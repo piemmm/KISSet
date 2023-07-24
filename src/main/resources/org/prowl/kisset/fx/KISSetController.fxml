@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<?import com.kodedu.terminalfx.TerminalView?>
+<VBox prefHeight="400.0" prefWidth="640.0" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.prowl.kisset.comms.fx.KISSetController">
+    <children>
+        <MenuBar VBox.vgrow="NEVER">
+            <menus>
+                <Menu mnemonicParsing="false" text="File">
+                    <items>
+                        <MenuItem mnemonicParsing="false" text="Preferences…" />
+                        <SeparatorMenuItem mnemonicParsing="false" />
+                        <MenuItem mnemonicParsing="false" onAction="#onQuitAction" text="Quit" />
+                    </items>
+                </Menu>
+
+                <Menu mnemonicParsing="false" text="Help">
+                    <items>
+                        <MenuItem mnemonicParsing="false" text="About MyHelloApp" />
+                    </items>
+                </Menu>
+            </menus>
+        </MenuBar>
+        <AnchorPane maxHeight="-1.0" maxWidth="-1.0" prefHeight="-1.0" prefWidth="-1.0" VBox.vgrow="ALWAYS">
+            <children>
+
+            <VBox>
+                <ScrollPane layoutX="97.0" layoutY="30.0" prefHeight="200.0" prefWidth="313.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                    <TerminalView fx:id="terminalView" />
+<!--                    <TextArea fx:id="terminalView" editable="false" wrapText="true" />-->
+                </ScrollPane>
+                <TextField fx:id="textEntry" promptText="Enter commands here" onAction="#onTextEnteredAction"/>
+
+            </VBox>
+
+         </children>
+        </AnchorPane>
+    </children>
+</VBox>
