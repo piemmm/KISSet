@@ -16,7 +16,6 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 
-
 <AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.prowl.kisset.fx.PreferencesController">
    <children>
       <BorderPane layoutX="100.0" layoutY="42.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
@@ -105,7 +104,7 @@
                                           <Insets />
                                        </opaqueInsets>
                                     </VBox>
-                                    <ListView fx:id="InterfaceList" accessibleText="Interfaces to KISS TNCs appear here" prefHeight="200.0" prefWidth="200.0">
+                                    <ListView fx:id="interfaceList" accessibleText="Interfaces to KISS TNCs appear here" prefHeight="200.0" prefWidth="200.0">
                                        <GridPane.margin>
                                           <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                                        </GridPane.margin>

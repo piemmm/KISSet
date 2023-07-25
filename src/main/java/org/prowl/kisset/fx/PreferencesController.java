@@ -56,32 +56,17 @@ public class PreferencesController {
 
     @FXML
     public void addInterfaceButtonClicked() {
-
-            try {
-                // Create the GUI.
-                Stage stage = new Stage();
-                FXMLLoader fxmlLoader = new FXMLLoader(KISSet.class.getResource("fx/ConnectionPreferenceHost.fxml"));
-                Parent root = fxmlLoader.load();
-                ConnetctionPreferenceHost controller = fxmlLoader.getController();
-                Scene scene = new Scene(root, 640, 480);
-                stage.setTitle("Add KISS interface");
-                stage.setScene(scene);
-                stage.show();
-                controller.setup(configuration);
-            } catch(Throwable e) {
-                LOG.error(e.getMessage(), e);
-            }
-
+        showAddInterfaceScreen(null);
     }
 
     @FXML
     public void removeInterfaceButtonClicked() {
-
+        removeInterface((Interface) interfaceList.getSelectionModel().getSelectedItem());
     }
 
     @FXML
     public void editInterfaceButtonClicked() {
-
+        showAddInterfaceScreen((Interface) interfaceList.getSelectionModel().getSelectedItem());
     }
 
     private static final Log LOG = LogFactory.getLog("PreferencesController");
@@ -122,4 +107,24 @@ public class PreferencesController {
 
     }
 
+    public void showAddInterfaceScreen(Interface interfaceToEditOrNull) {
+        try {
+            // Create the GUI.
+            Stage stage = new Stage();
+            FXMLLoader fxmlLoader = new FXMLLoader(KISSet.class.getResource("fx/ConnectionPreferenceHost.fxml"));
+            Parent root = fxmlLoader.load();
+            ConnectionPreferenceHost controller = fxmlLoader.getController();
+            Scene scene = new Scene(root, 640, 480);
+            stage.setTitle("Add KISS interface");
+            stage.setScene(scene);
+            stage.show();
+            controller.setup(interfaceToEditOrNull, this);
+        } catch(Throwable e) {
+            LOG.error(e.getMessage(), e);
+        }
+    }
+
+    public void removeInterface(Interface interfaceToRemove) {
+        interfaces.remove(interfaceToRemove);
+    }
 }

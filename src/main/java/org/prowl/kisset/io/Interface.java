@@ -1,5 +1,7 @@
 package org.prowl.kisset.io;
 
+import org.prowl.kisset.annotations.InterfaceDriver;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;

@@ -1,10 +1,11 @@
-package org.prowl.kisset.io.tcp;
+package org.prowl.kisset.io;
 
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.prowl.kisset.KISSet;
+import org.prowl.kisset.annotations.InterfaceDriver;
 import org.prowl.kisset.ax25.*;
 import org.prowl.kisset.ax25.io.BasicTransmittingConnector;
 import org.prowl.kisset.io.Interface;
@@ -22,7 +23,9 @@ import java.net.Socket;
 /**
  * Implements a KISS type passthrough on a TCP connection
  *
+ * All drivers should implement the @InterfaceDriver annotation so that they can be discovered by the system.
  */
+@InterfaceDriver(name = "KISS via TCP", description = "KISS over TCP/IP", uiName="fx/TCPConnectionPreference.fxml")
 public class KISSviaTCP extends Interface {
 
     private static final Log LOG = LogFactory.getLog("KISSviaTCP");

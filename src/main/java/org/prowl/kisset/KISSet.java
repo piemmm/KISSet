@@ -5,14 +5,11 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.prowl.kisset.comms.host.TNCHost;
 import org.prowl.kisset.fx.KISSetController;
 import org.prowl.kisset.config.Config;
 import org.prowl.kisset.fx.PreferencesController;
-import org.prowl.kisset.io.tcp.KISSviaTCP;
 
 import java.io.IOException;
 import java.util.Locale;
