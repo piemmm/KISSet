@@ -54,13 +54,15 @@ public class ConnectionPreferenceHost {
 
     private static final Set<Class<?>> ALL_TYPES = new Reflections("org.prowl.kisset.io").getTypesAnnotatedWith(InterfaceDriver.class);
 
+    private PreferencesController preferencesController;
 
     /**
      * Setup the controls - if null is passed in then this a new interface.
      *
      * @param interfaceToEdit
      */
-    public void setup(Interface interfaceToEdit, ) {
+    public void setup(Interface interfaceToEdit, PreferencesController preferencesController) {
+        this.preferencesController = preferencesController;
         setupDriverConfigPane(interfaceToEdit);
     }
 
@@ -114,7 +116,10 @@ public class ConnectionPreferenceHost {
 
             FXMLLoader fxmlLoader = new FXMLLoader(KISSet.class.getResource(uiName));
             Parent root = fxmlLoader.load();
-            // ConnectionPreferenceHost controller = fxmlLoader.getController();
+            //ConnectionPreferenceHost controller = fxmlLoader.getController();
+
+
+
             connectionContent.getChildren().add(root);
 
         } catch (IOException e) {
