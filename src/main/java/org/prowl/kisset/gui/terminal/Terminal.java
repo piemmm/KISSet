@@ -22,16 +22,18 @@
 
 package org.prowl.kisset.gui.terminal;
 
+
+import javafx.application.Platform;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.awt.image.BufferedImage;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-public class JCTermSwing extends JPanel implements KeyListener, /*Runnable,*/
-        Term {
+
+public class Terminal implements Term {
     private static final ConfigurationRepository defaultCR =
             new ConfigurationRepository() {
                 private final Configuration conf = new Configuration();
@@ -76,26 +78,20 @@ public class JCTermSwing extends JPanel implements KeyListener, /*Runnable,*/
     private int compression = 0;
     private boolean antialiasing = true;
 
-    public JCTermSwing() {
+    public Terminal() {
 
-        enableEvents(AWTEvent.KEY_EVENT_MASK);
-        addKeyListener(this);
 
         setFont("Monospaced-14");
 
-        setSize(getTermWidth(), getTermHeight());
+        setSize(getTermWidth(), getTermHeight(), true);
 
         clear();
 
-        term_area = this;
+         //term_area = this;
 
-        setPreferredSize(new Dimension(getTermWidth(), getTermHeight()));
 
-        setSize(getTermWidth(), getTermHeight());
-        setFocusable(true);
-        enableInputMethods(true);
+        setSize(getTermWidth(), getTermHeight(), true);
 
-        setFocusTraversalKeysEnabled(false);
         //  setOpaque(true);
     }
 
@@ -124,13 +120,14 @@ public class JCTermSwing extends JPanel implements KeyListener, /*Runnable,*/
     }
 
     void setFont(String fname) {
-        font = Font.decode(fname);
-        BufferedImage img = new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB);
-        Graphics2D graphics = (Graphics2D) (img.getGraphics());
-        graphics.setFont(font);
-        {
-            FontMetrics fo = graphics.getFontMetrics();
-            descent = fo.getDescent();
+
+            font = Font.decode(fname);
+            BufferedImage img = new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB);
+            Graphics2D graphics = (Graphics2D) (img.getGraphics());
+            graphics.setFont(font);
+            {
+                FontMetrics fo = graphics.getFontMetrics();
+                descent = fo.getDescent();
       /*
       System.out.println(fo.getDescent());
       System.out.println(fo.getAscent());
@@ -141,65 +138,68 @@ public class JCTermSwing extends JPanel implements KeyListener, /*Runnable,*/
       System.out.println(fo.getMaxDecent());
       System.out.println(fo.getMaxAdvance());
       */
-            char_width = (int) (fo.charWidth((char) '@'));
-            char_height = (int) (fo.getHeight()) + (line_space * 2);
-            descent += line_space;
-        }
+                char_width = (int) (fo.charWidth((char) '@'));
+                char_height = (int) (fo.getHeight()) + (line_space * 2);
+                descent += line_space;
+            }
 
-        img.flush();
-        graphics.dispose();
-
-        background = new BufferedImage(char_width, char_height,
-                BufferedImage.TYPE_INT_RGB);
-        {
-            Graphics2D foog = (Graphics2D) (background.getGraphics());
-            foog.setColor(getBackGround());
-            foog.fillRect(0, 0, char_width, char_height);
-            foog.dispose();
-        }
-    }
-
-    public void setSize(int w, int h) {
-
-        super.setSize(w, h);
-        BufferedImage imgOrg = img;
-        if (graphics != null)
+            img.flush();
             graphics.dispose();
 
-        int column = w / getCharWidth();
-        int row = h / getCharHeight();
-        term_width = column;
-        term_height = row;
+            background = new BufferedImage(char_width, char_height,
+                    BufferedImage.TYPE_INT_RGB);
+            {
+                Graphics2D foog = (Graphics2D) (background.getGraphics());
+                foog.setColor(getBackGround());
+                foog.fillRect(0, 0, char_width, char_height);
+                foog.dispose();
+            }
+    }
 
-        if (emulator != null)
-            emulator.reset();
+    public void setSize(int w, int h, boolean clear) {
 
-        img = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
-        graphics = (Graphics2D) (img.getGraphics());
-        graphics.setFont(font);
+            //setSize(w, h);
+            BufferedImage imgOrg = img;
+            if (graphics != null)
+                graphics.dispose();
 
-        clear_area(0, 0, w, h);
-        redraw(0, 0, w, h);
+            int column = w / getCharWidth();
+            int row = h / getCharHeight();
+            term_width = column;
+            term_height = row;
 
-        if (imgOrg != null) {
-            Shape clip = graphics.getClip();
-            graphics.setClip(0, 0, getTermWidth(), getTermHeight());
-            graphics.drawImage(imgOrg, 0, 0, term_area);
-            graphics.setClip(clip);
-        }
+            if (emulator != null)
+                emulator.reset();
 
-        resetCursorGraphics();
+            img = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+            graphics = (Graphics2D) (img.getGraphics());
+            graphics.setFont(font);
 
-        setAntiAliasing(antialiasing);
+            if (clear) {
+                clear_area(0, 0, w, h);
+            }
 
-        if (connection != null) {
-            connection.requestResize(this);
-        }
+            redraw(0, 0, w, h);
 
-        if (imgOrg != null) {
-            imgOrg.flush();
-            imgOrg = null;
-        }
+            if (imgOrg != null) {
+                Shape clip = graphics.getClip();
+                graphics.setClip(0, 0, getTermWidth(), getTermHeight());
+                graphics.drawImage(imgOrg, 0, 0, term_area);
+                graphics.setClip(clip);
+            }
+
+            resetCursorGraphics();
+
+            setAntiAliasing(antialiasing);
+
+            if (connection != null) {
+                connection.requestResize(this);
+            }
+
+            if (imgOrg != null) {
+                imgOrg.flush();
+                imgOrg = null;
+            }
     }
 
     public void start(Connection connection) {
@@ -216,28 +216,31 @@ public class JCTermSwing extends JPanel implements KeyListener, /*Runnable,*/
     }
 
     public void paintComponent(Graphics g) {
-        super.paintComponent(g);
-        if (img != null) {
-            g.drawImage(img, 0, 0, term_area);
-        }
+        Platform.runLater(() -> {
+
+            //  super.paintComponent(g);
+            if (img != null) {
+                g.drawImage(img, 0, 0, term_area);
+            }
+        });
     }
 
-    public void paint(Graphics g) {
-        super.paint(g);
-    }
+//    public void paint(Graphics g) {
+//        super.paint(g);
+//    }
 
-    public void processKeyEvent(KeyEvent e) {
-        //System.out.println(e);
-        int id = e.getID();
-        if (id == KeyEvent.KEY_PRESSED) {
-            keyPressed(e);
-        } else if (id == KeyEvent.KEY_RELEASED) {
-            /*keyReleased(e);*/
-        } else if (id == KeyEvent.KEY_TYPED) {
-            keyTyped(e);/*keyTyped(e);*/
-        }
-        e.consume(); // ??
-    }
+//    public void processKeyEvent(KeyEvent e) {
+//        //System.out.println(e);
+//        int id = e.getID();
+//        if (id == KeyEvent.KEY_PRESSED) {
+//            keyPressed(e);
+//        } else if (id == KeyEvent.KEY_RELEASED) {
+//            /*keyReleased(e);*/
+//        } else if (id == KeyEvent.KEY_TYPED) {
+//            keyTyped(e);/*keyTyped(e);*/
+//        }
+//        e.consume(); // ??
+//    }
 
     public void keyPressed(KeyEvent e) {
         int keycode = e.getKeyCode();
@@ -356,9 +359,12 @@ public class JCTermSwing extends JPanel implements KeyListener, /*Runnable,*/
     }
 
     public void clear() {
-        graphics.setColor(getBackGround());
-        graphics.fillRect(0, 0, char_width * term_width, char_height * term_height);
-        graphics.setColor(getForeGround());
+        Platform.runLater(() -> {
+
+            graphics.setColor(getBackGround());
+            graphics.fillRect(0, 0, char_width * term_width, char_height * term_height);
+            graphics.setColor(getForeGround());
+        });
     }
 
     public void setCursor(int x, int y) {
@@ -368,27 +374,35 @@ public class JCTermSwing extends JPanel implements KeyListener, /*Runnable,*/
     }
 
     public void draw_cursor() {
-        cursor_graphics.fillRect(x, y - char_height, char_width, char_height);
-        repaint(x, y - char_height, char_width, char_height);
+        Platform.runLater(() -> {
+
+                    cursor_graphics.fillRect(x, y - char_height, char_width, char_height);
+                });
+        // repaint(x, y - char_height, char_width, char_height);
     }
 
     public void redraw(int x, int y, int width, int height) {
-        repaint(x, y, width, height);
+        //repaint(x, y, width, height);
     }
 
     public void clear_area(int x1, int y1, int x2, int y2) {
         //System.out.println("clear_area: "+x1+" "+y1+" "+x2+" "+y2);
-        graphics.setColor(getBackGround());
-        graphics.fillRect(x1, y1, x2 - x1, y2 - y1);
-        graphics.setColor(getForeGround());
+        Platform.runLater(() -> {
+            graphics.setColor(getBackGround());
+            graphics.fillRect(x1, y1, x2 - x1, y2 - y1);
+            graphics.setColor(getForeGround());
+        });
     }
 
     //  public void keyPressed(KeyEvent event){}
 
     public void scroll_area(int x, int y, int w, int h, int dx, int dy) {
         //System.out.println("scroll_area: "+x+" "+y+" "+w+" "+h+" "+dx+" "+dy);
-        graphics.copyArea(x, y, w, h, dx, dy);
-        repaint(x + dx, y + dy, w, h);
+        Platform.runLater(() -> {
+
+                    graphics.copyArea(x, y, w, h, dx, dy);
+                });
+        // repaint(x + dx, y + dy, w, h);
     }
 
     public void drawBytes(byte[] buf, int s, int len, int x, int y) {
@@ -396,27 +410,32 @@ public class JCTermSwing extends JPanel implements KeyListener, /*Runnable,*/
         //    graphics.setColor(getForeGround());
 
         //System.out.println("drawString: "+x+","+y+" "+len+" "+new String(buf, s, len));
+        Platform.runLater(() -> {
 
-        graphics.drawBytes(buf, s, len, x, y - descent);
-        if (bold)
-            graphics.drawBytes(buf, s, len, x + 1, y - descent);
+            graphics.drawBytes(buf, s, len, x, y - descent);
+            if (bold)
+                graphics.drawBytes(buf, s, len, x + 1, y - descent);
 
-        if (underline) {
-            graphics.drawLine(x, y - 1, x + len * char_width, y - 1);
-        }
+            if (underline) {
+                graphics.drawLine(x, y - 1, x + len * char_width, y - 1);
+            }
+        });
 
     }
 
     public void drawString(String str, int x, int y) {
         //    clear_area(x, y, x+str.length()*char_width, y+char_height);
         //    graphics.setColor(getForeGround());
-        graphics.drawString(str, x, y - descent);
-        if (bold)
-            graphics.drawString(str, x + 1, y - descent);
+        Platform.runLater(() -> {
 
-        if (underline) {
-            graphics.drawLine(x, y - 1, x + str.length() * char_width, y - 1);
-        }
+            graphics.drawString(str, x, y - descent);
+            if (bold)
+                graphics.drawString(str, x + 1, y - descent);
+
+            if (underline) {
+                graphics.drawLine(x, y - 1, x + str.length() * char_width, y - 1);
+            }
+        });
 
     }
 
@@ -481,20 +500,24 @@ public class JCTermSwing extends JPanel implements KeyListener, /*Runnable,*/
     }
 
     public void setBackGround(Object b) {
-        bground = toColor(b);
-        Graphics2D foog = (Graphics2D) (background.getGraphics());
-        foog.setColor(getBackGround());
-        foog.fillRect(0, 0, char_width, char_height);
-        foog.dispose();
+
+            bground = toColor(b);
+        Platform.runLater(() -> {
+            Graphics2D foog = (Graphics2D) (background.getGraphics());
+            foog.setColor(getBackGround());
+            foog.fillRect(0, 0, char_width, char_height);
+            foog.dispose();
+        });
     }
 
     void resetCursorGraphics() {
-        if (cursor_graphics != null)
-            cursor_graphics.dispose();
 
-        cursor_graphics = (Graphics2D) (img.getGraphics());
-        cursor_graphics.setColor(getForeGround());
-        cursor_graphics.setXORMode(getBackGround());
+            if (cursor_graphics != null)
+                cursor_graphics.dispose();
+
+            cursor_graphics = (Graphics2D) (img.getGraphics());
+            cursor_graphics.setColor(getForeGround());
+            cursor_graphics.setXORMode(getBackGround());
     }
 
     public Object getColor(int index) {

@@ -5,9 +5,15 @@ module org.prowl.kisset {
     requires org.controlsfx.controls;
     requires net.synedra.validatorfx;
     requires org.kordamp.ikonli.javafx;
+    requires org.jfree.fxgraphics2d;
+    requires javafx.swing;
+    requires java.logging;
+    requires commons.logging;
+    requires commons.configuration;
+    requires java.prefs;
 
     opens org.prowl.kisset to javafx.fxml;
     exports org.prowl.kisset;
-    exports org.prowl.kisset.comms.fx;
-    opens org.prowl.kisset.comms.fx to javafx.fxml;
+    exports org.prowl.kisset.fx;
+    opens org.prowl.kisset.fx to javafx.fxml;
 }

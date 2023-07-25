@@ -20,7 +20,7 @@ package org.prowl.kisset.ax25;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.prowl.kissterm.util.ReschedulableTimerTask;
+import org.prowl.kisset.util.ReschedulableTimerTask;
 
 import java.io.Closeable;
 import java.io.IOException;

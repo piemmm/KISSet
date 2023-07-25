@@ -2,7 +2,9 @@ package org.prowl.kisset.ax25.io;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.prowl.kissterm.ax25.*;
+import org.prowl.kisset.ax25.AX25Callsign;
+import org.prowl.kisset.ax25.AX25Stack;
+import org.prowl.kisset.ax25.*;
 
 import java.io.IOException;
 import java.io.InputStream;

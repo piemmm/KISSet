@@ -1,7 +1,7 @@
 package org.prowl.kisset.ax25.test;
 
-import org.prowl.kissterm.ax25.*;
-import org.prowl.kissterm.ax25.io.BasicTransmittingConnector;
+import org.prowl.kisset.ax25.*;
+import org.prowl.kisset.ax25.io.BasicTransmittingConnector;
 
 import java.io.IOException;
 import java.io.InputStream;

@@ -4,11 +4,12 @@ import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.prowl.kissterm.KISSterm;
-import org.prowl.kissterm.ax25.*;
-import org.prowl.kissterm.ax25.io.BasicTransmittingConnector;
-import org.prowl.kissterm.io.Interface;
-import org.prowl.kissterm.util.Tools;
+import org.prowl.kisset.KISSet;
+import org.prowl.kisset.ax25.*;
+import org.prowl.kisset.ax25.io.BasicTransmittingConnector;
+import org.prowl.kisset.io.Interface;
+import org.prowl.kisset.util.Tools;
+
 
 import java.io.BufferedOutputStream;
 import java.io.IOException;
@@ -56,7 +57,7 @@ public class KISSviaTCP extends Interface {
         // So if I were to say at node level 'broadcast this UI frame on all interfaces' it would use this callsign.
         // But if a service wanted to do the same, (eg: BBS service sending an FBB list) then it would use the service
         // callsign instead.
-        defaultOutgoingCallsign = KISSterm.INSTANCE.getMyCall();
+        defaultOutgoingCallsign = KISSet.INSTANCE.getMyCall();
 
         // Settings for timeouts, max frames a
         pacLen = config.getInt("pacLen", 120);
@@ -118,7 +119,7 @@ public class KISSviaTCP extends Interface {
              * @return
              */
             @Override
-            public boolean acceptInbound(ConnState state, AX25Callsign originator, org.prowl.kissterm.ax25.Connector port) {
+            public boolean acceptInbound(ConnState state, AX25Callsign originator, org.prowl.kisset.ax25.Connector port) {
 
                 LOG.info("Incoming connection request from " + originator + " to " + state.getDst() );
 
@@ -136,7 +137,7 @@ public class KISSviaTCP extends Interface {
         // AX Frame listener for things like mheard lists
         connector.addFrameListener(new AX25FrameListener() {
             @Override
-            public void consumeAX25Frame(AX25Frame frame, org.prowl.kissterm.ax25.Connector connector) {
+            public void consumeAX25Frame(AX25Frame frame, org.prowl.kisset.ax25.Connector connector) {
                 // Create a node to represent what we've seen - we'll merge this in things like
                 // mheard lists if there is another node there so that capability lists can grow
 //                Node node = new Node(KISSviaTCP.this, frame.sender.toString(), frame.rcptTime, frame.dest.toString(), frame);
@@ -159,7 +160,7 @@ public class KISSviaTCP extends Interface {
      * @param originator
      * @param port
      */
-    public void setupConnectionListener(ConnState state, AX25Callsign originator, org.prowl.kissterm.ax25.Connector port) {
+    public void setupConnectionListener(ConnState state, AX25Callsign originator, org.prowl.kisset.ax25.Connector port) {
         // If we're going to accept then add a listener so we can keep track of this connection state
         state.listener = new ConnectionEstablishmentListener() {
             @Override

@@ -57,8 +57,8 @@ public class Configuration {
             String[] tmp = _fg_bg[i].split(":");
             if (tmp.length != 2)
                 continue;
-            Color fg = JCTermSwing.toColor(tmp[0]);
-            Color bg = JCTermSwing.toColor(tmp[1]);
+            Color fg = Terminal.toColor(tmp[0]);
+            Color bg = Terminal.toColor(tmp[1]);
             if (fg != null && bg != null) {
                 v.addElement(_fg_bg[i]);
             }

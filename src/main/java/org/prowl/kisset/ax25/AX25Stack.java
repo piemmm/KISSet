@@ -20,8 +20,8 @@ package org.prowl.kisset.ax25;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.prowl.kissterm.util.FastBlockingQueue;
-import org.prowl.kissterm.util.ReschedulableTimer;
+import org.prowl.kisset.util.FastBlockingQueue;
+import org.prowl.kisset.util.ReschedulableTimer;
 
 import java.io.*;
 import java.net.ConnectException;

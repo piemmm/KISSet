@@ -18,8 +18,8 @@
         <junit.version>5.9.2</junit.version>
     </properties>
 
-
     <dependencies>
+
         <dependency>
             <groupId>org.jfree</groupId>
             <artifactId>org.jfree.fxgraphics2d</artifactId>
@@ -80,6 +80,59 @@
             <groupId>net.sf.bluecove</groupId>
             <artifactId>bluecove</artifactId>
             <version>2.1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-runner</artifactId>
+            <version>1.5.2</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Commons configuration (for XML'ing configuration files) -->
+        <dependency>
+            <groupId>commons-configuration</groupId>
+            <artifactId>commons-configuration</artifactId>
+            <version>1.10</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>commons-logging</artifactId>
+                    <groupId>commons-logging</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <!-- Use the latest commons logging -->
+        <dependency>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+            <version>1.2</version>
+        </dependency>
+
+        <!-- Bean utils (required by commons above) -->
+        <dependency>
+            <groupId>commons-beanutils</groupId>
+            <artifactId>commons-beanutils</artifactId>
+            <version>1.9.4</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>commons-logging</artifactId>
+                    <groupId>commons-logging</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-collections4 -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-collections4</artifactId>
+            <version>4.4</version>
+        </dependency>
+
+        <!-- Lanterna is to help with drawing things in text mode -->
+        <dependency>
+            <groupId>com.googlecode.lanterna</groupId>
+            <artifactId>lanterna</artifactId>
+            <version>3.0.2</version>
         </dependency>
 
     </dependencies>

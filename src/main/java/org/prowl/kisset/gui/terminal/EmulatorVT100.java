@@ -71,7 +71,7 @@ public class EmulatorVT100 extends Emulator {
 
                 b = getChar();
 
-                //System.out.println("@0: "+ new Character((char)b)+"["+Integer.toHexString(b&0xff)+"]");
+                System.out.println("@0: " + new Character((char) b) + "[" + Integer.toHexString(b & 0xff) + "]");
 
                 //System.out.println("@0: ry="+ry);
 
@@ -554,6 +554,7 @@ public class EmulatorVT100 extends Emulator {
                 }
             }
         } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
