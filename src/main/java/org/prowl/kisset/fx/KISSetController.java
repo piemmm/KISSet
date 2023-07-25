@@ -54,6 +54,11 @@ public class KISSetController {
     }
 
     @FXML
+    protected void onPreferencesAction() {
+        KISSet.INSTANCE.showPreferences();
+    }
+
+    @FXML
     protected void onTextEnteredAction(ActionEvent event) {
         try {
             outpos.write(textEntry.getText().getBytes());

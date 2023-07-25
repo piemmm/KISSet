@@ -17,6 +17,10 @@ public class Config {
     private XMLConfiguration configuration;
 
     public Config() {
+        loadConfig();
+    }
+
+    public void loadConfig() {
         LOG.info("Loading configuration from: " + new File(new File("").getAbsolutePath(), CONFIG_FILE));
         try {
             configuration = new XMLConfiguration(new File(new File("").getAbsolutePath(), CONFIG_FILE));
@@ -46,6 +50,7 @@ public class Config {
     }
 
     public void saveConfig() {
+        LOG.info("Saving configuration to: " + new File(new File("").getAbsolutePath(), CONFIG_FILE));
         try {
             configuration.save();
         } catch (Throwable e) {

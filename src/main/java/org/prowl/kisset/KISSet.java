@@ -11,6 +11,7 @@ import org.apache.commons.logging.LogFactory;
 import org.prowl.kisset.comms.host.TNCHost;
 import org.prowl.kisset.fx.KISSetController;
 import org.prowl.kisset.config.Config;
+import org.prowl.kisset.fx.PreferencesController;
 import org.prowl.kisset.io.tcp.KISSviaTCP;
 
 import java.io.IOException;
@@ -28,7 +29,6 @@ public class KISSet extends Application {
 
     @Override
     public void start(Stage stage) throws IOException {
-
         try {
             // Init resource bundles.
             Messages.init();
@@ -62,7 +62,7 @@ public class KISSet extends Application {
 
 
         // Create the GUI.
-        FXMLLoader fxmlLoader = new FXMLLoader(KISSet.class.getResource("fx/kissetController.fxml"));
+        FXMLLoader fxmlLoader = new FXMLLoader(KISSet.class.getResource("fx/KISSetController.fxml"));
         Parent root = fxmlLoader.load();
         KISSetController controller = fxmlLoader.getController();
         Scene scene = new Scene(root, 640, 480);
@@ -71,6 +71,23 @@ public class KISSet extends Application {
         stage.show();
         controller.setup();
 
+    }
+
+    public void showPreferences() {
+        try {
+            // Create the GUI.
+            Stage stage = new Stage();
+            FXMLLoader fxmlLoader = new FXMLLoader(KISSet.class.getResource("fx/PreferencesController.fxml"));
+            Parent root = fxmlLoader.load();
+            PreferencesController controller = fxmlLoader.getController();
+            Scene scene = new Scene(root, 640, 480);
+            stage.setTitle("Preferences");
+            stage.setScene(scene);
+            stage.show();
+            controller.setup(configuration);
+        } catch(Throwable e) {
+            LOG.error(e.getMessage(), e);
+        }
     }
 
     public static void main(String[] args) {

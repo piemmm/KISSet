@@ -217,7 +217,7 @@ public class KISSviaTCP extends Interface {
 
     @Override
     public String getName() {
-        return getClass().getSimpleName();
+        return getClass().getSimpleName()+" " + address + ":" + port;
     }
 
 

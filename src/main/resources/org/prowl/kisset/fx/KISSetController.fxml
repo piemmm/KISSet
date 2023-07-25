@@ -9,7 +9,7 @@
             <menus>
                 <Menu mnemonicParsing="false" text="File">
                     <items>
-                        <MenuItem mnemonicParsing="false" text="Preferences…"/>
+                        <MenuItem mnemonicParsing="false" text="Preferences…" onAction="#onPreferencesAction"/>
                         <SeparatorMenuItem mnemonicParsing="false"/>
                         <MenuItem mnemonicParsing="false" onAction="#onQuitAction" text="Quit"/>
                     </items>
