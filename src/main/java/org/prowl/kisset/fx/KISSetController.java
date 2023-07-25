@@ -59,7 +59,7 @@ public class KISSetController {
             outpos.write(textEntry.getText().getBytes());
             outpos.write(CommandParser.CR.getBytes());
             outpos.flush();
-            //canvas.draw();
+            textEntry.clear();
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -2,7 +2,6 @@ package org.prowl.kisset.comms.host.parser;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.prowl.kisset.Messages;
 import org.prowl.kisset.annotations.TNCCommand;
 import org.prowl.kisset.comms.host.TNCHost;
@@ -26,7 +25,7 @@ public class CommandParser {
     public static final String CR = "\r\n";
 
     // Commands that are available
-    private static final Set<Class<?>> ALL_COMMANDS = new Reflections("org.prowl.distribbs.services.bbs.parser.commands").getTypesAnnotatedWith(TNCCommand.class);
+    private static final Set<Class<?>> ALL_COMMANDS = new Reflections("org.prowl.kisset.comms.host.parser.commands").getTypesAnnotatedWith(TNCCommand.class);
 
     // Command classes that help keep this class cleaner
     private final List<Command> commands = new ArrayList<>();
@@ -72,15 +71,19 @@ public class CommandParser {
     }
 
     public void parse(String c) throws IOException {
+
+        // Local echo
+        write(c);
+
         if (mode == Mode.CMD || mode == Mode.MESSAGE_LIST_PAGINATION || mode == Mode.MESSAGE_READ_PAGINATION) {
             String[] arguments = c.split(" "); // Arguments[0] is the command used.
 
             // If the command matches, then we will send the command. It is up to the command to check the mode we are
             // in and act accordingly.
             boolean commandExecuted = false;
-            for (Command command: commands) {
+            for (Command command : commands) {
                 String[] supportedCommands = command.getCommandNames();
-                for (String supportedCommand: supportedCommands) {
+                for (String supportedCommand : supportedCommands) {
                     if (supportedCommand.equalsIgnoreCase(arguments[0])) {
                         commandExecuted = command.doCommand(arguments) | commandExecuted;
                         // Stop when we executed a command.
@@ -115,7 +118,7 @@ public class CommandParser {
     }
 
     public void unknownCommand() throws IOException {
-        tncHost.send(CR + ANSI.BOLD_RED + Messages.get("unknownCommand") + ANSI.NORMAL + CR);
+        tncHost.send(CR + CR + ANSI.BOLD_RED + Messages.get("unknownCommand") + ANSI.NORMAL + CR);
     }
 
     public String getPrompt() {
@@ -146,7 +149,6 @@ public class CommandParser {
 //    public void stop() {
 //        ServerBus.INSTANCE.unregister(this);
 //    }
-
     public void pushModeToStack(Mode mode) {
         modeStack.add(mode);
     }

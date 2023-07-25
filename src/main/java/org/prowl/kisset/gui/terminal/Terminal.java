@@ -25,7 +25,6 @@ package org.prowl.kisset.gui.terminal;
 
 import javafx.application.Platform;
 
-import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
@@ -88,7 +87,7 @@ public class Terminal implements Term {
 
         clear();
 
-         //term_area = this;
+        //term_area = this;
 
 
         setSize(getTermWidth(), getTermHeight(), true);
@@ -122,13 +121,13 @@ public class Terminal implements Term {
 
     void setFont(String fname) {
 
-            font = Font.decode(fname);
-            BufferedImage img = new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB);
-            Graphics2D graphics = (Graphics2D) (img.getGraphics());
-            graphics.setFont(font);
-            {
-                FontMetrics fo = graphics.getFontMetrics();
-                descent = fo.getDescent();
+        font = Font.decode(fname);
+        BufferedImage img = new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB);
+        Graphics2D graphics = (Graphics2D) (img.getGraphics());
+        graphics.setFont(font);
+        {
+            FontMetrics fo = graphics.getFontMetrics();
+            descent = fo.getDescent();
       /*
       System.out.println(fo.getDescent());
       System.out.println(fo.getAscent());
@@ -139,68 +138,68 @@ public class Terminal implements Term {
       System.out.println(fo.getMaxDecent());
       System.out.println(fo.getMaxAdvance());
       */
-                char_width = (int) (fo.charWidth((char) '@'));
-                char_height = (int) (fo.getHeight()) + (line_space * 2);
-                descent += line_space;
-            }
+            char_width = (int) (fo.charWidth((char) '@'));
+            char_height = (int) (fo.getHeight()) + (line_space * 2);
+            descent += line_space;
+        }
 
-            img.flush();
-            graphics.dispose();
+        img.flush();
+        graphics.dispose();
 
-            background = new BufferedImage(char_width, char_height,
-                    BufferedImage.TYPE_INT_RGB);
-            {
-                Graphics2D foog = (Graphics2D) (background.getGraphics());
-                foog.setColor(getBackGround());
-                foog.fillRect(0, 0, char_width, char_height);
-                foog.dispose();
-            }
+        background = new BufferedImage(char_width, char_height,
+                BufferedImage.TYPE_INT_RGB);
+        {
+            Graphics2D foog = (Graphics2D) (background.getGraphics());
+            foog.setColor(getBackGround());
+            foog.fillRect(0, 0, char_width, char_height);
+            foog.dispose();
+        }
     }
 
     public void setSize(int w, int h, boolean clear) {
 
-            //setSize(w, h);
-            BufferedImage imgOrg = img;
-            if (graphics != null)
-                graphics.dispose();
+        //setSize(w, h);
+        BufferedImage imgOrg = img;
+        if (graphics != null)
+            graphics.dispose();
 
-            int column = w / getCharWidth();
-            int row = h / getCharHeight();
-            term_width = column;
-            term_height = row;
+        int column = w / getCharWidth();
+        int row = h / getCharHeight();
+        term_width = column;
+        term_height = row;
 
-            if (emulator != null)
-                emulator.reset();
+        if (emulator != null)
+            emulator.reset();
 
-            img = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
-            graphics = (Graphics2D) (img.getGraphics());
-            graphics.setFont(font);
+        img = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+        graphics = (Graphics2D) (img.getGraphics());
+        graphics.setFont(font);
 
-            if (clear) {
-                clear_area(0, 0, w, h);
-            }
+        if (clear) {
+            clear_area(0, 0, w, h);
+        }
 
-            redraw(0, 0, w, h);
+        redraw(0, 0, w, h);
 
-            if (imgOrg != null) {
-                Shape clip = graphics.getClip();
-                graphics.setClip(0, 0, getTermWidth(), getTermHeight());
-                graphics.drawImage(imgOrg, 0, 0, term_area);
-                graphics.setClip(clip);
-            }
+        if (imgOrg != null) {
+            Shape clip = graphics.getClip();
+            graphics.setClip(0, 0, getTermWidth(), getTermHeight());
+            graphics.drawImage(imgOrg, 0, 0, term_area);
+            graphics.setClip(clip);
+        }
 
-            resetCursorGraphics();
+        resetCursorGraphics();
 
-            setAntiAliasing(antialiasing);
+        setAntiAliasing(antialiasing);
 
-            if (connection != null) {
-                connection.requestResize(this);
-            }
+        if (connection != null) {
+            connection.requestResize(this);
+        }
 
-            if (imgOrg != null) {
-                imgOrg.flush();
-                imgOrg = null;
-            }
+        if (imgOrg != null) {
+            imgOrg.flush();
+            imgOrg = null;
+        }
     }
 
     public void start(Connection connection) {
@@ -218,13 +217,13 @@ public class Terminal implements Term {
 
     public void paintComponent(Graphics2D g) {
         this.paintGraphics = g;
-      //  Platform.runLater(() -> {
+        //  Platform.runLater(() -> {
 
-            //  super.paintComponent(g);
-            if (img != null) {
-                g.drawImage(img, 0, 0, term_area);
-            }
-      //  });
+        //  super.paintComponent(g);
+        if (img != null && g != null) {
+            g.drawImage(img, 0, 0, term_area);
+        }
+        //  });
     }
 
 //    public void paint(Graphics g) {
@@ -362,7 +361,6 @@ public class Terminal implements Term {
 
     public void clear() {
         Platform.runLater(() -> {
-
             graphics.setColor(getBackGround());
             graphics.fillRect(0, 0, char_width * term_width, char_height * term_height);
             graphics.setColor(getForeGround());
@@ -378,17 +376,17 @@ public class Terminal implements Term {
     public void draw_cursor() {
         Platform.runLater(() -> {
 
-                   // cursor_graphics.fillRect(x, y - char_height, char_width, char_height);
-                });
+            // cursor_graphics.fillRect(x, y - char_height, char_width, char_height);
+        });
         // repaint(x, y - char_height, char_width, char_height);
     }
 
     public void redraw(int x, int y, int width, int height) {
-
-        Platform.runLater(() -> {
-            paintComponent(paintGraphics);
-        });
-        //repaint(x, y, width, height);
+        if (paintGraphics != null) {
+            Platform.runLater(() -> {
+                paintComponent(paintGraphics);
+            });
+        }
     }
 
     public void clear_area(int x1, int y1, int x2, int y2) {
@@ -406,8 +404,8 @@ public class Terminal implements Term {
         //System.out.println("scroll_area: "+x+" "+y+" "+w+" "+h+" "+dx+" "+dy);
         Platform.runLater(() -> {
 
-                    graphics.copyArea(x, y, w, h, dx, dy);
-                });
+            graphics.copyArea(x, y, w, h, dx, dy);
+        });
         // repaint(x + dx, y + dy, w, h);
     }
 
@@ -507,7 +505,7 @@ public class Terminal implements Term {
 
     public void setBackGround(Object b) {
 
-            bground = toColor(b);
+        bground = toColor(b);
         Platform.runLater(() -> {
             Graphics2D foog = (Graphics2D) (background.getGraphics());
             foog.setColor(getBackGround());
@@ -518,12 +516,12 @@ public class Terminal implements Term {
 
     void resetCursorGraphics() {
 
-            if (cursor_graphics != null)
-                cursor_graphics.dispose();
+        if (cursor_graphics != null)
+            cursor_graphics.dispose();
 
-            cursor_graphics = (Graphics2D) (img.getGraphics());
-            cursor_graphics.setColor(getForeGround());
-            cursor_graphics.setXORMode(getBackGround());
+        cursor_graphics = (Graphics2D) (img.getGraphics());
+        cursor_graphics.setColor(getForeGround());
+        cursor_graphics.setXORMode(getBackGround());
     }
 
     public Object getColor(int index) {

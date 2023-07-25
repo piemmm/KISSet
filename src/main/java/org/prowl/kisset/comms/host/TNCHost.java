@@ -3,23 +3,37 @@ package org.prowl.kisset.comms.host;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.prowl.kisset.Messages;
 import org.prowl.kisset.comms.host.parser.CommandParser;
 import org.prowl.kisset.util.ANSI;
 import org.prowl.kisset.util.Tools;
 
 import java.io.*;
 
+/**
+ * Each TNC host
+ */
 public class TNCHost {
-
+    // Logging
     private static final Log LOG = LogFactory.getLog("TNCHost");
 
+    // The end character for the TNC prompt
     public static final String CR = CommandParser.CR;
 
+    // The command parser
     private CommandParser parser;
 
+    // Terminal window input stream
     private InputStream in;
+    // Terminal window output stream
     private OutputStream out;
 
+    /**
+     * Create a new TNC host.
+     * @param config The configuration for this host.
+     * @param in The input stream for the terminal window.
+     * @param out The output stream for the terminal window.
+     */
     public TNCHost(HierarchicalConfiguration config, InputStream in, OutputStream out) {
         this.in = in;
         this.out = out;
@@ -32,9 +46,8 @@ public class TNCHost {
     public void start() {
         try {
             // Write welcome/init message to the client.
-            for (int i = 0; i < 100; i++) {
-                send(CR);
-            }
+            send(CR);
+            send(Messages.get("tncInit")+CR);
             send(parser.getPrompt());
 
             // Start the reader thread for the client.
@@ -56,7 +69,6 @@ public class TNCHost {
         }
     }
 
-
     /**
      * Send ASCII text data to the client - will strip colour codes if user has requested it.
      *
@@ -66,12 +78,16 @@ public class TNCHost {
     public void send(String data) throws IOException {
         data = data.replaceAll("[^\\x04-\\xFF]", "?");
 
-        // Strip colour if needed.
-       // data = ANSI.convertTokensToANSIColours(data);
+        // Colourise
+        data = ANSI.convertTokensToANSIColours(data);
 
         out.write(data.getBytes());
     }
 
+    /**
+     * Flush the output stream.
+     * @throws IOException
+     */
     public void flush() throws IOException {
         out.flush();
     }

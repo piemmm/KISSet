@@ -14,6 +14,11 @@
                         <MenuItem mnemonicParsing="false" onAction="#onQuitAction" text="Quit"/>
                     </items>
                 </Menu>
+                <Menu mnemonicParsing="false" text="Window">
+                    <items>
+                        <MenuItem mnemonicParsing="false" text="Monitor traffic"/>
+                    </items>
+                </Menu>
 
                 <Menu mnemonicParsing="false" text="Help">
                     <items>
