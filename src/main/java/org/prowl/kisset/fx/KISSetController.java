@@ -7,8 +7,12 @@ import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.StackPane;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jfree.fx.FXGraphics2D;
 import org.prowl.kisset.KISSet;
+import org.prowl.kisset.comms.host.TNCHost;
+import org.prowl.kisset.comms.host.parser.CommandParser;
 import org.prowl.kisset.gui.terminal.Connection;
 import org.prowl.kisset.gui.terminal.Term;
 import org.prowl.kisset.gui.terminal.Terminal;
@@ -31,6 +35,8 @@ public class KISSetController {
 //    @FXML
 //    ScrollPane mScrollPane;
 
+    private static final Log LOG = LogFactory.getLog("KISSetController");
+
     private Terminal term;
     private PipedInputStream inpis = new PipedInputStream();
     private PipedOutputStream inpos = new PipedOutputStream();
@@ -50,16 +56,14 @@ public class KISSetController {
     @FXML
     protected void onTextEnteredAction(ActionEvent event) {
         try {
-            inpos.write(textEntry.getText().getBytes());
-            inpos.write('\r');
-            inpos.write('\n');
-            inpos.flush();
-            canvas.draw();
+            outpos.write(textEntry.getText().getBytes());
+            outpos.write(CommandParser.CR.getBytes());
+            outpos.flush();
+            //canvas.draw();
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        System.out.println("moo" + textEntry.getText());
     }
 
     static class TerminalCanvas extends Canvas {
@@ -79,18 +83,11 @@ public class KISSetController {
 
 
         private void draw() {
-
-            //terminal.setSize(300,300);
             Platform.runLater(() -> {
                 double width = Math.max(100, getWidth());
                 double height = Math.max(100, getHeight());
-
                 terminal.setSize((int) width, (int) height, false);
-
-                // terminal.setSize((int)width,640);
-                // getGraphicsContext2D().clearRect(0, 0, width, height);
-                this.terminal.paintComponent(g2);//draw(this.g2, new Rectangle2D.Double(0, 0, width, height));
-                //this.terminal.redraw();
+                this.terminal.paintComponent(g2);
             });
         }
 
@@ -112,7 +109,6 @@ public class KISSetController {
 
     public void setup() {
         term = new Terminal();
-
         term.setForeGround(Color.WHITE);
         canvas = new TerminalCanvas(term);
         Graphics2D g2d = new FXGraphics2D(canvas.getGraphicsContext2D());
@@ -128,6 +124,8 @@ public class KISSetController {
             e.printStackTrace();
         }
 
+
+        TNCHost tncHost = new TNCHost(KISSet.INSTANCE.getConfig().getConfig("tnc"), outpis, inpos);
         Tools.runOnThread(() -> {
             term.start(new Connection() {
                 @Override

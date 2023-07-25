@@ -11,6 +11,7 @@ module org.prowl.kisset {
     requires commons.logging;
     requires commons.configuration;
     requires java.prefs;
+    requires org.reflections;
 
     opens org.prowl.kisset to javafx.fxml;
     exports org.prowl.kisset;

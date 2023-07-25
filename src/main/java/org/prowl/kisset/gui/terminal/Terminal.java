@@ -55,6 +55,7 @@ public class Terminal implements Term {
     byte[] obuffer = new byte[3];
     private BufferedImage img;
     private BufferedImage background;
+    private Graphics2D paintGraphics;
     private Graphics2D cursor_graphics;
     private Graphics2D graphics;
     private Color defaultbground = Color.black;
@@ -215,14 +216,15 @@ public class Terminal implements Term {
         redraw(0, 0, getTermWidth(), getTermHeight());
     }
 
-    public void paintComponent(Graphics g) {
-        Platform.runLater(() -> {
+    public void paintComponent(Graphics2D g) {
+        this.paintGraphics = g;
+      //  Platform.runLater(() -> {
 
             //  super.paintComponent(g);
             if (img != null) {
                 g.drawImage(img, 0, 0, term_area);
             }
-        });
+      //  });
     }
 
 //    public void paint(Graphics g) {
@@ -376,12 +378,16 @@ public class Terminal implements Term {
     public void draw_cursor() {
         Platform.runLater(() -> {
 
-                    cursor_graphics.fillRect(x, y - char_height, char_width, char_height);
+                   // cursor_graphics.fillRect(x, y - char_height, char_width, char_height);
                 });
         // repaint(x, y - char_height, char_width, char_height);
     }
 
     public void redraw(int x, int y, int width, int height) {
+
+        Platform.runLater(() -> {
+            paintComponent(paintGraphics);
+        });
         //repaint(x, y, width, height);
     }
 

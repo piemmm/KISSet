@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+
+<!-- DistriBBS configuration test file -->
+<configuration>
+    <!-- Station default callsign used for outgoing connections on any interface, unless overridden
+         in the interface config itself -->
+    <callsign>GB7MNK</callsign>
+
+    <bluetooth>
+        <deviceName>TH-D74</deviceName>
+    </bluetooth>
+
+    <tnc>
+
+
+    </tnc>
+
+
+</configuration>

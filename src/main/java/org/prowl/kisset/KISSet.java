@@ -5,8 +5,10 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.prowl.kisset.comms.host.TNCHost;
 import org.prowl.kisset.fx.KISSetController;
 import org.prowl.kisset.config.Config;
 import org.prowl.kisset.io.tcp.KISSviaTCP;
@@ -36,8 +38,6 @@ public class KISSet extends Application {
 
             // Set our callsign
             myCall = configuration.getConfig("callsign", "NOCALL").toUpperCase(Locale.ENGLISH);
-
-            // Create the GUI
 
 
         } catch (Throwable e) {
@@ -89,6 +89,9 @@ public class KISSet extends Application {
         return myCall;
     }
 
+    public Config getConfig() {
+        return configuration;
+    }
 
     /**
      * Time to shut down

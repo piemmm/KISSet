@@ -45,5 +45,12 @@ public class Config {
         return configuration.configurationAt(subNode);
     }
 
+    public void saveConfig() {
+        try {
+            configuration.save();
+        } catch (Throwable e) {
+            LOG.error("Unable to save configuration file: " + e.getMessage(), e);
+        }
+    }
 
 }
