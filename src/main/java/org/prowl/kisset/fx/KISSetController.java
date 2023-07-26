@@ -122,6 +122,9 @@ public class KISSetController {
         canvas.widthProperty().bind(stackPane.widthProperty());
         canvas.heightProperty().bind(stackPane.heightProperty());
 
+        canvas.setOnMouseClicked(event -> {
+            textEntry.requestFocus();
+        });
         try {
             inpis.connect(inpos);
             outpis.connect(outpos);
