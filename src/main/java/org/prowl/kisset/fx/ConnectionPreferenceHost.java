@@ -52,6 +52,7 @@ public class ConnectionPreferenceHost {
         // Tell the pane to write its config to our current preferences config
         connectionPreferenceClient.applyToConfig(configInterfaceNode);
         applyToConfig(configInterfaceNode);
+        preferencesController.updateList(); // lazy.
 
         // Close the window
         ((Stage)okButton.getScene().getWindow()).close();

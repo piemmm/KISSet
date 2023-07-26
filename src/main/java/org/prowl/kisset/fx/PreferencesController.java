@@ -101,6 +101,27 @@ public class PreferencesController {
 
         config = new Config(); // Load a new config we can modify without comitting.
 
+        editInterfaceButton.setDisable(true);
+        removeInterfaceButton.setDisable(true);
+
+        interfaceList.setCellFactory(listView -> {
+            return new ComboBoxListCell<Interface>() {
+                @Override
+                public void updateItem(Interface item, boolean empty) {
+                    super.updateItem(item, empty);
+                    if (item != null) {
+                        setText(item.toString());
+                    }
+                }
+            };
+        });
+
+
+        updateList();
+    }
+
+    public void updateList() {
+        interfaces.clear();
         // Get a list of interfaces
         List<HierarchicalConfiguration> interfaceConfigs = config.getConfig("interfaces").configurationsAt("interface");
         for (HierarchicalConfiguration interfaceConfig : interfaceConfigs) {
@@ -124,26 +145,17 @@ public class PreferencesController {
             Interface selectedInterface = (Interface) interfaceList.getSelectionModel().getSelectedItem();
             if (selectedInterface != null) {
                 editInterfaceButton.setDisable(false);
+                removeInterfaceButton.setDisable(false);
             } else {
                 editInterfaceButton.setDisable(true);
+                removeInterfaceButton.setDisable(true);
             }
         });
 
-        interfaceList.setCellFactory(listView -> {
-            return new ComboBoxListCell<Interface>() {
-                @Override
-                public void updateItem(Interface item, boolean empty) {
-                    super.updateItem(item, empty);
-                    if (item != null) {
-                        setText(item.toString());
-                    }
-                }
-            };
-        });
-
-
 
     }
+
+
 
     public void showAddInterfaceScreen(Interface interfaceToEditOrNull) {
         try {
