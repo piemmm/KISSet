@@ -19,6 +19,7 @@ import java.io.OutputStream;
 import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.UUID;
 
 /**
  * Implements a KISS type passthrough on a TCP connection
@@ -77,6 +78,15 @@ public class KISSviaTCP extends Interface {
         Tools.runOnThread(() -> {
             setup();
         });
+    }
+
+    @Override
+    public String getUUID() {
+        return config.getString("uuid");
+    }
+
+    public void setUUID(String uuid) {
+        config.setProperty("uuid", uuid);
     }
 
     public void setup() {

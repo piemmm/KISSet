@@ -1,23 +1,36 @@
-<?xml version="1.0" encoding="ISO-8859-1" ?>
-<!-- KISSet configuration test file -->
-<configuration>
-
+<?xml version="1.0" encoding="ISO-8859-1" standalone="no"?>
+<!-- KISSet configuration test file --><configuration>
     <!-- Station default callsign used for outgoing connections on any interface, unless overridden
          in the interface config itself -->
     <callsign>GB7MNK</callsign>
-
     <bluetooth>
+                
         <deviceName>TH-D74</deviceName>
+            
     </bluetooth>
-
     <interfaces>
-
+                
+        <interface>
+                        
+            <uuid>a5d64a20-3415-416a-b0df-596944d9e502</uuid>
+                        
+            <ipAddress>asxasdasda</ipAddress>
+                        
+            <port>323</port>
+                        
+            <className>org.prowl.kisset.io.KISSviaTCP</className>
+                    
+        </interface>
+            
+        <interface>
+            <uuid>0e73f80e-34d2-42f1-8d16-f7a4cfb5b283</uuid>
+            <ipAddress>1.2.3.4</ipAddress>
+            <port>423</port>
+            <className>org.prowl.kisset.io.KISSviaTCP</className>
+        </interface>
     </interfaces>
-
     <tnc>
 
 
     </tnc>
-
-
 </configuration>

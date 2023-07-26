@@ -81,7 +81,7 @@ public class KISSet extends Application {
             stage.setTitle("Preferences");
             stage.setScene(scene);
             stage.show();
-            controller.setup(configuration);
+            controller.setup();
         } catch(Throwable e) {
             LOG.error(e.getMessage(), e);
         }

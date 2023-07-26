@@ -18,6 +18,8 @@ import org.prowl.kisset.KISSet;
 import org.prowl.kisset.config.Config;
 import org.prowl.kisset.io.Interface;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,12 +48,27 @@ public class PreferencesController {
 
     @FXML
     public void onCancelButtonClicked() {
-        config.loadConfig();
+        ((Stage)cancelButton.getScene().getWindow()).close();
     }
 
     @FXML
     public void onSaveButtonClicked() {
+        // Save our preferences config
         config.saveConfig();
+
+        // Tell the main app to reload the new config
+        KISSet.INSTANCE.getConfig().loadConfig();
+
+        // Probably post a configChanged event here.
+        ((Stage)saveButton.getScene().getWindow()).close();
+    }
+
+    /**
+     * Return the configuration that we are modifying.
+     * @return
+     */
+    Config getPreferencesConfiguration() {
+        return config;
     }
 
     @FXML
@@ -69,25 +86,30 @@ public class PreferencesController {
         showAddInterfaceScreen((Interface) interfaceList.getSelectionModel().getSelectedItem());
     }
 
+
+
     private static final Log LOG = LogFactory.getLog("PreferencesController");
 
     private List<Interface> interfaces = new ArrayList<>();
 
     private Config config;
 
-    public void setup(Config config) {
-        this.config = config;
+    public void setup( ) {
 
+        config = new Config(); // Load a new config we can modify without comitting.
 
         // Get a list of interfaces
         List<HierarchicalConfiguration> interfaceConfigs = config.getConfig("interfaces").configurationsAt("interface");
         for (HierarchicalConfiguration interfaceConfig : interfaceConfigs) {
-            String className = interfaceConfig.getString("class");
+            String className = interfaceConfig.getString("className");
             try {
                 Class<?> interfaceClass = Class.forName(className);
-                Interface interfaceInstance = (Interface) interfaceClass.newInstance();
+                Constructor<?> constructor = interfaceClass.getConstructor(HierarchicalConfiguration.class);
+                Interface interfaceInstance = (Interface) constructor.newInstance(interfaceConfig);
+             //   Interface interfaceInstance = (Interface) interfaceClass.newInstance();
                 interfaces.add(interfaceInstance);
-            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
+            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | NoSuchMethodException |
+                     InvocationTargetException e) {
                 LOG.error(e.getMessage(), e);
             }
         }
@@ -115,7 +137,7 @@ public class PreferencesController {
             Parent root = fxmlLoader.load();
             ConnectionPreferenceHost controller = fxmlLoader.getController();
             Scene scene = new Scene(root, 640, 480);
-            stage.setTitle("Add KISS interface");
+            stage.setTitle("KISS interface settings");
             stage.setScene(scene);
             stage.show();
             controller.setup(interfaceToEditOrNull, this);

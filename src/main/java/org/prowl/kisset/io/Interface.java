@@ -16,5 +16,7 @@ public abstract class Interface {
 
     public abstract String getName();
 
+    public abstract String getUUID();
+
 
 }
