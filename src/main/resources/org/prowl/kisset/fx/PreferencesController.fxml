@@ -80,7 +80,7 @@
                                                 <Insets top="10.0" />
                                              </VBox.margin>
                                           </Button>
-                                          <Button fx:id="removeIInterfaceButton" accessibleText="Remove a KISS interface" mnemonicParsing="false" onAction="#removeInterfaceButtonClicked" prefWidth="80.0" text="Remove">
+                                          <Button fx:id="removeInterfaceButton" accessibleText="Remove a KISS interface" mnemonicParsing="false" onAction="#removeInterfaceButtonClicked" prefWidth="80.0" text="Remove">
                                              <VBox.margin>
                                                 <Insets top="10.0" />
                                              </VBox.margin>

@@ -22,6 +22,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class PreferencesController {
 
@@ -148,5 +149,24 @@ public class PreferencesController {
 
     public void removeInterface(Interface interfaceToRemove) {
         interfaces.remove(interfaceToRemove);
+        interfaceList.getItems().remove(interfaceToRemove);
+
+        String uuid = interfaceToRemove.getUUID();
+        LOG.info("uuid: "+ uuid);
+
+        HierarchicalConfiguration interfacesNode = config.getConfig("interfaces");
+            // Get a list of all interfaces
+            List<HierarchicalConfiguration> interfaceList = interfacesNode.configurationsAt("interface");
+            // Get the one with the correct UUID
+            for (HierarchicalConfiguration interfaceNode : interfaceList) {
+                if (interfaceNode.getString("uuid").equals(uuid)) {
+                       // Remove the interface node from the interfaces node.
+                    config.getConfig("interfaces").getRootNode().removeChild(interfaceNode.getRootNode());
+                    break;
+                }
+            }
+//
+
+
     }
 }

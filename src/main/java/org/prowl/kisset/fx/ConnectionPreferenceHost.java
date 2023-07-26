@@ -179,7 +179,6 @@ public class ConnectionPreferenceHost {
 
     public void applyToConfig(HierarchicalConfiguration configuration) {
         configuration.setProperty("className", currentInterfaceClass.getName());
-
     }
 
 
