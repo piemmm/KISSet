@@ -10,6 +10,7 @@ import org.apache.commons.logging.LogFactory;
 import org.prowl.kisset.fx.KISSetController;
 import org.prowl.kisset.config.Config;
 import org.prowl.kisset.fx.PreferencesController;
+import org.prowl.kisset.io.InterfaceHandler;
 
 import java.io.IOException;
 import java.util.Locale;
@@ -21,6 +22,8 @@ public class KISSet extends Application {
     private static final Log LOG = LogFactory.getLog("KISSet");
 
     private Config configuration;
+
+    private InterfaceHandler interfaceHandler;
 
     public String myCall = "N0CALL";
 
@@ -36,7 +39,12 @@ public class KISSet extends Application {
             // Set our callsign
             myCall = configuration.getConfig("callsign", "NOCALL").toUpperCase(Locale.ENGLISH);
 
+            // Init interfaces
+            interfaceHandler = new InterfaceHandler(configuration.getConfig("interfaces"));
 
+
+            // Start interfaces
+            interfaceHandler.start();
         } catch (Throwable e) {
             LOG.error(e.getMessage(), e);
             System.exit(1);
