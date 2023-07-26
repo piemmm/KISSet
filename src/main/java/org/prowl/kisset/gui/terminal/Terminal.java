@@ -66,7 +66,7 @@ public class Terminal implements Term {
     private boolean bold = false;
     private boolean underline = false;
     private boolean reverse = false;
-    private int term_width = 80;
+    private int term_width = 90;
     private int term_height = 24;
     private int descent = 0;
     private int x = 0;
