@@ -10,9 +10,7 @@ import org.prowl.kisset.comms.host.parser.Mode;
 import org.prowl.kisset.io.Interface;
 import org.prowl.kisset.util.Tools;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 
 /**
  * Connect to a remote station and then the TNC will be in a connect mode.
@@ -63,21 +61,33 @@ public class Connect extends Command implements ConnectionEstablishmentListener 
             setMode(Mode.CONNECTED_TO_STATION);
 
             // Now setup the streams so we talk to the station instead of the command parser
-            InputStream in = conn.getInputStream();
-            OutputStream out = conn.getOutputStream();
+            InputStream in = new BufferedInputStream(conn.getInputStream());
+            OutputStream out = new BufferedOutputStream(conn.getOutputStream());
 
+            // Create a thread to read from the station and send to the client
+            // We are interested in the first line, in case it contains a special header
+            // that we need to process to enable more capabilities.
             commandParser.setDivertStream(out);
             Tools.runOnThread(() -> {
                 try {
+                    StringBuffer firstLine = new StringBuffer();
                     while(true) {
                         int b = in.read();
                         if(b == -1) {
                             break;
                         }
                         if (b == 13) {
+                            if (firstLine != null) {
+                                checkRemoteStationCapabilities(firstLine.toString());
+                                firstLine = null;
+                            }
                             tncHost.send("\n");
                         }
-                        tncHost.send(String.valueOf((char)b));
+                        String data = String.valueOf((char)b); // Inefficient for now.
+                        if (firstLine != null) {
+                            firstLine.append(data);
+                        }
+                        tncHost.send(data);
                     }
                 } catch(IOException e) {
                     LOG.error("Error reading from client:"+e.getMessage(), e);
@@ -128,6 +138,27 @@ public class Connect extends Command implements ConnectionEstablishmentListener 
     @Override
     public String[] getCommandNames() {
         return new String[]{"c", "connect"};
+    }
+
+    /**
+     * If the first line matches a known format then we can enable more capabilities in the client such as compression
+     * (which is also enabled serverside)
+     * The format of the line we look for is: [OARC-<capabilities as [a-zA-Z0-9]>] as a regexp
+     * @param firstLine
+     */
+    public void checkRemoteStationCapabilities(String firstLine) {
+        String capabilities = "";
+        if (firstLine.matches("\\[OARC-[a-zA-Z0-9]+\\]")) {
+            capabilities = firstLine.substring(6, firstLine.length() - 1);
+            LOG.info("Remote station capabilities: " + capabilities);
+        }
+
+        if (capabilities.contains("C")) {
+            LOG.info("Remote station supports compression");
+        }
+        if (capabilities.contains("A")) {
+            LOG.info("Remote station supports ANSI colours");
+        }
     }
 
 }

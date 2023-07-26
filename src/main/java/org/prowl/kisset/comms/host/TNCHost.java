@@ -1,5 +1,6 @@
 package org.prowl.kisset.comms.host;
 
+import javafx.application.Platform;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -44,11 +45,22 @@ public class TNCHost {
 
     // Start the TNC host
     public void start() {
-        try {
-            // Write welcome/init message to the client.
-            send(CR);
-            send(Messages.get("tncInit")+CR);
-            send(parser.getPrompt());
+
+
+            Platform.runLater(new Runnable() {
+                @Override
+                public void run() {
+
+                    try {
+                       // Write welcome/init message to the client.
+                        send(CR);
+                        send(Messages.get("tncInit")+CR);
+                        send(parser.getPrompt());
+                    } catch(IOException e) {
+                        LOG.error(e.getMessage(), e);
+                    }
+                }
+            });
 
             // Start the reader thread for the client.
             Tools.runOnThread(() -> {
@@ -64,9 +76,7 @@ public class TNCHost {
                 }
             });
 
-        } catch(IOException e) {
-            LOG.error(e.getMessage(), e);
-        }
+
     }
 
     /**
