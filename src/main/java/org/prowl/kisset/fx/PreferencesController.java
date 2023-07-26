@@ -10,11 +10,13 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import javafx.scene.control.cell.ComboBoxListCell;
 import javafx.stage.Stage;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.prowl.kisset.KISSet;
+import org.prowl.kisset.annotations.InterfaceDriver;
 import org.prowl.kisset.config.Config;
 import org.prowl.kisset.io.Interface;
 
@@ -126,6 +128,19 @@ public class PreferencesController {
                 editInterfaceButton.setDisable(true);
             }
         });
+
+        interfaceList.setCellFactory(listView -> {
+            return new ComboBoxListCell<Interface>() {
+                @Override
+                public void updateItem(Interface item, boolean empty) {
+                    super.updateItem(item, empty);
+                    if (item != null) {
+                        setText(item.toString());
+                    }
+                }
+            };
+        });
+
 
 
     }

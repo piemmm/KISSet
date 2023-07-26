@@ -47,14 +47,9 @@ public class KISSviaTCP extends Interface {
 
     public KISSviaTCP(HierarchicalConfiguration config) {
         this.config = config;
-    }
-
-    @Override
-    public void start() throws IOException {
-        running = true;
 
         // The address and port of the KISS interface we intend to connect to (KISS over IP or Direwolf, etc)
-        address = config.getString("address");
+        address = config.getString("ipAddress");
         port = config.getInt("port");
 
         // This is the default callsign used for any frames sent out not using a registered service(with its own call).
@@ -69,6 +64,12 @@ public class KISSviaTCP extends Interface {
         maxFrames = config.getInt("maxFrames", 3);
         frequency = config.getInt("frequency", 0);
         retries = config.getInt("retries", 6);
+
+    }
+
+    @Override
+    public void start() throws IOException {
+        running = true;
 
         // Check the slot is obtainable.
         if (port < 1) {
@@ -229,8 +230,8 @@ public class KISSviaTCP extends Interface {
     }
 
     @Override
-    public String getName() {
-        return getClass().getSimpleName()+" " + address + ":" + port;
+    public String toString() {
+        return getClass().getSimpleName()+" (" + address + ":" + port+")";
     }
 
 

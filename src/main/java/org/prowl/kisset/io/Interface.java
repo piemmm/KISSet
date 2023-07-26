@@ -14,8 +14,6 @@ public abstract class Interface {
 
     public abstract void stop();
 
-    public abstract String getName();
-
     public abstract String getUUID();
 
 
