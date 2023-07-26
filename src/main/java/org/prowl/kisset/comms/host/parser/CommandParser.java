@@ -122,6 +122,16 @@ public class CommandParser {
         }
     }
 
+    public void closeDivertStream() {
+        if (divertStream != null) {
+            try {
+                divertStream.close();
+            } catch (IOException e) {
+                LOG.error("Unable to close divert stream", e);
+            }
+        }
+    }
+
     public void setDivertStream(OutputStream divertStream) {
         this.divertStream = divertStream;
     }
