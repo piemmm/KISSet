@@ -56,8 +56,8 @@ class AX25OutputStream extends OutputStream {
      *
      * @param b the <code>byte</code>.
      * @throws IOException if an I/O error occurs. In particular,
-     *                             an <code>IOException</code> may be thrown if the
-     *                             output stream has been closed.
+     *                     an <code>IOException</code> may be thrown if the
+     *                     output stream has been closed.
      */
     public synchronized void write(int b) throws IOException {
         buf[bufIdx++] = (byte) b;
@@ -91,8 +91,8 @@ class AX25OutputStream extends OutputStream {
      * @param off the start offset in the data.
      * @param len the number of bytes to write.
      * @throws IOException if an I/O error occurs. In particular,
-     *                             an <code>IOException</code> is thrown if the output
-     *                             stream is closed.
+     *                     an <code>IOException</code> is thrown if the output
+     *                     stream is closed.
      */
     public synchronized void write(byte[] b, int off, int len) throws IOException {
         if (len == 0) {
@@ -180,6 +180,7 @@ class AX25OutputStream extends OutputStream {
             } while (true);
 
             connState.transmitWindow[nextVS] = f;
+
             if (nextVS == connState.vs) {
                 connState.vs = (connState.vs + 1) % (f.mod128 ? 128 : 8);
             }
@@ -188,7 +189,7 @@ class AX25OutputStream extends OutputStream {
                     f.setNS(nextVS);
                     f.setNR(connState.vr);
                     LOG.debug("sending I frame " + f.sender + "->" + f.dest + " NS=" + f.getNS() + " NR=" + f.getNR() + " #=" + f.body.length);
-                    connState.connector.sendFrame(f);
+                    connState.stack.getTransmitting().queue(f);
                     connState.setResendableFrame(f, connState.stack.getTransmitting().getRetransmitCount()); // Make sure we resend it if we have no ack
 
                 } else {

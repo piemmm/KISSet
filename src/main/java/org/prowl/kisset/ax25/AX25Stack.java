@@ -752,6 +752,7 @@ public class AX25Stack implements FrameListener, Runnable {
                             " NR=" + frame.getNR() + " #=" + frame.body.length + " VR=" + state.vr);
                     // check frame number against flow control
                     int ns = frame.getNS();
+
                     if (ns == state.vr) {
                         if (state.localRcvBlocked) {
                             transmitRNR(connector, frame.dest, frame.sender, reverseDigipeaters(frame.digipeaters), state, false);
@@ -773,14 +774,16 @@ public class AX25Stack implements FrameListener, Runnable {
                     int nr = frame.getNR();
                     boolean ackFrames = false;
                     while (state.va != nr) {
-                        state.va = (state.va + 1) % (state.getConnType() == ConnState.ConnType.MOD128 ? 128 : 8);
                         if (state.transmitWindow != null) {
                             if (state.transmitWindow[state.va] != null) {
                                 state.transmitWindow[state.va] = null;
                                 ackFrames = true; //TODO: did we ack the frame we are currently sending?
+
                             }
                         }
+                        state.va = (state.va + 1) % (state.getConnType() == ConnState.ConnType.MOD128 ? 128 : 8);
                     }
+
                     if (ackFrames) {
                         state.clearResendableFrame();
                         state.xmtToRemoteBlocked = false;
@@ -837,7 +840,6 @@ public class AX25Stack implements FrameListener, Runnable {
 
                             // Must resend frames if we the acked frame counter is not the same as we have sent.
                             ackFrames = ackFrames | (state.va != state.vs);
-
                             if (ackFrames) {
                                 state.clearResendableFrame();
                                 AX25Frame f;
