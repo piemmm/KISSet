@@ -7,8 +7,6 @@ import org.apache.commons.logging.LogFactory;
 import org.prowl.kisset.KISSet;
 import org.prowl.kisset.annotations.InterfaceDriver;
 import org.prowl.kisset.ax25.*;
-import org.prowl.kisset.ax25.io.BasicTransmittingConnector;
-import org.prowl.kisset.io.Interface;
 import org.prowl.kisset.util.Tools;
 
 
@@ -234,5 +232,11 @@ public class KISSviaTCP extends Interface {
         return getClass().getSimpleName()+" (" + address + ":" + port+")";
     }
 
+    @Override
+    public boolean connect(String to, String from, ConnectionEstablishmentListener connectionEstablishmentListener) throws IOException {
 
+        connector.makeConnection(from, to, connectionEstablishmentListener);
+
+        return true;
+    }
 }

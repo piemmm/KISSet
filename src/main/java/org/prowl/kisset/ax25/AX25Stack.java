@@ -20,8 +20,8 @@ package org.prowl.kisset.ax25;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.prowl.kisset.util.FastBlockingQueue;
-import org.prowl.kisset.util.ReschedulableTimer;
+import org.prowl.kisset.ax25.util.FastBlockingQueue;
+import org.prowl.kisset.ax25.util.ReschedulableTimer;
 
 import java.io.*;
 import java.net.ConnectException;
@@ -1557,7 +1557,7 @@ public class AX25Stack implements FrameListener, Runnable {
         }
     }
 
-    private void fireConnStateUpdated(ConnState connState) {
+    void fireConnStateUpdated(ConnState connState) {
         //ArrayList<ConnStateChangeListener> connStateListeners = AX25Stack.connStateListeners;
         for (int i = connStateListeners.size() - 1; i >= 0; i--) {
             try {

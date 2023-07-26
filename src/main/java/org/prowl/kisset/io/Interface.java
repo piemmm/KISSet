@@ -1,6 +1,7 @@
 package org.prowl.kisset.io;
 
 import org.prowl.kisset.annotations.InterfaceDriver;
+import org.prowl.kisset.ax25.ConnectionEstablishmentListener;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -16,5 +17,6 @@ public abstract class Interface {
 
     public abstract String getUUID();
 
+    public abstract boolean connect(String to, String from, ConnectionEstablishmentListener connectionEstablishmentListener) throws IOException;
 
 }

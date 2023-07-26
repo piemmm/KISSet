@@ -127,7 +127,7 @@ public class AX25Frame implements Serializable, AX25FrameSource, Comparable<AX25
     public AX25Message parsedAX25Msg;
 
     /**
-     * SerialVersionUID when rcptTime was of type java.org.prowl.kissterm.util.Date.
+     * SerialVersionUID when rcptTime was of type java.org.ka2ddo.util.Date.
      *
      * @see #rcptTime
      */
@@ -1051,7 +1051,7 @@ public class AX25Frame implements Serializable, AX25FrameSource, Comparable<AX25
      */
     public int getChecksum() {
         // we're still doing Adler-32, but doing it inline without all the JNI calls and object malloc's
-        //    of the java.org.prowl.kissterm.util.zip.Adler32 class
+        //    of the java.org.ka2ddo.util.zip.Adler32 class
         int a = 1, b = 0;
         byte[] body;
         if (sender != null) {

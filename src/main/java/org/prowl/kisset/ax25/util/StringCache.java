@@ -1,4 +1,4 @@
-package org.prowl.kisset.util;
+package org.prowl.kisset.ax25.util;
 /*
  * Copyright (C) 2011-2012 Andrew Pavlin, KA2DDO
  * This file is part of YAAC (Yet Another APRS Client).

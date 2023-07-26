@@ -70,13 +70,11 @@ public class InterfaceHandler {
     /**
      * Get the interface that services the requested radio port (eg: 0=144MHz,
      * 1=433MHZ, etc)
-     *
-     * @param port
      * @return the port, or null if the port does not exist
      */
-    public Interface getPort(int port) {
-        if (port < interfaces.size()) {
-            return interfaces.get(port);
+    public Interface getInterface(int inteterface) {
+        if (inteterface < interfaces.size()) {
+            return interfaces.get(inteterface);
         }
         return null;
     }
@@ -86,7 +84,7 @@ public class InterfaceHandler {
      *
      * @return
      */
-    public List<Interface> getPorts() {
+    public List<Interface> getInterfaces() {
         return new ArrayList(interfaces);
     }
 

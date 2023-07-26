@@ -20,7 +20,7 @@ package org.prowl.kisset.ax25;
  */
 
 /**
- * This listener interface allows classes outside the org.prowl.kissterm.ax25 hierarchy
+ * This listener interface allows classes outside the org.ka2ddo.ax25 hierarchy
  * to be informed when connected sessions are updated.
  */
 public interface ConnStateChangeListener {

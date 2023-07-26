@@ -1,10 +1,12 @@
 package org.prowl.kisset.comms.host.parser.commands;
 
 import org.prowl.kisset.Messages;
+import org.prowl.kisset.annotations.TNCCommand;
 import org.prowl.kisset.comms.host.parser.Mode;
 
 import java.io.IOException;
 
+@TNCCommand
 public class Disconnect extends Command {
 
     @Override

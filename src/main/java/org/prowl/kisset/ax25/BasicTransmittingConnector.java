@@ -1,10 +1,7 @@
-package org.prowl.kisset.ax25.io;
+package org.prowl.kisset.ax25;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.prowl.kisset.ax25.AX25Callsign;
-import org.prowl.kisset.ax25.AX25Stack;
-import org.prowl.kisset.ax25.*;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -133,8 +130,8 @@ public class BasicTransmittingConnector extends Connector implements Transmittin
     }
 
     @Override
-    public PortStats getStats() {
-        return new PortStats();
+    public Connector.PortStats getStats() {
+        return new Connector.PortStats();
     }
 
     @Override
@@ -530,6 +527,66 @@ public class BasicTransmittingConnector extends Connector implements Transmittin
         stack.setDebugTag(tag);
     }
 
+    /**
+     * Makes an outgoing connection to another station.
+     * @param from Your originating callsign
+     * @param to the station you are connecting to.
+     * @param listener the listener to be notified of connection establishment or failure
+     */
+    public void makeConnection(String from, String to, ConnectionEstablishmentListener listener) {
+
+        try {
+
+            AX25Frame sabmFrame = new AX25Frame();
+            sabmFrame.sender = new AX25Callsign(from);
+            sabmFrame.dest =  new AX25Callsign(to);
+            sabmFrame.setCmd(true);
+            ConnState state = stack.getConnState(sabmFrame.sender, sabmFrame.dest, true);
+            LOG.debug("Transmitter.openConnection(" + sabmFrame.dest + ',' + sabmFrame.sender + ',' + Arrays.toString(state.via) + "): sending SABM U-frame");
+            state.connType = ConnState.ConnType.MOD8;
+            state.transition = ConnState.ConnTransition.LINK_UP;
+            //sabmFrame.digipeaters = state.via;
+            sabmFrame.ctl = (byte) (AX25Frame.FRAMETYPE_U | AX25Frame.UTYPE_SABM);
+            sabmFrame.body = new byte[0];
+            state.listener = listener;
+//            state.listener = new ConnectionEstablishmentListener() {
+//                @Override
+//                public void connectionEstablished(Object sessionIdentifier, ConnState conn) {
+//                    LOG.info("Connection established:" + conn.getSrc() + " -> " + conn.getDst());
+//                    try {
+//                        OutputStream out = conn.getOutputStream();
+//                        out.write("Hello world\r\r".getBytes());
+//                        out.flush();
+//                    } catch(IOException e) {}
+//                }
+//
+//                @Override
+//                public void connectionNotEstablished(Object sessionIdentifier, Object reason) {
+//
+//                }
+//
+//                @Override
+//                public void connectionClosed(Object sessionIdentifier, boolean fromOtherEnd) {
+//
+//                }
+//
+//                @Override
+//                public void connectionLost(Object sessionIdentifier, Object reason) {
+//
+//                }
+//            };
+            queue(sabmFrame);
+            state.setConnector(this);
+            state.setResendableFrame(sabmFrame, getRetransmitCount());
+            state.updateSessionTime();
+            stack.fireConnStateUpdated(state);
+
+
+
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
+        }
+    }
 }
 
 

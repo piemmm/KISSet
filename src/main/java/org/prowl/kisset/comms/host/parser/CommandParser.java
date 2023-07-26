@@ -11,6 +11,7 @@ import org.reflections.Reflections;
 
 import java.io.EOFException;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -35,6 +36,8 @@ public class CommandParser {
 
     // Default to command mode.
     private Mode mode = Mode.CMD;
+
+    private OutputStream divertStream;
 
     // Stack of modes so we can go back to the previous mode from any command.
     protected List<Mode> modeStack = new ArrayList<>();
@@ -73,7 +76,7 @@ public class CommandParser {
     public void parse(String c) throws IOException {
 
         // Local echo
-        write(c);
+        write(c+CR);
 
         if (mode == Mode.CMD || mode == Mode.MESSAGE_LIST_PAGINATION || mode == Mode.MESSAGE_READ_PAGINATION) {
             String[] arguments = c.split(" "); // Arguments[0] is the command used.
@@ -97,7 +100,24 @@ public class CommandParser {
                 unknownCommand();
             }
             sendPrompt();
+        } else if (mode == Mode.CONNECTED_TO_STATION) {
+
+            // Send i/o to/from station
+            if (divertStream != null) {
+                try {
+                    divertStream.write(c.getBytes());
+                    divertStream.write('\r');
+                    divertStream.flush();
+                } catch (IOException e) {
+                    LOG.error("Unable to write to divert stream", e);
+                }
+            }
+
         }
+    }
+
+    public void setDivertStream(OutputStream divertStream) {
+        this.divertStream = divertStream;
     }
 
     public void sendPrompt() throws IOException {

@@ -2,7 +2,7 @@
 <!-- KISSet configuration test file --><configuration>
     <!-- Station default callsign used for outgoing connections on any interface, unless overridden
          in the interface config itself -->
-    <callsign>GB7MNK</callsign>
+    <callsign>G0TAI-2</callsign>
     <bluetooth>
                                                                                                 
         

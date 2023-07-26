@@ -18,7 +18,8 @@ package org.prowl.kisset.ax25;
  *  see <http://www.gnu.org/licenses/>.
  */
 
-import org.prowl.kisset.util.StringCache;
+
+import org.prowl.kisset.ax25.util.StringCache;
 
 import java.io.IOException;
 import java.io.OutputStream;

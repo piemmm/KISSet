@@ -42,7 +42,6 @@ public class KISSet extends Application {
             // Init interfaces
             interfaceHandler = new InterfaceHandler(configuration.getConfig("interfaces"));
 
-
             // Start interfaces
             interfaceHandler.start();
         } catch (Throwable e) {
@@ -115,6 +114,9 @@ public class KISSet extends Application {
         return configuration;
     }
 
+    public InterfaceHandler getInterfaceHandler() {
+        return interfaceHandler;
+    }
     /**
      * Time to shut down
      */

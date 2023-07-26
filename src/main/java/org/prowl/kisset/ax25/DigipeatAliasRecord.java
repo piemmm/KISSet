@@ -90,7 +90,7 @@ public class DigipeatAliasRecord implements Comparable<DigipeatAliasRecord> {
     /**
      * Returns a hash code value for the object. This method is
      * supported for the benefit of hashtables such as those provided by
-     * <code>java.org.prowl.kissterm.util.Hashtable</code>.
+     * <code>java.org.ka2ddo.util.Hashtable</code>.
      *
      * @return a hash code value for this object.
      * @see #equals(Object)
