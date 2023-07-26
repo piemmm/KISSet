@@ -4,7 +4,13 @@
          in the interface config itself -->
     <callsign>G0TAI-2</callsign>
     <bluetooth>
-                                                                                                
+                                                                                                                                                
+        
+        
+        
+        
+        
+        
         
         
         
@@ -16,7 +22,13 @@
         
         
         <deviceName>TH-D74</deviceName>
-                                                                                            
+                                                                                                                                            
+    
+    
+    
+    
+    
+    
     
     
     
@@ -29,7 +41,7 @@
     
     </bluetooth>
     <interfaces>
-                                                                                
+                                                                                                                                
         
         
         
@@ -52,12 +64,49 @@
         
             
     
+        
+    
+        
+        
+        
+        
+        
         <interface>
-            <uuid>560409d3-1aef-42a9-8772-3a725b3fb20d</uuid>
-            <ipAddress>127.0.0.1</ipAddress>
-            <port>8001</port>
-            <className>org.prowl.kisset.io.KISSviaTCP</className>
+                                                                        
+            
+            
+            
+            
+            <uuid>0967b898-0dfb-4e28-90fd-826190a38d58</uuid>
+                                                                        
+            
+            
+            
+            
+            <serialPort>/dev/cu.usbmodem834301</serialPort>
+                                                                        
+            
+            
+            
+            
+            <baudRate>19200</baudRate>
+                                                                        
+            
+            
+            
+            
+            <className>org.prowl.kisset.io.KISSviaSerial</className>
+                                                                    
+        
+        
+        
+        
         </interface>
+                                            
+    
+    
+    
+    
     </interfaces>
     <tnc>
 

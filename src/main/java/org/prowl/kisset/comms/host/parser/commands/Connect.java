@@ -74,6 +74,9 @@ public class Connect extends Command implements ConnectionEstablishmentListener 
                         if(b == -1) {
                             break;
                         }
+                        if (b == 13) {
+                            tncHost.send("\n");
+                        }
                         tncHost.send(String.valueOf((char)b));
                     }
                 } catch(IOException e) {

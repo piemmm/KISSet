@@ -75,43 +75,49 @@ public class CommandParser {
 
     public void parse(String c) throws IOException {
 
-        // Local echo
-        write(c+CR);
+        try {
+            // Local echo
+            write(c + CR);
 
-        if (mode == Mode.CMD || mode == Mode.MESSAGE_LIST_PAGINATION || mode == Mode.MESSAGE_READ_PAGINATION) {
-            String[] arguments = c.split(" "); // Arguments[0] is the command used.
+            if (mode == Mode.CMD || mode == Mode.MESSAGE_LIST_PAGINATION || mode == Mode.MESSAGE_READ_PAGINATION) {
+                String[] arguments = c.split(" "); // Arguments[0] is the command used.
 
-            // If the command matches, then we will send the command. It is up to the command to check the mode we are
-            // in and act accordingly.
-            boolean commandExecuted = false;
-            for (Command command : commands) {
-                String[] supportedCommands = command.getCommandNames();
-                for (String supportedCommand : supportedCommands) {
-                    if (supportedCommand.equalsIgnoreCase(arguments[0])) {
-                        commandExecuted = command.doCommand(arguments) | commandExecuted;
-                        // Stop when we executed a command.
-                        if (commandExecuted) {
-                            break;
+                // If the command matches, then we will send the command. It is up to the command to check the mode we are
+                // in and act accordingly.
+                boolean commandExecuted = false;
+                for (Command command : commands) {
+                    String[] supportedCommands = command.getCommandNames();
+                    for (String supportedCommand : supportedCommands) {
+                        if (supportedCommand.equalsIgnoreCase(arguments[0])) {
+                            commandExecuted = command.doCommand(arguments) | commandExecuted;
+                            // Stop when we executed a command.
+                            if (commandExecuted) {
+                                break;
+                            }
                         }
                     }
                 }
-            }
-            if (!commandExecuted && arguments[0].length() > 0) {
-                unknownCommand();
-            }
-            sendPrompt();
-        } else if (mode == Mode.CONNECTED_TO_STATION) {
-
-            // Send i/o to/from station
-            if (divertStream != null) {
-                try {
-                    divertStream.write(c.getBytes());
-                    divertStream.write('\r');
-                    divertStream.flush();
-                } catch (IOException e) {
-                    LOG.error("Unable to write to divert stream", e);
+                if (!commandExecuted && arguments[0].length() > 0) {
+                    unknownCommand();
                 }
+                sendPrompt();
+            } else if (mode == Mode.CONNECTED_TO_STATION) {
+
+                // Send i/o to/from station
+                if (divertStream != null) {
+                    try {
+                        divertStream.write(c.getBytes());
+                        divertStream.write('\r');
+                        divertStream.flush();
+                    } catch (IOException e) {
+                        LOG.error("Unable to write to divert stream", e);
+                    }
+                }
+
             }
+        } catch(Throwable e) {
+            LOG.error(e.getMessage(), e);
+            write("*** Error: " + e.getMessage() + CR);
 
         }
     }

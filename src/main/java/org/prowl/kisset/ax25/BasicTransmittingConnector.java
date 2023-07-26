@@ -549,32 +549,7 @@ public class BasicTransmittingConnector extends Connector implements Transmittin
             sabmFrame.ctl = (byte) (AX25Frame.FRAMETYPE_U | AX25Frame.UTYPE_SABM);
             sabmFrame.body = new byte[0];
             state.listener = listener;
-//            state.listener = new ConnectionEstablishmentListener() {
-//                @Override
-//                public void connectionEstablished(Object sessionIdentifier, ConnState conn) {
-//                    LOG.info("Connection established:" + conn.getSrc() + " -> " + conn.getDst());
-//                    try {
-//                        OutputStream out = conn.getOutputStream();
-//                        out.write("Hello world\r\r".getBytes());
-//                        out.flush();
-//                    } catch(IOException e) {}
-//                }
-//
-//                @Override
-//                public void connectionNotEstablished(Object sessionIdentifier, Object reason) {
-//
-//                }
-//
-//                @Override
-//                public void connectionClosed(Object sessionIdentifier, boolean fromOtherEnd) {
-//
-//                }
-//
-//                @Override
-//                public void connectionLost(Object sessionIdentifier, Object reason) {
-//
-//                }
-//            };
+
             queue(sabmFrame);
             state.setConnector(this);
             state.setResendableFrame(sabmFrame, getRetransmitCount());

@@ -172,7 +172,7 @@ public class KISSviaTCP extends Interface {
      * @param originator
      * @param port
      */
-    public void setupConnectionListener(ConnState state, AX25Callsign originator, org.prowl.kisset.ax25.Connector port) {
+    public void setupConnectionListener(ConnState state, AX25Callsign originator, Connector port) {
         // If we're going to accept then add a listener so we can keep track of this connection state
         state.listener = new ConnectionEstablishmentListener() {
             @Override
