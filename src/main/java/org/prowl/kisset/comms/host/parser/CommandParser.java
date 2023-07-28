@@ -15,6 +15,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.zip.DeflaterOutputStream;
 
 public class CommandParser {
     private static final Log LOG = LogFactory.getLog("CommandParser");

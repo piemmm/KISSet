@@ -10,10 +10,7 @@ import org.prowl.kisset.ax25.*;
 import org.prowl.kisset.util.Tools;
 
 
-import java.io.BufferedOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -98,8 +95,8 @@ public class KISSviaTCP extends Interface {
             try {
                 LOG.info("Connecting to kiss service at: " + address + ":" + port);
                 Socket s = new Socket(InetAddress.getByName(address), port);
-                in = s.getInputStream();
-                out = s.getOutputStream();
+                in = new BufferedInputStream(s.getInputStream());
+                out = new BufferedOutputStream(s.getOutputStream());
                 LOG.info("Connected to kiss service at: " + address + ":" + port);
                 break;
             } catch (ConnectException e) {

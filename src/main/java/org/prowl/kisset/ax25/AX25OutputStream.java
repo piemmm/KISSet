@@ -60,6 +60,7 @@ class AX25OutputStream extends OutputStream {
      *                     output stream has been closed.
      */
     public synchronized void write(int b) throws IOException {
+        b = b & 0xFF;
         buf[bufIdx++] = (byte) b;
         if (bufIdx >= buf.length) {
             flush();
@@ -120,84 +121,87 @@ class AX25OutputStream extends OutputStream {
      */
     @Override
     public synchronized void flush() throws IOException {
-        if (bufIdx > 0) {
-            if (!connState.isOpen()) {
-                throw new EOFException("AX.25 connection closed");
-            }
-            AX25Frame f = new AX25Frame();
+        synchronized (connState) {
 
-            // fill in header
-            if (connState.stack.isLocalDest(connState.src)) {
-                f.sender = connState.src.dup();
-                f.dest = connState.dst.dup();
-                if (connState.via != null) {
-                    AX25Callsign[] digis = new AX25Callsign[connState.via.length];
-                    for (int i = 0; i < connState.via.length; i++) {
-                        digis[i] = connState.via[i].dup();
-                        digis[i].h_c = false;
-                    }
-                    f.digipeaters = digis;
-                }
-            } else {
-                f.sender = connState.dst.dup();
-                f.dest = connState.src.dup();
-                f.digipeaters = connState.stack.reverseDigipeaters(connState.via);
-            }
-            f.ctl = AX25Frame.FRAMETYPE_I;
-            f.mod128 = (ConnState.ConnType.MOD128 == connState.connType);
-            f.setPid(AX25Frame.PID_NOLVL3);
-            f.setCmd(true);
-            f.body = new byte[bufIdx];
-            System.arraycopy(buf, 0, f.body, 0, bufIdx);
-
-            // submit new frame to destination (blocking if window buffer is full)
-            int nextVS;
-            do {
-                nextVS = connState.vs;
-                if (connState.transmitWindow[nextVS] != null) {
-                    nextVS = (nextVS + 1) % (f.mod128 ? 128 : 8);
-                    while (connState.transmitWindow[nextVS] != null && nextVS != connState.vs) {
-                        nextVS = (nextVS + 1) % (f.mod128 ? 128 : 8);
-                    }
-                }
-
-                // AX.25 Spec says we can transmit N(R)-1 frames before waiting for an ACK
-                int nextNextVS = (nextVS + 1 + (7 - connState.stack.maxFrames)) % (f.mod128 ? 128 : 8);
-                if (connState.transmitWindow[nextNextVS] == null) {
-                    break;
-                }
-                // window buffer is completely full, wait until there is room
-                synchronized (connState) {
-                    try {
-                        wait(1000L);
-                    } catch (InterruptedException e) {
-                        // ignore
-                    }
-                }
+            if (bufIdx > 0) {
                 if (!connState.isOpen()) {
                     throw new EOFException("AX.25 connection closed");
                 }
-            } while (true);
+                AX25Frame f = new AX25Frame();
 
-            connState.transmitWindow[nextVS] = f;
-
-            if (nextVS == connState.vs) {
-                connState.vs = (connState.vs + 1) % (f.mod128 ? 128 : 8);
-            }
-            if (!connState.xmtToRemoteBlocked) {
-                if (connState.connector != null) {
-                    f.setNS(nextVS);
-                    f.setNR(connState.vr);
-                    LOG.debug("sending I frame " + f.sender + "->" + f.dest + " NS=" + f.getNS() + " NR=" + f.getNR() + " #=" + f.body.length);
-                    connState.stack.getTransmitting().queue(f);
-                    connState.setResendableFrame(f, connState.stack.getTransmitting().getRetransmitCount()); // Make sure we resend it if we have no ack
-
+                // fill in header
+                if (connState.stack.isLocalDest(connState.src)) {
+                    f.sender = connState.src.dup();
+                    f.dest = connState.dst.dup();
+                    if (connState.via != null) {
+                        AX25Callsign[] digis = new AX25Callsign[connState.via.length];
+                        for (int i = 0; i < connState.via.length; i++) {
+                            digis[i] = connState.via[i].dup();
+                            digis[i].h_c = false;
+                        }
+                        f.digipeaters = digis;
+                    }
                 } else {
-                    throw new NullPointerException("no TransmittingConnector to send data through");
+                    f.sender = connState.dst.dup();
+                    f.dest = connState.src.dup();
+                    f.digipeaters = connState.stack.reverseDigipeaters(connState.via);
                 }
-            }
+                f.ctl = AX25Frame.FRAMETYPE_I;
+                f.mod128 = (ConnState.ConnType.MOD128 == connState.connType);
+                f.setPid(AX25Frame.PID_NOLVL3);
+                f.setCmd(true);
+                f.body = new byte[bufIdx];
+                System.arraycopy(buf, 0, f.body, 0, bufIdx);
 
-            bufIdx = 0;
+                // submit new frame to destination (blocking if window buffer is full)
+                int nextVS;
+                do {
+                    nextVS = connState.vs;
+                    if (connState.transmitWindow[nextVS] != null) {
+                        nextVS = (nextVS + 1) % (f.mod128 ? 128 : 8);
+                        while (connState.transmitWindow[nextVS] != null && nextVS != connState.vs) {
+                            nextVS = (nextVS + 1) % (f.mod128 ? 128 : 8);
+                        }
+                    }
+
+                    // AX.25 Spec says we can transmit N(R)-1 frames before waiting for an ACK
+                  //  int nextNextVS = (nextVS + 1 + (7 - connState.stack.maxFrames)) % (f.mod128 ? 128 : 8);
+                    if (connState.transmitWindow[nextVS] == null) {
+                        break;
+                    }
+                    // window buffer is completely full, wait until there is room
+                    synchronized (connState) {
+                        try {
+                            wait(1000L);
+                        } catch (InterruptedException e) {
+                            // ignore
+                        }
+                    }
+                    if (!connState.isOpen()) {
+                        throw new EOFException("AX.25 connection closed");
+                    }
+                } while (true);
+
+                connState.transmitWindow[nextVS] = f;
+
+                if (nextVS == connState.vs) {
+                    connState.vs = (connState.vs + 1) % (f.mod128 ? 128 : 8);
+                }
+                if (!connState.xmtToRemoteBlocked) {
+                    if (connState.connector != null) {
+                        f.setNS(nextVS);
+                        f.setNR(connState.vr);
+                        LOG.debug("sending I frame " + f.sender + "->" + f.dest + " NS=" + f.getNS() + " NR=" + f.getNR() + " #=" + f.body.length);
+                        connState.stack.getTransmitting().queue(f);
+                        //connState.connector.sendFrame(f);
+                        connState.setResendableFrame(f, connState.stack.getTransmitting().getRetransmitCount()); // Make sure we resend it if we have no ack
+                    } else {
+                        throw new NullPointerException("no TransmittingConnector to send data through");
+                    }
+                }
+
+                bufIdx = 0;
+            }
         }
     }
 

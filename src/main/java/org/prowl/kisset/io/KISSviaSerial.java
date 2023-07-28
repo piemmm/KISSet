@@ -9,8 +9,6 @@ import org.prowl.kisset.annotations.InterfaceDriver;
 import org.prowl.kisset.ax25.*;
 import org.prowl.kisset.util.Tools;
 
-
-import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -21,7 +19,7 @@ import java.util.List;
  * Implements a KISS type connection with a serial port device
  *
  */
-@InterfaceDriver(name = "KISS via Serial", description = "KISS over Serial Port", uiName="fx/SerialPortConnectionPreference.fxml")
+@InterfaceDriver(name = "KISS via Serial", description = "KISS over Serial Port", uiName = "fx/SerialPortConnectionPreference.fxml")
 public class KISSviaSerial extends Interface {
 
     private static final Log LOG = LogFactory.getLog("KISSviaSerial");
@@ -103,7 +101,7 @@ public class KISSviaSerial extends Interface {
         }
 
         if (serialPort == null) {
-             LOG.warn("Configuration problem - port " + port + " needs to be set correctly");
+            LOG.warn("Configuration problem - port " + port + " needs to be set correctly");
             return;
         }
         LOG.debug(" ** Using serial port: " + serialPort.getSystemPortName());
@@ -114,7 +112,6 @@ public class KISSviaSerial extends Interface {
     }
 
     public void setup() {
-
         int parityInt = SerialPort.NO_PARITY;
         if (parity.equalsIgnoreCase("E")) {
             parityInt = SerialPort.EVEN_PARITY;
@@ -134,6 +131,7 @@ public class KISSviaSerial extends Interface {
 
         InputStream in = serialPort.getInputStream();
         OutputStream out = serialPort.getOutputStream();
+
 
         if (in == null || out == null) {
             LOG.error("Unable to connect to kiss service at: " + port + " - this connector is stopping.");
@@ -156,7 +154,7 @@ public class KISSviaSerial extends Interface {
              */
             @Override
             public boolean acceptInbound(ConnState state, AX25Callsign originator, Connector port) {
-                LOG.info("Rejecting connection request from " + originator + " to " + state.getDst() );
+                LOG.info("Rejecting connection request from " + originator + " to " + state.getDst());
                 return false;
             }
         });
@@ -168,7 +166,7 @@ public class KISSviaSerial extends Interface {
         connector.addFrameListener(new AX25FrameListener() {
             @Override
             public void consumeAX25Frame(AX25Frame frame, Connector connector) {
-LOG.debug("Got frame: " + frame.toString());
+                LOG.debug("Got frame: " + frame.toString() + "  body=" + Tools.byteArrayToHexString(frame.getBody()));
 
                 // Fire off to anything that wants to know about nodes heard
                 //ServerBus.INSTANCE.post(new HeardNodeEvent(node));
@@ -190,7 +188,7 @@ LOG.debug("Got frame: " + frame.toString());
         state.listener = new ConnectionEstablishmentListener() {
             @Override
             public void connectionEstablished(Object sessionIdentifier, ConnState conn) {
-                LOG.info("Connection established from " + originator + " to " + state.getDst() );
+                LOG.info("Connection established from " + originator + " to " + state.getDst());
 
             }
 
@@ -206,7 +204,7 @@ LOG.debug("Got frame: " + frame.toString());
 
             @Override
             public void connectionLost(Object sessionIdentifier, Object reason) {
-                LOG.info("Connection lost from " + originator + " to " + state.getDst() );
+                LOG.info("Connection lost from " + originator + " to " + state.getDst());
             }
         };
     }
@@ -231,17 +229,17 @@ LOG.debug("Got frame: " + frame.toString());
 
     @Override
     public void stop() {
-       // ServerBus.INSTANCE.unregister(this);
+        // ServerBus.INSTANCE.unregister(this);
         running = false;
     }
 
 
     @Override
     public String toString() {
-        if (serialPort == null ){
-            return getClass().getSimpleName()+" (serial port not found!)";
+        if (serialPort == null) {
+            return getClass().getSimpleName() + " (serial port not found!)";
         }
-        return getClass().getSimpleName()+" (" + serialPort.toString()+"/"+serialPort.getSystemPortName() +")";
+        return getClass().getSimpleName() + " (" + serialPort.toString() + "/" + serialPort.getSystemPortName() + ")";
     }
 
 

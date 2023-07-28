@@ -4,7 +4,9 @@
          in the interface config itself -->
     <callsign>G0TAI-2</callsign>
     <bluetooth>
-                                                                                                                                                
+                                                                                                                                                                
+        
+        
         
         
         
@@ -22,7 +24,9 @@
         
         
         <deviceName>TH-D74</deviceName>
-                                                                                                                                            
+                                                                                                                                                            
+    
+    
     
     
     
@@ -41,7 +45,7 @@
     
     </bluetooth>
     <interfaces>
-                                                                                                                                
+                                                                                                                                                
         
         
         
@@ -71,42 +75,21 @@
         
         
         
+        
+        
+                                                    
+    
+    
+    
+    
+    
+    
         <interface>
-                                                                        
-            
-            
-            
-            
-            <uuid>0967b898-0dfb-4e28-90fd-826190a38d58</uuid>
-                                                                        
-            
-            
-            
-            
-            <serialPort>/dev/cu.usbmodem834301</serialPort>
-                                                                        
-            
-            
-            
-            
-            <baudRate>19200</baudRate>
-                                                                        
-            
-            
-            
-            
-            <className>org.prowl.kisset.io.KISSviaSerial</className>
-                                                                    
-        
-        
-        
-        
+            <uuid>f6f0d8ab-b3da-4727-82fe-bc70b1c4f0d7</uuid>
+            <ipAddress>127.0.0.1</ipAddress>
+            <port>8001</port>
+            <className>org.prowl.kisset.io.KISSviaTCP</className>
         </interface>
-                                            
-    
-    
-    
-    
     </interfaces>
     <tnc>
 

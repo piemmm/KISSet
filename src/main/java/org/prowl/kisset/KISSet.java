@@ -69,7 +69,7 @@ public class KISSet extends Application {
         FXMLLoader fxmlLoader = new FXMLLoader(KISSet.class.getResource("fx/KISSetController.fxml"));
         Parent root = fxmlLoader.load();
         KISSetController controller = fxmlLoader.getController();
-        Scene scene = new Scene(root, 640, 480);
+        Scene scene = new Scene(root, 700, 480);
         stage.setTitle("KISSet - TH-D74(Bluetooth)");
         stage.setScene(scene);
         stage.show();

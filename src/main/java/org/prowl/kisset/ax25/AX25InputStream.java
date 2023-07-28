@@ -18,6 +18,10 @@ package org.prowl.kisset.ax25;
  *  see <http://www.gnu.org/licenses/>.
  */
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.prowl.kisset.util.Tools;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.LinkedList;

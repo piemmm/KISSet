@@ -23,6 +23,7 @@ import org.apache.commons.logging.LogFactory;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Objects;
 
 /**
  * This filtering OutputStream adds the KISS protocol escape sequences for the
@@ -109,6 +110,30 @@ public class KissEscapeOutputStream extends OutputStream {
         g8bpqCrc ^= (byte) b;
     }
 
+    public void write(byte[] body) {
+        for (byte b : body) {
+            try {
+                write(b);
+            } catch (IOException e) {
+                LOG.error("Error writing to stream", e);
+            }
+        }
+    }
+
+    public void write(byte b[], int off, int len) throws IOException {
+        // len == 0 condition implicitly handled by loop bounds
+        for (int i = 0 ; i < len ; i++) {
+            write(b[off + i]);
+        }
+    }
+
+    public void flush() throws IOException {
+        os.flush();
+    }
+
+    public void close() throws IOException {
+        os.close();
+    }
 
     /**
      * Write one byte to the output stream.
@@ -120,6 +145,7 @@ public class KissEscapeOutputStream extends OutputStream {
         os.write(b);
         byteCount++;
     }
+
 
     /**
      * Get the G8BPQ CRC value for the last sent KISS frame.

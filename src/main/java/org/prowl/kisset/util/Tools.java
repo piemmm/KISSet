@@ -19,4 +19,14 @@ public class Tools {
         }
     }
 
+    public static String byteArrayToHexString(byte[] output) {
+        StringBuffer hexString = new StringBuffer();
+        for (int i = 0; i < output.length; i++) {
+            hexString.append(String.format("%02X", output[i]));
+            hexString.append(" ");
+        }
+        return hexString.toString();
+    }
+
+
 }
