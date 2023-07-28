@@ -32,11 +32,11 @@ public final class StringCache extends ShareableObjectCache<String> {
         return instance.internKey(s);
     }
 
-    protected Class getType() {
-        return String.class;
-    }
-
     public static String paramString() {
         return instance.toString();
+    }
+
+    protected Class getType() {
+        return String.class;
     }
 }

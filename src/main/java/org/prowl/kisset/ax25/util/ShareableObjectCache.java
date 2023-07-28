@@ -20,10 +20,7 @@ package org.prowl.kisset.ax25.util;
 
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
-import java.util.AbstractSet;
-import java.util.ConcurrentModificationException;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 /**
  * This class provides an alternative to the Java PermGen heap section used for String.intern(),
@@ -49,32 +46,26 @@ public abstract class ShareableObjectCache<T> extends AbstractSet<T> {
      * The load fast used when none specified in constructor.
      */
     private static final float DEFAULT_LOAD_FACTOR = 2.0f;
-
-    /**
-     * The table, resized as necessary. Length MUST Always be a power of two.
-     */
-    private Entry<T>[] table;
-
-    /**
-     * The number of key-value mappings contained in this weak hash set.
-     */
-    private int size;
-
-    /**
-     * The next size value at which to resize (capacity * load factor).
-     */
-    private int threshold;
-
     /**
      * The load factor for the hash table.
      */
     private final float loadFactor;
-
     /**
      * Reference queue for cleared WeakEntries
      */
     private final ReferenceQueue<T> queue = new ReferenceQueue<T>();
-
+    /**
+     * The table, resized as necessary. Length MUST Always be a power of two.
+     */
+    private Entry<T>[] table;
+    /**
+     * The number of key-value mappings contained in this weak hash set.
+     */
+    private int size;
+    /**
+     * The next size value at which to resize (capacity * load factor).
+     */
+    private int threshold;
     /**
      * The number of times this WeakHashSet has been structurally modified.
      * Structural modifications are those that change the number of
@@ -137,6 +128,21 @@ public abstract class ShareableObjectCache<T> extends AbstractSet<T> {
     // internal utilities
 
     /**
+     * Applies a supplemental hash function to a given hashCode, which
+     * defends against poor quality hash functions.  This is critical
+     * because HashMap uses power-of-two length hash tables, that
+     * otherwise encounter collisions for hashCodes that do not differ
+     * in lower bits. Note: Null keys always map to hash 0, thus index 0.
+     */
+    static int hash(int h) {
+        // This function ensures that hashCodes that differ only by
+        // constant multiples at each bit position have a bounded
+        // number of collisions (approximately 8 at default load factor).
+        h ^= (h >>> 20) ^ (h >>> 12);
+        return h ^ (h >>> 7) ^ (h >>> 4);
+    }
+
+    /**
      * Expunges stale entries from the table.
      */
     private void expungeStaleEntries() {
@@ -170,21 +176,6 @@ public abstract class ShareableObjectCache<T> extends AbstractSet<T> {
     private Entry<T>[] getTable() {
         expungeStaleEntries();
         return table;
-    }
-
-    /**
-     * Applies a supplemental hash function to a given hashCode, which
-     * defends against poor quality hash functions.  This is critical
-     * because HashMap uses power-of-two length hash tables, that
-     * otherwise encounter collisions for hashCodes that do not differ
-     * in lower bits. Note: Null keys always map to hash 0, thus index 0.
-     */
-    static int hash(int h) {
-        // This function ensures that hashCodes that differ only by
-        // constant multiples at each bit position have a bounded
-        // number of collisions (approximately 8 at default load factor).
-        h ^= (h >>> 20) ^ (h >>> 12);
-        return h ^ (h >>> 7) ^ (h >>> 4);
     }
 
     /**
@@ -474,15 +465,11 @@ public abstract class ShareableObjectCache<T> extends AbstractSet<T> {
         }
 
         public boolean equals(Object o) {
-            if (!(o instanceof Entry))
+            if (!(o instanceof Entry e))
                 return false;
-            Entry e = (Entry) o;
             Object k1 = get();
             Object k2 = e.get();
-            if (k1 == k2 || (k1 != null && k1.equals(k2))) {
-                return true;
-            }
-            return false;
+            return Objects.equals(k1, k2);
         }
 
         public int hashCode() {
@@ -491,7 +478,7 @@ public abstract class ShareableObjectCache<T> extends AbstractSet<T> {
         }
 
         public String toString() {
-            return "" + getKey();
+            return String.valueOf(getKey());
         }
     }
 

@@ -32,17 +32,30 @@ import java.util.Comparator;
  * @author Andrew Pavlin, KA2DDO
  */
 public final class AX25Callsign implements Comparable<AX25Callsign>, Cloneable, Serializable {
+    /**
+     * A Comparator to use for callsigns when it is more efficient than using the
+     * Comparable interface to AX25Callsign.
+     *
+     * @see #compareTo(AX25Callsign)
+     */
+    public static final Comparator<AX25Callsign> CALLSIGN_COMPARATOR = new Comparator<AX25Callsign>() {
+        public int compare(AX25Callsign o1, AX25Callsign o2) {
+            int diff = o1.callsign.compareToIgnoreCase(o2.callsign);
+            if (0 == diff && o1.valid == o2.valid) {
+                diff = ((int) o1.ssid & 0xFF) - ((int) o2.ssid & 0xFF);
+            }
+            return diff;
+        }
+    };
     private static final long serialVersionUID = -1967268147133231444L;
-    private String callsign;
-    private byte ssid;
+    /**
+     * Default value for AX.25 reserved bits (initialized to protocol default value).
+     */
+    private static byte defaultReserved = 3;
     /**
      * Has_been_repeated flag (for digipeater callsigns) or command/response flags (for destination and source callsigns).
      */
     public boolean h_c;
-    /**
-     * AX.25 reserved bits (initialized to protocol default value).
-     */
-    byte reserved = defaultReserved;
     /**
      * Flag bit in SSID byte indicating this is the last callsign in a digipeater sequence.
      */
@@ -51,12 +64,13 @@ public final class AX25Callsign implements Comparable<AX25Callsign>, Cloneable, 
      * Indicates whether the callsign in this object can be exported as a valid AX.25 binary protocol address.
      */
     public boolean valid = true;
-    private transient String cachedToString;
-
     /**
-     * Default value for AX.25 reserved bits (initialized to protocol default value).
+     * AX.25 reserved bits (initialized to protocol default value).
      */
-    private static byte defaultReserved = 3;
+    byte reserved = defaultReserved;
+    private String callsign;
+    private byte ssid;
+    private transient String cachedToString;
 
     /**
      * Construct an empty but assumed-valid callsign.
@@ -371,36 +385,6 @@ public final class AX25Callsign implements Comparable<AX25Callsign>, Cloneable, 
     }
 
     /**
-     * Test if this callsign appears to be a valid New n-N digipeat alias. Such callsigns are all
-     * uppercase ASCII letters except for the last character, which must be a digit between 1 and 7,
-     * and the SSID must be less than or equal to the number corresponding to that digit (i.e.,
-     * WIDE1-7 is not valid).
-     *
-     * @return boolean true if this callsign looks like a New n-N digipeat alias
-     */
-    public boolean isNewNParadigmAlias() {
-        if (valid) {
-            int len = callsign.length();
-            if (len >= 2) {
-                char ch;
-                ch = callsign.charAt(len - 1);
-                if (ch >= '1' && ch <= '7') {
-                    if (ssid <= ch - '0') {
-                        for (int i = len - 2; i >= 0; i--) {
-                            ch = callsign.charAt(i);
-                            if (ch < 'A' || ch > 'Z') {
-                                return false;
-                            }
-                        }
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
-    }
-
-    /**
      * Test if the parameter appears to be a valid New n-N digipeat alias. Such callsigns are all
      * uppercase ASCII letters except for the last character, which must be a digit between 1 and 7,
      * and the SSID (if present) must be less than or equal to the number corresponding to that digit (i.e.,
@@ -455,6 +439,54 @@ public final class AX25Callsign implements Comparable<AX25Callsign>, Cloneable, 
     }
 
     /**
+     * Get the current default value for the reserved bits of the AX25 callsign SSID byte.
+     *
+     * @return current default RR bit value
+     */
+    public static byte getDefaultReserved() {
+        return defaultReserved;
+    }
+
+    /**
+     * Set the default value for the reserved bits of newly generated AX25 callsign SSID byte.
+     *
+     * @param defaultReserved current default RR bit value
+     */
+    public static void setDefaultReserved(byte defaultReserved) {
+        AX25Callsign.defaultReserved = (byte) (defaultReserved & 3);
+    }
+
+    /**
+     * Test if this callsign appears to be a valid New n-N digipeat alias. Such callsigns are all
+     * uppercase ASCII letters except for the last character, which must be a digit between 1 and 7,
+     * and the SSID must be less than or equal to the number corresponding to that digit (i.e.,
+     * WIDE1-7 is not valid).
+     *
+     * @return boolean true if this callsign looks like a New n-N digipeat alias
+     */
+    public boolean isNewNParadigmAlias() {
+        if (valid) {
+            int len = callsign.length();
+            if (len >= 2) {
+                char ch;
+                ch = callsign.charAt(len - 1);
+                if (ch >= '1' && ch <= '7') {
+                    if (ssid <= ch - '0') {
+                        for (int i = len - 2; i >= 0; i--) {
+                            ch = callsign.charAt(i);
+                            if (ch < 'A' || ch > 'Z') {
+                                return false;
+                            }
+                        }
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
      * Test if some other object is the same as this AX25Callsign.
      *
      * @param o Object to compare against this callsign
@@ -462,9 +494,7 @@ public final class AX25Callsign implements Comparable<AX25Callsign>, Cloneable, 
      */
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || !(o instanceof AX25Callsign)) return false;
-
-        AX25Callsign that = (AX25Callsign) o;
+        if (o == null || !(o instanceof AX25Callsign that)) return false;
 
         return (ssid == that.ssid) &&
                 callsign.equals(that.callsign);
@@ -545,22 +575,6 @@ public final class AX25Callsign implements Comparable<AX25Callsign>, Cloneable, 
         }
         return diff;
     }
-
-    /**
-     * A Comparator to use for callsigns when it is more efficient than using the
-     * Comparable interface to AX25Callsign.
-     *
-     * @see #compareTo(AX25Callsign)
-     */
-    public static final Comparator<AX25Callsign> CALLSIGN_COMPARATOR = new Comparator<AX25Callsign>() {
-        public int compare(AX25Callsign o1, AX25Callsign o2) {
-            int diff = o1.callsign.compareToIgnoreCase(o2.callsign);
-            if (0 == diff && o1.valid == o2.valid) {
-                diff = ((int) o1.ssid & 0xFF) - ((int) o2.ssid & 0xFF);
-            }
-            return diff;
-        }
-    };
 
     /**
      * Encode this AX25Callsign into binary radio transmission format on a stream.
@@ -724,23 +738,5 @@ public final class AX25Callsign implements Comparable<AX25Callsign>, Cloneable, 
      */
     public boolean isValid() {
         return valid;
-    }
-
-    /**
-     * Get the current default value for the reserved bits of the AX25 callsign SSID byte.
-     *
-     * @return current default RR bit value
-     */
-    public static byte getDefaultReserved() {
-        return defaultReserved;
-    }
-
-    /**
-     * Set the default value for the reserved bits of newly generated AX25 callsign SSID byte.
-     *
-     * @param defaultReserved current default RR bit value
-     */
-    public static void setDefaultReserved(byte defaultReserved) {
-        AX25Callsign.defaultReserved = (byte) (defaultReserved & 3);
     }
 }

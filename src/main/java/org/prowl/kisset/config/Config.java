@@ -26,7 +26,7 @@ public class Config {
             configuration = new XMLConfiguration(new File(new File("").getAbsolutePath(), CONFIG_FILE));
         } catch (Throwable e) {
             e.printStackTrace();
-            System.err.println("Search path: " + new File("").getAbsolutePath().toString());
+            System.err.println("Search path: " + new File("").getAbsolutePath());
             System.err.println("Unable to load production config file, exiting:" + e.getMessage());
             System.exit(1);
         }

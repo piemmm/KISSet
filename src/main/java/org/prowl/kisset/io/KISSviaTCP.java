@@ -3,41 +3,38 @@ package org.prowl.kisset.io;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.prowl.kisset.KISSet;
 import org.prowl.kisset.annotations.InterfaceDriver;
 import org.prowl.kisset.ax25.*;
 import org.prowl.kisset.util.Tools;
 
-
 import java.io.*;
 import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.util.UUID;
 
 /**
  * Implements a KISS type passthrough on a TCP connection
- *
+ * <p>
  * All drivers should implement the @InterfaceDriver annotation so that they can be discovered by the system.
  */
-@InterfaceDriver(name = "KISS via TCP", description = "KISS over TCP/IP", uiName="fx/TCPConnectionPreference.fxml")
+@InterfaceDriver(name = "KISS via TCP", description = "KISS over TCP/IP", uiName = "fx/TCPConnectionPreference.fxml")
 public class KISSviaTCP extends Interface {
 
     private static final Log LOG = LogFactory.getLog("KISSviaTCP");
 
-    private String address;
-    private int port;
-    private String defaultOutgoingCallsign;
+    private final String address;
+    private final int port;
+    private final String defaultOutgoingCallsign;
 
-    private int pacLen;
-    private int maxFrames;
-    private int baudRate;
-    private int frequency;
-    private int retries;
+    private final int pacLen;
+    private final int maxFrames;
+    private final int baudRate;
+    private final int frequency;
+    private final int retries;
 
     private BasicTransmittingConnector connector;
-    private HierarchicalConfiguration config;
+    private final HierarchicalConfiguration config;
     private boolean running;
 
     public KISSviaTCP(HierarchicalConfiguration config) {
@@ -130,7 +127,7 @@ public class KISSviaTCP extends Interface {
             @Override
             public boolean acceptInbound(ConnState state, AX25Callsign originator, org.prowl.kisset.ax25.Connector port) {
 
-                LOG.info("Incoming connection request from " + originator + " to " + state.getDst() );
+                LOG.info("Incoming connection request from " + originator + " to " + state.getDst());
 
 
                 // Do not accept (possibly replace this with a default handler to display a message in the future?)
@@ -141,7 +138,7 @@ public class KISSviaTCP extends Interface {
         });
 
         // Tag for debug logs so we know what instance/frequency this connector is
-      //  connector.setDebugTag(Tools.getNiceFrequency(frequency));
+        //  connector.setDebugTag(Tools.getNiceFrequency(frequency));
 
         // AX Frame listener for things like mheard lists
         connector.addFrameListener(new AX25FrameListener() {
@@ -192,7 +189,7 @@ public class KISSviaTCP extends Interface {
 
                         };
 
-                      //  service.acceptedConnection(user, in, wrapped);
+                        //  service.acceptedConnection(user, in, wrapped);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -226,7 +223,7 @@ public class KISSviaTCP extends Interface {
 
     @Override
     public String toString() {
-        return getClass().getSimpleName()+" (" + address + ":" + port+")";
+        return getClass().getSimpleName() + " (" + address + ":" + port + ")";
     }
 
     @Override

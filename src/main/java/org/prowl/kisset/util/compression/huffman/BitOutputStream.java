@@ -42,7 +42,7 @@ public final class BitOutputStream implements AutoCloseable {
     /*---- Fields ----*/
 
     // The underlying byte stream to write to (not null).
-    private OutputStream output;
+    private final OutputStream output;
 
     // The accumulated bits for the current byte, always in the range [0x00, 0xFF].
     private int currentByte;

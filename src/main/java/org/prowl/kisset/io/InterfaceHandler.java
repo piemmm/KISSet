@@ -13,9 +13,9 @@ public class InterfaceHandler {
 
     private static final Log LOG = LogFactory.getLog("InterfaceHandler");
 
-    private SubnodeConfiguration configuration;
+    private final SubnodeConfiguration configuration;
 
-    private List<Interface> interfaces = new ArrayList<>();
+    private final List<Interface> interfaces = new ArrayList<>();
 
 
     public InterfaceHandler(SubnodeConfiguration configuration) throws IOException {
@@ -70,6 +70,7 @@ public class InterfaceHandler {
     /**
      * Get the interface that services the requested radio port (eg: 0=144MHz,
      * 1=433MHZ, etc)
+     *
      * @return the port, or null if the port does not exist
      */
     public Interface getInterface(int inteterface) {

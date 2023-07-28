@@ -32,33 +32,13 @@ abstract public class AX25Message implements Comparable<AX25Message>, Serializab
      * Reserved constant for non-expiring objects' timestamp.
      */
     public static final long PERMANENT = -1L;
-
     /**
-     * This enum defines the allowed traffic precedence levels for messages.
+     * A read-only protocol set that includes both APRS and OpenTRAC.
+     *
+     * @see #getProtocols()
      */
-    public enum Precedence {
-        /**
-         * Normal traffic with no preferential handling.
-         */
-        ROUTINE,
-        /**
-         * Health and welfare traffic. Not currently implemented in APRS, but reserved for future expansion.
-         */
-        WELFARE,
-        /**
-         * Station with reason to be specially monitored.
-         */
-        SPECIAL,
-        /**
-         * Time-sensitive traffic needing preferred handling.
-         */
-        PRIORITY,
-        /**
-         * Top-priority traffic preempting all other traffic, regarding life and safety issues.
-         */
-        EMERGENCY
-    }
-
+    protected static final Set<ProtocolFamily> APRS_AND_OPENTRAC = Collections.unmodifiableSet(EnumSet.of(ProtocolFamily.APRS, ProtocolFamily.OPENTRAC));
+    static final Set<ProtocolFamily> RAW_AX25_ONLY = Collections.singleton(ProtocolFamily.RAW_AX25);
     /**
      * The AX.25 frame object from which this Message was extracted.
      */
@@ -89,10 +69,6 @@ abstract public class AX25Message implements Comparable<AX25Message>, Serializab
      */
     public String thirdParty = null;
     /**
-     * The last digipeater or I-gate to forward this message.
-     */
-    private transient String lastDigipeater = null;
-    /**
      * Message timestamp in Java standard milliseconds since 1970 UTC. May be different from rcptTime if
      * the message body has a time value in it.
      */
@@ -110,6 +86,10 @@ abstract public class AX25Message implements Comparable<AX25Message>, Serializab
      * in the message.
      */
     protected Map<Enum, Object> extensions = null;
+    /**
+     * The last digipeater or I-gate to forward this message.
+     */
+    private transient String lastDigipeater = null;
 
     /**
      * Constructor for partially initialized AX25Message.
@@ -129,88 +109,6 @@ abstract public class AX25Message implements Comparable<AX25Message>, Serializab
             this.thirdParty = thirdParty;
         }
         this.rcptTime = rcptTime;
-    }
-
-    /**
-     * Test if the Object o is a duplicate of this Message.
-     *
-     * @param o Object to compare against this message.
-     * @return true if o is a Message with the same contents as this Message
-     */
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        AX25Message ax25message = (AX25Message) o;
-
-        if (timestamp != ax25message.timestamp) return false;
-        if (originatingCallsign == null) {
-            if (ax25message.originatingCallsign != null) {
-                return false;
-            }
-        } else if (!originatingCallsign.equals(ax25message.originatingCallsign)) {
-            return false;
-        }
-        return bodyEquals(ax25message);
-    }
-
-    /**
-     * Compare the contents of the body of the message, reporting if they match. This method
-     * must be overridden by concrete subclasses, but will only be called when the Class of the
-     * other message equals the Class of this message.
-     *
-     * @param other another AX25Message to compare against
-     * @return boolean true if the body values are equivalent
-     */
-    abstract protected boolean bodyEquals(AX25Message other);
-
-    /**
-     * Returns a hash code for this Message.
-     *
-     * @return a hash code value for this object.
-     */
-    public int hashCode() {
-        int result = 0;
-        if (originatingCallsign != null) {
-            result = originatingCallsign.hashCode();
-        }
-        result = 31 * result + (int) timestamp;
-        return result;
-    }
-
-    /**
-     * Compares this object with the specified object for order.  Returns a
-     * negative integer, zero, or a positive integer as this object is less
-     * than, equal to, or greater than the specified object.
-     *
-     * @param o the object to be compared.
-     * @return a negative integer, zero, or a positive integer as this object
-     * is less than, equal to, or greater than the specified object.
-     * @throws ClassCastException if the specified object's type prevents it
-     *                            from being compared to this object.
-     */
-    public int compareTo(AX25Message o) {
-        if (PERMANENT == timestamp || PERMANENT == o.timestamp) {
-            return 0; // permanent fits in anywhere
-        }
-        if (timestamp > o.timestamp) {
-            return -1; // later in time, earlier in order
-        } else if (timestamp < o.timestamp) {
-            return +1;
-        }
-        int diff;
-        if ((diff = originatingCallsign.compareTo(o.originatingCallsign)) == 0) {
-            if (thirdParty == null) {
-                if (o.thirdParty != null) {
-                    diff = -1;
-                }
-            } else if (o.thirdParty == null) {
-                diff = +1;
-            } else {
-                diff = thirdParty.compareTo(o.thirdParty);
-            }
-        }
-        return diff;
     }
 
     /**
@@ -362,6 +260,171 @@ abstract public class AX25Message implements Comparable<AX25Message>, Serializab
     }
 
     /**
+     * Extract the callsign of the original destination of this message.
+     *
+     * @param src        AX25Callsign of the source of the original AX25Frame
+     * @param thirdParty String of the third-party routing of this message, or null if not routed over another network
+     * @return source callsign String
+     */
+    public static String getOriginalSource(AX25Callsign src, String thirdParty) {
+        if (thirdParty == null || thirdParty.length() == 0) {
+            return src.toString();
+        }
+
+        // this code assumes TNC format
+
+        // find end of source
+        int srcPos = thirdParty.indexOf('>');
+
+        return thirdParty.substring(0, srcPos);
+    }
+
+    /**
+     * Extract the callsign of the original destination of this message.
+     *
+     * @param dest       AX25Callsign of the destination (tocall) of the original AX25Frame
+     * @param thirdParty String of the third-party routing of this message, or null if not routed over another network
+     * @return destination callsign String
+     */
+    public static String getOriginalDestination(AX25Callsign dest, String thirdParty) {
+        if (thirdParty == null || thirdParty.length() == 0) {
+            return dest.toString();
+        }
+
+        // this code assumes TNC format
+
+        // find end of source
+        int srcPos = thirdParty.indexOf('>', 3) + 1;
+
+        // find end of initial destination
+        int destPos = thirdParty.indexOf(',', srcPos + 2);
+
+        return thirdParty.substring(srcPos, destPos);
+    }
+
+    /**
+     * This is a more optimized version of String.split() that doesn't require
+     * compiling and evaluating regular expression patterns to do it, thereby
+     * saving chunks of transient heap (and probably some CPU time as well).
+     *
+     * @param line      the String to split at occurrences of the separator
+     * @param separator the String delimiting substrings of the line
+     * @return array of Strings split at the various points the separator appears
+     */
+    public static String[] split(String line, char separator) {
+        int lastFoundPos = 0;
+        int numHits = 0;
+        int lineLen = line.length();
+        while (lastFoundPos < lineLen) {
+            int pos = line.indexOf(separator, lastFoundPos);
+            if (-1 == pos) {
+                break;
+            }
+            numHits++;
+            lastFoundPos = pos + 1;
+        }
+        String[] answer = new String[numHits + 1];
+        if (numHits == 0) {
+            answer[0] = line;
+        } else {
+            lastFoundPos = 0;
+            numHits = 0;
+            while (true) {
+                int pos = line.indexOf(separator, lastFoundPos);
+                if (pos < 0) {
+                    answer[numHits] = line.substring(lastFoundPos);
+                    break;
+                }
+                answer[numHits++] = line.substring(lastFoundPos, pos);
+                lastFoundPos = pos + 1;
+            }
+        }
+        return answer;
+    }
+
+    /**
+     * Test if the Object o is a duplicate of this Message.
+     *
+     * @param o Object to compare against this message.
+     * @return true if o is a Message with the same contents as this Message
+     */
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        AX25Message ax25message = (AX25Message) o;
+
+        if (timestamp != ax25message.timestamp) return false;
+        if (originatingCallsign == null) {
+            if (ax25message.originatingCallsign != null) {
+                return false;
+            }
+        } else if (!originatingCallsign.equals(ax25message.originatingCallsign)) {
+            return false;
+        }
+        return bodyEquals(ax25message);
+    }
+
+    /**
+     * Compare the contents of the body of the message, reporting if they match. This method
+     * must be overridden by concrete subclasses, but will only be called when the Class of the
+     * other message equals the Class of this message.
+     *
+     * @param other another AX25Message to compare against
+     * @return boolean true if the body values are equivalent
+     */
+    abstract protected boolean bodyEquals(AX25Message other);
+
+    /**
+     * Returns a hash code for this Message.
+     *
+     * @return a hash code value for this object.
+     */
+    public int hashCode() {
+        int result = 0;
+        if (originatingCallsign != null) {
+            result = originatingCallsign.hashCode();
+        }
+        result = 31 * result + (int) timestamp;
+        return result;
+    }
+
+    /**
+     * Compares this object with the specified object for order.  Returns a
+     * negative integer, zero, or a positive integer as this object is less
+     * than, equal to, or greater than the specified object.
+     *
+     * @param o the object to be compared.
+     * @return a negative integer, zero, or a positive integer as this object
+     * is less than, equal to, or greater than the specified object.
+     * @throws ClassCastException if the specified object's type prevents it
+     *                            from being compared to this object.
+     */
+    public int compareTo(AX25Message o) {
+        if (PERMANENT == timestamp || PERMANENT == o.timestamp) {
+            return 0; // permanent fits in anywhere
+        }
+        if (timestamp > o.timestamp) {
+            return -1; // later in time, earlier in order
+        } else if (timestamp < o.timestamp) {
+            return +1;
+        }
+        int diff;
+        if ((diff = originatingCallsign.compareTo(o.originatingCallsign)) == 0) {
+            if (thirdParty == null) {
+                if (o.thirdParty != null) {
+                    diff = -1;
+                }
+            } else if (o.thirdParty == null) {
+                diff = +1;
+            } else {
+                diff = thirdParty.compareTo(o.thirdParty);
+            }
+        }
+        return diff;
+    }
+
+    /**
      * Descriptive text about this message, to be included in the toString() method's response.
      * This method may be overridden. Its default implementation returns an empty string.
      *
@@ -432,49 +495,6 @@ abstract public class AX25Message implements Comparable<AX25Message>, Serializab
             throw new NullPointerException("setting null AX25Frame associated with this Message");
         }
         this.ax25Frame = ax25Frame;
-    }
-
-    /**
-     * Extract the callsign of the original destination of this message.
-     *
-     * @param src        AX25Callsign of the source of the original AX25Frame
-     * @param thirdParty String of the third-party routing of this message, or null if not routed over another network
-     * @return source callsign String
-     */
-    public static String getOriginalSource(AX25Callsign src, String thirdParty) {
-        if (thirdParty == null || thirdParty.length() == 0) {
-            return src.toString();
-        }
-
-        // this code assumes TNC format
-
-        // find end of source
-        int srcPos = thirdParty.indexOf('>');
-
-        return thirdParty.substring(0, srcPos);
-    }
-
-    /**
-     * Extract the callsign of the original destination of this message.
-     *
-     * @param dest       AX25Callsign of the destination (tocall) of the original AX25Frame
-     * @param thirdParty String of the third-party routing of this message, or null if not routed over another network
-     * @return destination callsign String
-     */
-    public static String getOriginalDestination(AX25Callsign dest, String thirdParty) {
-        if (thirdParty == null || thirdParty.length() == 0) {
-            return dest.toString();
-        }
-
-        // this code assumes TNC format
-
-        // find end of source
-        int srcPos = thirdParty.indexOf('>', 3) + 1;
-
-        // find end of initial destination
-        int destPos = thirdParty.indexOf(',', srcPos + 2);
-
-        return thirdParty.substring(srcPos, destPos);
     }
 
     /**
@@ -674,6 +694,17 @@ abstract public class AX25Message implements Comparable<AX25Message>, Serializab
     }
 
     /**
+     * Change the timestamp of this message. Intended only for use by the
+     * Transmitter class when creating a time-stamped duplicate of a
+     * periodically-repeated APRS Message.
+     *
+     * @param timestamp new time in Java milliseconds since epoch
+     */
+    public void setTimestamp(long timestamp) {
+        this.timestamp = timestamp;
+    }
+
+    /**
      * Report if this AX25Message contains weather information.
      *
      * @return boolean true if weather information in this AX25Message
@@ -691,14 +722,12 @@ abstract public class AX25Message implements Comparable<AX25Message>, Serializab
     }
 
     /**
-     * Change the timestamp of this message. Intended only for use by the
-     * Transmitter class when creating a time-stamped duplicate of a
-     * periodically-repeated APRS Message.
+     * Get the callsign of the station that originated this message (not of any Tx-Igate relay).
      *
-     * @param timestamp new time in Java milliseconds since epoch
+     * @return String callsign
      */
-    public void setTimestamp(long timestamp) {
-        this.timestamp = timestamp;
+    public String getOriginatingCallsign() {
+        return originatingCallsign;
     }
 
     /**
@@ -709,15 +738,6 @@ abstract public class AX25Message implements Comparable<AX25Message>, Serializab
      */
     public void setOriginatingCallsign(String originatingCallsign) {
         this.originatingCallsign = originatingCallsign;
-    }
-
-    /**
-     * Get the callsign of the station that originated this message (not of any Tx-Igate relay).
-     *
-     * @return String callsign
-     */
-    public String getOriginatingCallsign() {
-        return originatingCallsign;
     }
 
     /**
@@ -841,14 +861,6 @@ abstract public class AX25Message implements Comparable<AX25Message>, Serializab
         return null;
     }
 
-    static final Set<ProtocolFamily> RAW_AX25_ONLY = Collections.singleton(ProtocolFamily.RAW_AX25);
-    /**
-     * A read-only protocol set that includes both APRS and OpenTRAC.
-     *
-     * @see #getProtocols()
-     */
-    protected static final Set<ProtocolFamily> APRS_AND_OPENTRAC = Collections.unmodifiableSet(EnumSet.of(ProtocolFamily.APRS, ProtocolFamily.OPENTRAC));
-
     /**
      * Get the protocol family or families that this message corresponds to, so
      * ports that don't support all protocols will not forward inappropriate packets.
@@ -918,42 +930,28 @@ abstract public class AX25Message implements Comparable<AX25Message>, Serializab
     }
 
     /**
-     * This is a more optimized version of String.split() that doesn't require
-     * compiling and evaluating regular expression patterns to do it, thereby
-     * saving chunks of transient heap (and probably some CPU time as well).
-     *
-     * @param line      the String to split at occurrences of the separator
-     * @param separator the String delimiting substrings of the line
-     * @return array of Strings split at the various points the separator appears
+     * This enum defines the allowed traffic precedence levels for messages.
      */
-    public static String[] split(String line, char separator) {
-        int lastFoundPos = 0;
-        int numHits = 0;
-        int lineLen = line.length();
-        while (lastFoundPos < lineLen) {
-            int pos = line.indexOf(separator, lastFoundPos);
-            if (-1 == pos) {
-                break;
-            }
-            numHits++;
-            lastFoundPos = pos + 1;
-        }
-        String[] answer = new String[numHits + 1];
-        if (numHits == 0) {
-            answer[0] = line;
-        } else {
-            lastFoundPos = 0;
-            numHits = 0;
-            while (true) {
-                int pos = line.indexOf(separator, lastFoundPos);
-                if (pos < 0) {
-                    answer[numHits] = line.substring(lastFoundPos);
-                    break;
-                }
-                answer[numHits++] = line.substring(lastFoundPos, pos);
-                lastFoundPos = pos + 1;
-            }
-        }
-        return answer;
+    public enum Precedence {
+        /**
+         * Normal traffic with no preferential handling.
+         */
+        ROUTINE,
+        /**
+         * Health and welfare traffic. Not currently implemented in APRS, but reserved for future expansion.
+         */
+        WELFARE,
+        /**
+         * Station with reason to be specially monitored.
+         */
+        SPECIAL,
+        /**
+         * Time-sensitive traffic needing preferred handling.
+         */
+        PRIORITY,
+        /**
+         * Top-priority traffic preempting all other traffic, regarding life and safety issues.
+         */
+        EMERGENCY
     }
 }

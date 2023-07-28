@@ -32,7 +32,6 @@ public class EmulatorVT100 extends Emulator {
     private static final Log LOG = LogFactory.getLog("EmulatorVT100");
 
 
-
     private static final byte[] ENTER = {(byte) 0x0d};
     private static final byte[] UP = {(byte) 0x1b, (byte) 0x4f, (byte) 0x41};
     private static final byte[] DOWN = {(byte) 0x1b, (byte) 0x4f, (byte) 0x42};
@@ -78,7 +77,7 @@ public class EmulatorVT100 extends Emulator {
 
                 b = getChar();
 
-             //   System.out.println("@0: " + new Character((char) b) + "[" + Integer.toHexString(b & 0xff) + "]");
+                //   System.out.println("@0: " + new Character((char) b) + "[" + Integer.toHexString(b & 0xff) + "]");
 
                 //System.out.println("@0: ry="+ry);
 
@@ -262,8 +261,8 @@ public class EmulatorVT100 extends Emulator {
                     }
 
                     if (b != '[') {
-                   //     System.out.print("@11: " + new Character((char) b) + "["
-                   //             + Integer.toHexString(b & 0xff) + "]");
+                        //     System.out.print("@11: " + new Character((char) b) + "["
+                        //             + Integer.toHexString(b & 0xff) + "]");
                         pushChar(b);
                         continue;
                     }

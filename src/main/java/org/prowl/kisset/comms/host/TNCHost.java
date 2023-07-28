@@ -15,25 +15,24 @@ import java.io.*;
  * Each TNC host
  */
 public class TNCHost {
-    // Logging
-    private static final Log LOG = LogFactory.getLog("TNCHost");
-
     // The end character for the TNC prompt
     public static final String CR = CommandParser.CR;
-
+    // Logging
+    private static final Log LOG = LogFactory.getLog("TNCHost");
     // The command parser
-    private CommandParser parser;
+    private final CommandParser parser;
 
     // Terminal window input stream
-    private InputStream in;
+    private final InputStream in;
     // Terminal window output stream
-    private OutputStream out;
+    private final OutputStream out;
 
     /**
      * Create a new TNC host.
+     *
      * @param config The configuration for this host.
-     * @param in The input stream for the terminal window.
-     * @param out The output stream for the terminal window.
+     * @param in     The input stream for the terminal window.
+     * @param out    The output stream for the terminal window.
      */
     public TNCHost(HierarchicalConfiguration config, InputStream in, OutputStream out) {
         this.in = in;
@@ -47,34 +46,34 @@ public class TNCHost {
     public void start() {
 
 
-            Platform.runLater(new Runnable() {
-                @Override
-                public void run() {
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
 
-                    try {
-                       // Write welcome/init message to the client.
-                        send(CR);
-                        send(Messages.get("tncInit")+CR);
-                        send(parser.getPrompt());
-                    } catch(IOException e) {
-                        LOG.error(e.getMessage(), e);
-                    }
-                }
-            });
-
-            // Start the reader thread for the client.
-            Tools.runOnThread(() -> {
                 try {
-                    InputStreamReader reader = new InputStreamReader(in);
-                    BufferedReader bin = new BufferedReader(reader);
-                    String inLine;
-                    while ((inLine = bin.readLine()) != null) {
-                        parser.parse(inLine);
-                    }
-                } catch (Exception e) {
+                    // Write welcome/init message to the client.
+                    send(CR);
+                    send(Messages.get("tncInit") + CR);
+                    send(parser.getPrompt());
+                } catch (IOException e) {
                     LOG.error(e.getMessage(), e);
                 }
-            });
+            }
+        });
+
+        // Start the reader thread for the client.
+        Tools.runOnThread(() -> {
+            try {
+                InputStreamReader reader = new InputStreamReader(in);
+                BufferedReader bin = new BufferedReader(reader);
+                String inLine;
+                while ((inLine = bin.readLine()) != null) {
+                    parser.parse(inLine);
+                }
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+            }
+        });
 
 
     }
@@ -96,6 +95,7 @@ public class TNCHost {
 
     /**
      * Flush the output stream.
+     *
      * @throws IOException
      */
     public void flush() throws IOException {

@@ -26,6 +26,8 @@ import java.io.IOException;
 import java.io.InputStream;
 
 public abstract class Emulator {
+    private final byte[] b2 = new byte[2];
+    private final byte[] b1 = new byte[1];
     protected int term_width = 80;
     protected int term_height = 24;
     protected int x = 0;
@@ -40,8 +42,6 @@ public abstract class Emulator {
     int buflen = 0;
     private int region_y2;
     private int region_y1;
-    private final byte[] b2 = new byte[2];
-    private final byte[] b1 = new byte[1];
 
     public Emulator(Term term, InputStream in) {
         this.term = term;

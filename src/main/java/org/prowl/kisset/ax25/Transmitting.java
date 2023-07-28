@@ -35,7 +35,7 @@ public interface Transmitting {
      *
      * @param entry AX25FrameSource of the frame to be transmitted
      */
-    public void queue(AX25FrameSource entry);
+    void queue(AX25FrameSource entry);
 
     /**
      * Queue the specified frame source for transmission over the specified (or all, if not
@@ -44,7 +44,7 @@ public interface Transmitting {
      * @param entry      AX25FrameSource of the frame to be transmitted
      * @param timeToSend long time in milliseconds since Unix epoch when packet is to be dequeued and transmitted
      */
-    public void delayedQueue(AX25FrameSource entry, long timeToSend);
+    void delayedQueue(AX25FrameSource entry, long timeToSend);
 
     /**
      * Test if this callsign is addressed to the local station.
@@ -52,12 +52,12 @@ public interface Transmitting {
      * @param destCallsign String of AX.25 callsign-SSID to test as a destination
      * @return boolean true if this callsign is for the local station
      */
-    public boolean isLocalDest(String destCallsign);
+    boolean isLocalDest(String destCallsign);
 
     /**
      * Get the locally-originated message retransmit count.
      *
      * @return default retransmit count
      */
-    public int getRetransmitCount();
+    int getRetransmitCount();
 }

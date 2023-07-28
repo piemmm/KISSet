@@ -77,7 +77,7 @@ public final class ReschedulableTimer extends Thread {
      * Execute the timer tasks queued to this timer.
      */
     @Override
-    public final void run() {
+    public void run() {
         while (!shutdown) {
             synchronized (this) {
                 if (needsResort) {

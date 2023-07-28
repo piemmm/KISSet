@@ -36,52 +36,7 @@ import java.util.concurrent.TimeoutException;
 public class ConnState implements AX25FrameSource, Closeable {
 
     private static final Log LOG = LogFactory.getLog("ConnState");
-
-    /**
-     * Enum identifying the transitional condition of the connection.
-     *
-     * @author Andrew Pavlin, KA2DDO
-     */
-    public enum ConnTransition {
-        /**
-         * No changes in the state of this connection.
-         */
-        STEADY,
-        /**
-         * Connection in the process of coming up,
-         */
-        LINK_UP,
-        /**
-         * Connection in the process of going down.
-         */
-        LINK_DOWN
-    }
-
-    /**
-     * Enumeration specifying the different types of connection-oriented AX.25 sessions.
-     *
-     * @author Andrew Pavlin, KA2DDO
-     */
-    public enum ConnType {
-        /**
-         * Not currently connection-oriented (still in initial negotiation).
-         */
-        NONE,
-        /**
-         * Using an eight-frame sliding window (all that AX.25 V2.0 can handle).
-         */
-        MOD8,
-        /**
-         * Using a 128-frame sliding window (if both ends speak AX.25 v2.2).
-         */
-        MOD128,
-        /**
-         * Either negotiation failed or the connection has been closed. Used to tell {@link AX25InputStream}
-         * to report end-of-file.
-         */
-        CLOSED
-    }
-
+    private static final Object MONITOR = new Object();
     /**
      * Originator of session.
      */
@@ -90,7 +45,6 @@ public class ConnState implements AX25FrameSource, Closeable {
      * Recipient of session.
      */
     public final AX25Callsign dst;
-    ConnType connType = ConnType.NONE;
     /**
      * The current state of this session.
      */
@@ -100,6 +54,15 @@ public class ConnState implements AX25FrameSource, Closeable {
      * source is the local station.
      */
     public AX25Callsign[] via = null;
+    /**
+     * Listener to be asynchronously informed of state changes in the session.
+     */
+    public ConnectionEstablishmentListener listener = null;
+    /**
+     * Arbitrary identifier for a particular connected-mode session.
+     */
+    public Object sessionIdentifier = null;
+    ConnType connType = ConnType.NONE;
     /**
      * Modulo index of last received frame. Only used for sessions to or from this station.
      * AX.25 spec section 4.2.2.4.
@@ -118,19 +81,10 @@ public class ConnState implements AX25FrameSource, Closeable {
     volatile boolean localRcvBlocked = false;
     volatile boolean xmtToRemoteBlocked = false;
     /**
-     * Listener to be asynchronously informed of state changes in the session.
-     */
-    public ConnectionEstablishmentListener listener = null;
-    /**
-     * Arbitrary identifier for a particular connected-mode session.
-     */
-    public Object sessionIdentifier = null;
-    /**
      * Window of I-frames being sent from this station to the other end of the connection. Only used
      * for sessions to or from this station. {@link #vs} and {@link #va} are indexes into this array.
      */
     AX25Frame[] transmitWindow = null;
-
     AX25Stack stack;
     /**
      * PortConnector from which this connected-mode session was heard, or null if port not identified yet.
@@ -143,12 +97,8 @@ public class ConnState implements AX25FrameSource, Closeable {
      * Last time this connection was updated.
      */
     transient long lastUpdateInSession = System.currentTimeMillis();
-
     AX25InputStream in = null;
     AX25OutputStream out = null;
-
-    private static final Object MONITOR = new Object();
-
     ConnState(AX25Callsign src, AX25Callsign dst, AX25Stack stack) {
         this.src = src;
         this.dst = dst;
@@ -300,7 +250,7 @@ public class ConnState implements AX25FrameSource, Closeable {
                         return;
                     }
 
-                    LOG.debug("T1 timeout on " + ConnState.this+" retriesRemaining="+retriesRemaining+" for frame:"+frame+"   frameToResend:"+frameToResend);
+                    LOG.debug("T1 timeout on " + ConnState.this + " retriesRemaining=" + retriesRemaining + " for frame:" + frame + "   frameToResend:" + frameToResend);
                     if (retriesRemaining-- > 0) {
                         if (localRcvBlocked) {
                             stack.transmitRNR((Connector) connector, frameToResend.sender, frameToResend.dest, frameToResend.digipeaters, ConnState.this, true, true);
@@ -472,5 +422,50 @@ public class ConnState implements AX25FrameSource, Closeable {
      */
     public void updateSessionTime() {
         lastUpdateInSession = System.currentTimeMillis();
+    }
+
+    /**
+     * Enum identifying the transitional condition of the connection.
+     *
+     * @author Andrew Pavlin, KA2DDO
+     */
+    public enum ConnTransition {
+        /**
+         * No changes in the state of this connection.
+         */
+        STEADY,
+        /**
+         * Connection in the process of coming up,
+         */
+        LINK_UP,
+        /**
+         * Connection in the process of going down.
+         */
+        LINK_DOWN
+    }
+
+    /**
+     * Enumeration specifying the different types of connection-oriented AX.25 sessions.
+     *
+     * @author Andrew Pavlin, KA2DDO
+     */
+    public enum ConnType {
+        /**
+         * Not currently connection-oriented (still in initial negotiation).
+         */
+        NONE,
+        /**
+         * Using an eight-frame sliding window (all that AX.25 V2.0 can handle).
+         */
+        MOD8,
+        /**
+         * Using a 128-frame sliding window (if both ends speak AX.25 v2.2).
+         */
+        MOD128,
+        /**
+         * Either negotiation failed or the connection has been closed. Used to tell {@link AX25InputStream}
+         * to report end-of-file.
+         */
+        CLOSED
     }
 }

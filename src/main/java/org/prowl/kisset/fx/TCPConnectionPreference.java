@@ -4,7 +4,6 @@ package org.prowl.kisset.fx;
 import javafx.fxml.FXML;
 import javafx.scene.control.TextField;
 import org.apache.commons.configuration.HierarchicalConfiguration;
-import org.prowl.kisset.io.Interface;
 
 
 public class TCPConnectionPreference implements ConnectionPreferenceInterface {
@@ -31,7 +30,7 @@ public class TCPConnectionPreference implements ConnectionPreferenceInterface {
             if (intport == 0 || intport > 65534) {
                 return false;
             }
-        } catch(Throwable e) {
+        } catch (Throwable e) {
             return false;
         }
         return true;

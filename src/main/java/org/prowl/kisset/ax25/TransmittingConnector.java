@@ -34,14 +34,14 @@ public interface TransmittingConnector {
      *
      * @return boolean true if Connector is open
      */
-    public boolean isOpen();
+    boolean isOpen();
 
     /**
      * Get the current statistics for this PortConnector instance.
      *
      * @return PortStats for this port.
      */
-    public Connector.PortStats getStats();
+    Connector.PortStats getStats();
 
     /**
      * Transmit an AX.25 frame through this port. May fail silently if port is not
@@ -52,7 +52,7 @@ public interface TransmittingConnector {
      * @param frame AX25Frame object to transmit
      * @throws IOException if transmit failed for any reason other than a receive-only port
      */
-    public void sendFrame(AX25Frame frame) throws IOException;
+    void sendFrame(AX25Frame frame) throws IOException;
 
     /**
      * For ports that have an AX.25 address (callsign), report the callsign
@@ -62,7 +62,7 @@ public interface TransmittingConnector {
      *
      * @return callsign String, or null if no associated callsign
      */
-    public String getCallsign();
+    String getCallsign();
 
     /**
      * Specify what capabilities a port of this type has.
@@ -83,7 +83,7 @@ public interface TransmittingConnector {
      * @see Connector#CAP_WAYPOINT_SENDER
      * @see Connector#CAP_WEATHER
      */
-    public int getCapabilities();
+    int getCapabilities();
 
     /**
      * Test if this Connector has the specified capability or capabilities.
@@ -105,7 +105,7 @@ public interface TransmittingConnector {
      * @see Connector#CAP_WAYPOINT_SENDER
      * @see Connector#CAP_WEATHER
      */
-    public boolean hasCapability(int capMask);
+    boolean hasCapability(int capMask);
 
     /**
      * Get the bitmask of AX.25 protocols supported by this port.
@@ -114,5 +114,5 @@ public interface TransmittingConnector {
      *
      * @return protocol bitmask, or 0 for no AX.25 protocols supported
      */
-    public int getAcceptableProtocolsMask();
+    int getAcceptableProtocolsMask();
 }

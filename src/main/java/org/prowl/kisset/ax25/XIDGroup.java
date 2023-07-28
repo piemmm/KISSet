@@ -29,9 +29,9 @@ import java.util.ArrayList;
  * responding to the XID frame in the AX.25 protocol.
  */
 public class XIDGroup {
+    public final ArrayList<XIDParameter> paramList = new ArrayList<XIDParameter>();
     public byte formatIdentifier;
     public byte groupIdentifier;
-    public final ArrayList<XIDParameter> paramList = new ArrayList<XIDParameter>();
 
     /**
      * Create an empty XIDGroup with the AX.25 default FI/GI.
@@ -39,6 +39,28 @@ public class XIDGroup {
     public XIDGroup() {
         formatIdentifier = (byte) 0x82;
         groupIdentifier = (byte) 0x80;
+    }
+
+    /**
+     * Read an XIDGroup from an input byte stream.
+     *
+     * @param dis DataInput to read the XIDGroup from
+     * @return decoded XIDGroup
+     * @throws IOException if read fails for any reason
+     */
+    public static XIDGroup read(DataInput dis) throws IOException {
+        XIDGroup g = new XIDGroup();
+        g.formatIdentifier = dis.readByte();
+        g.groupIdentifier = dis.readByte();
+        int len = dis.readUnsignedShort();
+        while (len > 0) {
+            XIDParameter p = XIDParameter.read(dis);
+            len -= 2 + p.getParamLength();
+        }
+        if (len < 0) {
+            throw new ProtocolException("groupLength didn't contain whole set of XIDParameters");
+        }
+        return g;
     }
 
     /**
@@ -67,27 +89,5 @@ public class XIDGroup {
             len += p.getParamLength() + 2;
         }
         return len;
-    }
-
-    /**
-     * Read an XIDGroup from an input byte stream.
-     *
-     * @param dis DataInput to read the XIDGroup from
-     * @return decoded XIDGroup
-     * @throws IOException if read fails for any reason
-     */
-    public static XIDGroup read(DataInput dis) throws IOException {
-        XIDGroup g = new XIDGroup();
-        g.formatIdentifier = dis.readByte();
-        g.groupIdentifier = dis.readByte();
-        int len = dis.readUnsignedShort();
-        while (len > 0) {
-            XIDParameter p = XIDParameter.read(dis);
-            len -= 2 + p.getParamLength();
-        }
-        if (len < 0) {
-            throw new ProtocolException("groupLength didn't contain whole set of XIDParameters");
-        }
-        return g;
     }
 }

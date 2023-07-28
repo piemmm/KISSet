@@ -35,11 +35,188 @@ import java.util.*;
  * @version 2.2
  */
 public class AX25Frame implements Serializable, AX25FrameSource, Comparable<AX25Frame> {
+    /**
+     * The bitmask to extract the frametype bits from the ctl byte of the frame.
+     *
+     * @see #ctl
+     */
+    public static final int MASK_FRAMETYPE = 0x03;
+    /**
+     * Numeric code for information (I) frame type.
+     */
+    public static final int FRAMETYPE_I = 0;
+    /**
+     * Numeric code for supervisory (S) frame type.
+     */
+    public static final int FRAMETYPE_S = 1;
+    /**
+     * Numeric code for unnumbered (U) frame type.
+     */
+    public static final int FRAMETYPE_U = 3;
+    /**
+     * Bitmask to extract supervisory (S) frame subtype from the ctl byte.
+     *
+     * @see #ctl
+     */
+    public static final int MASK_STYPE = 0x0C;
+    /**
+     * Bit shift to get least significant bit of S frame subtype into least significant bit of integer.
+     */
+    public static final int SHIFT_STYPE = 2;
+    /**
+     * Unshifted S frame subtype for Receive Ready frame.
+     *
+     * @see #MASK_STYPE
+     */
+    public static final int STYPE_RR = 0x00;
+    /**
+     * Unshifted S frame subtype for Receive Not Ready frame.
+     *
+     * @see #MASK_STYPE
+     */
+    public static final int STYPE_RNR = 0x04;
+    /**
+     * Unshifted S frame subtype for Reject frame.
+     *
+     * @see #MASK_STYPE
+     */
+    public static final int STYPE_REJ = 0x08;
+    /**
+     * Unshifted S frame subtype for Selective Reject frame.
+     *
+     * @see #MASK_STYPE
+     */
+    public static final int STYPE_SREJ = 0x0C;
+    /**
+     * Bitmask to extract unnumbered (U) frame subtype from the ctl byte.
+     *
+     * @see #ctl
+     */
+    public static final int MASK_UTYPE = 0xEC;
+    /**
+     * Bitmask to extract poll/final bit from unnumbered (U) frame ctl byte, mod 8 format.
+     *
+     * @see #ctl
+     */
+    public static final int MASK_U_P = 0x10;
+    /**
+     * Bitmask to extract poll/final bit from I/S frame 2nd ctl byte, mod 128 format.
+     *
+     * @see #ctl2
+     */
+    public static final int MASK_U_P128 = 0x01;
+    /**
+     * Bit shift to get least significant bit of U frame subtype into least significant bit of integer.
+     */
+    public static final int SHIFT_UTYPE = 2;
+    /**
+     * Unshifted U frame subtype for Unnumbered Information (UI).
+     */
+    public static final int UTYPE_UI = 0x00;
+    /**
+     * Unshifted U frame subtype for Disconnected Mode (DM).
+     */
+    public static final int UTYPE_DM = 0x0C;
+    /**
+     * Unshifted U frame subtype for Set Asynchronous Balanced Mode (SABM). Only allowed window sizing for AX.25 V2.0 stations.
+     */
+    public static final int UTYPE_SABM = 0x2C;
+    /**
+     * Unshifted U frame subtype for Disconnect (DISC).
+     */
+    public static final int UTYPE_DISC = 0x40;
+    /**
+     * Unshifted U frame subtype for Unnumbered Acknowledge (UA).
+     */
+    public static final int UTYPE_UA = 0x60;
+    /**
+     * Unshifted U frame subtype for Set Asynchronous Balanced Mode Extended (SABME). Only usable between AX.25 V2.2 stations.
+     *
+     * @since 2.2
+     */
+    public static final int UTYPE_SABME = 0x6C;
+    /**
+     * Unshifted U frame subtype for obsolete Frame Reject (FRMR).
+     *
+     * @deprecated 2.0
+     */
+    public static final int UTYPE_FRMR = 0x84;
+    /**
+     * Unshifted U frame subtype for Exchange Identification (XID).
+     */
+    public static final int UTYPE_XID = 0xAC;
+    /**
+     * Unshifted U frame subtype for Test (TEST).
+     */
+    public static final int UTYPE_TEST = 0xE0;
+    /**
+     * Protocol ID for CCITT X.25 PLP (also used by the ROSE network).
+     */
+    public static final byte PID_X25_PLP = (byte) 0x01;
+    /**
+     * Protocol ID for Van Jacobson compressed TCP/IP packet, per RFC 1144.
+     */
+    public static final byte PID_VJC_TCPIP = (byte) 0x06;
+    /**
+     * Protocol ID for Van Jacobson uncompressed TCP/IP packet, per RFC 1144.
+     */
+    public static final byte PID_VJUC_TCPIP = (byte) 0x07;
+    /**
+     * Protocol ID for AX.25 segmentation fragment.
+     */
+    public static final byte PID_SEG_FRAG = (byte) 0x08;
+    /**
+     * Protocol ID for OpenTRAC.
+     */
+    public static final byte PID_OPENTRAC = (byte) 0x77;
+    /**
+     * Protocol ID for TEXNET datagram.
+     */
+    public static final byte PID_TEXNET = (byte) 0xC3;
+    /**
+     * Protocol ID for Link Quality Protocol.
+     */
+    public static final byte PID_LQP = (byte) 0xC4;
+    /**
+     * Protocol ID for Appletalk.
+     */
+    public static final byte PID_ATALK = (byte) 0xCA;
+    /**
+     * Protocol ID for Appletalk Address Resolution Protocol (ARP).
+     */
+    public static final byte PID_AARP = (byte) 0xCB;
+    /**
+     * Protocol ID for ARPA Internet Protocol.
+     */
+    public static final byte PID_IP = (byte) 0xCC;
+    /**
+     * Protocol ID for ARPA Internet Address Resolution Protocol (ARP).
+     */
+    public static final byte PID_IARP = (byte) 0xCD;
+    /**
+     * Protocol ID for FlexNet.
+     */
+    public static final byte PID_FLEXNET = (byte) 0xCE;
+    /**
+     * Protocol ID for NET/ROM.
+     */
+    public static final byte PID_NETROM = (byte) 0xCF;
+    /**
+     * Protocol ID for no level 3 protocol (also used for APRS).
+     */
+    public static final byte PID_NOLVL3 = (byte) 0xF0;
+    /**
+     * Protocol ID for escape code indicating second byte of PID (not supported).
+     */
+    public static final byte PID_ESCAPE = (byte) 0xFF;
+    /**
+     * SerialVersionUID when rcptTime was of type java.org.ka2ddo.util.Date.
+     *
+     * @see #rcptTime
+     */
+    static final long previousSerialVersionUID = 4260042831169759L;
     private static final long serialVersionUID = 3107587793401226132L;
-
     private static final Log LOG = LogFactory.getLog("AX25Frame");
-
-
     /**
      * Maximum number of digipeat addresses allowed in an AX.25 frame, according to the AX.25 spec.
      */
@@ -49,6 +226,58 @@ public class AX25Frame implements Serializable, AX25FrameSource, Comparable<AX25
      * but someone is managing to send over-length packets.
      */
     private static final int OVERSIZED_MAX_DIGIS = 10;
+    /**
+     * String names for the different AX.25 frame types.
+     */
+    private static final String[] FRAMETYPES_S = {"I", "S", "I", "U"};
+    /**
+     * String names of supervisory (S) frame subtypes (indexed after shifting).
+     *
+     * @see #MASK_STYPE
+     * @see #SHIFT_STYPE
+     */
+    private static final String[] STYPES_S = {"RR", "RNR", "REJ", "SREJ"};
+    /**
+     * String names of unnumbered (U) frame subtypes (indexed after shifting).
+     *
+     * @see #MASK_UTYPE
+     * @see #SHIFT_UTYPE
+     */
+    private static final String[] UTYPES_S = {"UI", "?1", "?2", "DM", "?4", "?5", "?6", "?7", "?8", "?9", "?10", "SABM",
+            "?12", "?13", "?14", "?15", "DISC", "?17", "?18", "?19", "?20", "?21", "?22", "?23", "UA", "?25", "?26", "SABME", "?28", "?29", "?30", "?31",
+            "?32", "FRMR", "?34", "35?", "?36", "?37", "?38", "?39", "?40", "?41", "?42", "XID", "?44", "?45", "?46", "?47",
+            "?48", "?49", "?50", "?51", "?52", "?53", "?54", "?55", "TEST", "?57", "?58", "?59", "?60", "?61", "?62", "?63"};
+    /**
+     * Hashmap of Information (I) or Unnumbered Information (UI) frame protocol ID to protocol name strings.
+     *
+     * @see #pid
+     */
+    private static final HashMap<Byte, String> PTYPES_S_hidden = new HashMap<Byte, String>();
+    /**
+     * Hashmap of Information (I) or Unnumbered Information (UI) frame protocol ID to protocol name strings.
+     *
+     * @see #pid
+     */
+    public static final Map<Byte, String> PTYPES_S = Collections.unmodifiableMap(PTYPES_S_hidden);
+
+    static {
+        PTYPES_S_hidden.put(PID_X25_PLP, "X.25-PLP");
+        PTYPES_S_hidden.put(PID_VJC_TCPIP, "VJC-TCP/IP");
+        PTYPES_S_hidden.put(PID_VJUC_TCPIP, "VJuc-TCP/IP");
+        PTYPES_S_hidden.put(PID_SEG_FRAG, "seg_frag");
+        PTYPES_S_hidden.put(PID_OPENTRAC, "OpenTRAC");
+        PTYPES_S_hidden.put(PID_TEXNET, "TEXNET");
+        PTYPES_S_hidden.put(PID_LQP, "LQP");
+        PTYPES_S_hidden.put(PID_ATALK, "Appletalk");
+        PTYPES_S_hidden.put(PID_AARP, "Appletalk-ARP");
+        PTYPES_S_hidden.put(PID_IP, "IP");
+        PTYPES_S_hidden.put(PID_IARP, "IP-ARP");
+        PTYPES_S_hidden.put(PID_FLEXNET, "FlexNet");
+        PTYPES_S_hidden.put(PID_NETROM, "NET/ROM");
+        PTYPES_S_hidden.put(PID_NOLVL3, "No_LVL3");
+        PTYPES_S_hidden.put(PID_ESCAPE, "-escape-");
+    }
+
     /**
      * Callsign of the transmitting station (not of any intermediate digipeaters).
      */
@@ -84,6 +313,35 @@ public class AX25Frame implements Serializable, AX25FrameSource, Comparable<AX25
      */
     public byte ctl2;
     /**
+     * Byte array containing the higher-level protocol payload for I and UI frames.
+     */
+    public byte[] body;
+    /**
+     * Indicates whether 128-segment windowing is used for I frame connections. If this is false,
+     * the backwards-compatible 8-segment windowing is used.
+     */
+    public boolean mod128;
+    /**
+     * The time when this message was received in Java milliseconds since midnight, Jan 1 1970 UTC.
+     */
+    public long rcptTime;
+    /**
+     * The decoded APRS (or other protocol) message (if the AX25Frame contains a higher-level protocol). May be null.
+     */
+    public AX25Message parsedAX25Msg;
+    /**
+     * Indicate whether this is a command or a poll message, for AX.25 frame
+     * types that include a P/C bit.
+     */
+    boolean isCmd;
+
+    // unused UTYPE's: 0x04, 0x08, 0x20, 0x24, 0x28, 0x44, 0x48, 0x4C, 0x64, 0x68,
+    //  0x80, 0x88, 0x8C, 0xA0, 0xA4, 0xA8, 0xC0, 0xC4, 0xC8, 0xCC, 0xE4, 0xE8, 0xEC
+    /**
+     * Reference to the raw packet itself.
+     */
+    byte[] rawPacket;
+    /**
      * The one-byte code identifying how to interpret the body of I and UI frames.
      *
      * @see #PID_X25_PLP
@@ -103,40 +361,6 @@ public class AX25Frame implements Serializable, AX25FrameSource, Comparable<AX25
      * @see #PID_ESCAPE
      */
     private byte pid;
-    /**
-     * Byte array containing the higher-level protocol payload for I and UI frames.
-     */
-    public byte[] body;
-    /**
-     * Indicates whether 128-segment windowing is used for I frame connections. If this is false,
-     * the backwards-compatible 8-segment windowing is used.
-     */
-    public boolean mod128;
-    /**
-     * Indicate whether this is a command or a poll message, for AX.25 frame
-     * types that include a P/C bit.
-     */
-    boolean isCmd;
-    /**
-     * The time when this message was received in Java milliseconds since midnight, Jan 1 1970 UTC.
-     */
-    public long rcptTime;
-    /**
-     * The decoded APRS (or other protocol) message (if the AX25Frame contains a higher-level protocol). May be null.
-     */
-    public AX25Message parsedAX25Msg;
-
-    /**
-     * SerialVersionUID when rcptTime was of type java.org.ka2ddo.util.Date.
-     *
-     * @see #rcptTime
-     */
-    static final long previousSerialVersionUID = 4260042831169759L;
-
-    /**
-     * Reference to the raw packet itself.
-     */
-    byte[] rawPacket;
 
     /**
      * Create an empty AX25Frame initialized for a UI frame containing an APRS packet.
@@ -145,23 +369,6 @@ public class AX25Frame implements Serializable, AX25FrameSource, Comparable<AX25
         // assume APRS until explicitly changed
         ctl = (AX25Frame.FRAMETYPE_U | AX25Frame.UTYPE_UI);
         pid = PID_NOLVL3;
-    }
-
-    /**
-     * Get the frame PID - remember this is a byte so convert by & 0xFF to stick it in an int.
-     *
-     * @return
-     */
-    public byte getPid() {
-        return pid;
-    }
-
-    void setPid(byte pid) {
-        this.pid = pid;
-    }
-
-    public byte[] getRawPacket() {
-        return rawPacket;
     }
 
     /**
@@ -246,27 +453,162 @@ public class AX25Frame implements Serializable, AX25FrameSource, Comparable<AX25
     }
 
     /**
-     * The bitmask to extract the frametype bits from the ctl byte of the frame.
+     * Given a string name, get the numeric S-type value for that type of AX.25 frame.
      *
-     * @see #ctl
+     * @param sTypeName String name of frame type
+     * @return S-type numeric value, or -1 if no match found
      */
-    public static final int MASK_FRAMETYPE = 0x03;
+    public static int findSTypeByName(String sTypeName) {
+        int sType = STYPES_S.length - 1;
+        while (sType >= 0) {
+            if (sTypeName.equals(STYPES_S[sType])) {
+                break;
+            }
+            sType--;
+        }
+        return sType;
+    }
+
     /**
-     * String names for the different AX.25 frame types.
+     * Given a string name, get the numeric U-type value for that type of AX.25 frame.
+     *
+     * @param uTypeName String name of frame type
+     * @return U-type numeric value, or -1 if no match found
      */
-    private static final String[] FRAMETYPES_S = {"I", "S", "I", "U"};
+    public static int findUTypeByName(String uTypeName) {
+        int uType = UTYPES_S.length - 1;
+        while (uType >= 0) {
+            if (uTypeName.equals(UTYPES_S[uType])) {
+                break;
+            }
+            uType--;
+        }
+        return uType;
+    }
+
     /**
-     * Numeric code for information (I) frame type.
+     * Test if a callsign looks like a real callsign (at least one digit somewhere other than
+     * the last character, all letters uppercase). Note this will automatically strip off the SSID
+     * (if any) before testing. Note this is safe for empty strings, and will properly report them
+     * as not being a valid real-station callsign,
+     *
+     * @param callsign String callsign to test
+     * @return boolean true if callsign looks like real
      */
-    public static final int FRAMETYPE_I = 0;
+    public static boolean isRealCallsign(String callsign) {
+        boolean hasDigit = false;
+        boolean hasLetter = false;
+        boolean allUppercase = true;
+        int lastCharPos = callsign.length() - 1;
+        int hyphenPos = callsign.lastIndexOf('-', lastCharPos);
+        if (hyphenPos > 0 && hyphenPos < lastCharPos) {
+            lastCharPos = hyphenPos - 1;
+        } else /*if (-1 == hyphenPos)*/ {
+            hyphenPos = callsign.lastIndexOf(' ', lastCharPos); // handle possible Dstar callsigns in object names
+            if (hyphenPos > 0 && hyphenPos < lastCharPos) {
+                lastCharPos = hyphenPos - 1;
+                while (lastCharPos > 0 && callsign.charAt(lastCharPos) == ' ') {
+                    lastCharPos--;
+                }
+            }
+        }
+        if (lastCharPos >= 6 || lastCharPos <= 2) {
+            return false; // too long or short to be real
+        }
+        for (int i = lastCharPos; i >= 0; i--) {
+            char ch = callsign.charAt(i);
+            if (i < lastCharPos && ch >= '0' && ch <= '9') {
+                hasDigit = true;
+            } else if (ch >= 'A' && ch <= 'Z') {
+                hasLetter = true;
+            } else if (ch >= 'a' && ch <= 'z') {
+                allUppercase = false;
+            } else {
+                return false; // not a legal character for a callsign
+            }
+        }
+        return hasDigit && hasLetter && allUppercase;
+    }
+
     /**
-     * Numeric code for supervisory (S) frame type.
+     * Get the first actual digipeated digipeater station callsign in the digipeater sequence.
+     *
+     * @param digipeaters array of AX25Callsigns for digipeating a message
+     * @return String of first real callsign in sequence, or empty String if no actual digipeater callsign
      */
-    public static final int FRAMETYPE_S = 1;
+    public static String getFirstDigi(AX25Callsign[] digipeaters) {
+        String first = "";
+        if (digipeaters != null) {
+            for (AX25Callsign r : digipeaters) {
+                if (!r.hasBeenRepeated()) {
+                    break;
+                } else {
+                    // doesn't matter if this is a real traced callsign or an alias (with no trace before it)
+                    first = r.toString();
+                    break;
+                }
+            }
+        }
+        return first;
+    }
+
     /**
-     * Numeric code for unnumbered (U) frame type.
+     * Get the Nth digipeated digipeater station callsign in the digipeater sequence.
+     *
+     * @param digipeaters array of AX25Callsigns for digipeating a message
+     * @param index       zero-based index of digipeater to report
+     * @return String of callsign in sequence, or null if run out of repeated aliases
      */
-    public static final int FRAMETYPE_U = 3;
+    public static String getNthDigi(AX25Callsign[] digipeaters, int index) {
+        String digi = null;
+        if (digipeaters != null && digipeaters.length > index) {
+            AX25Callsign r = digipeaters[index];
+            if (r.hasBeenRepeated()) {
+                // doesn't matter if this is a real traced callsign or an alias (with no trace before it)
+                digi = r.toString();
+            }
+        }
+        return digi;
+    }
+
+    /**
+     * Find the last callsign through which a frame has been digipeated.
+     *
+     * @param digipeaters array of digipeater callsigns
+     * @return String callsign of last digipeater entry that is marked as used, or empty String if none used
+     */
+    public static String getLastDigi(AX25Callsign[] digipeaters) {
+        String last = "";
+        if (digipeaters != null) {
+            for (AX25Callsign r : digipeaters) {
+                if (!r.hasBeenRepeated()) {
+                    break;
+                } else {
+                    if (!DigipeatAliasCatalog.isRelayAStep(r)) {
+                        last = r.toString();
+                    }
+                }
+            }
+        }
+        return last;
+    }
+
+    /**
+     * Get the frame PID - remember this is a byte so convert by & 0xFF to stick it in an int.
+     *
+     * @return
+     */
+    public byte getPid() {
+        return pid;
+    }
+
+    void setPid(byte pid) {
+        this.pid = pid;
+    }
+
+    public byte[] getRawPacket() {
+        return rawPacket;
+    }
 
     /**
      * Generate a string describing the type of the frame.
@@ -391,50 +733,6 @@ public class AX25Frame implements Serializable, AX25FrameSource, Comparable<AX25
     }
 
     /**
-     * Bitmask to extract supervisory (S) frame subtype from the ctl byte.
-     *
-     * @see #ctl
-     */
-    public static final int MASK_STYPE = 0x0C;
-    /**
-     * Bit shift to get least significant bit of S frame subtype into least significant bit of integer.
-     */
-    public static final int SHIFT_STYPE = 2;
-
-    /**
-     * Unshifted S frame subtype for Receive Ready frame.
-     *
-     * @see #MASK_STYPE
-     */
-    public static final int STYPE_RR = 0x00;
-    /**
-     * Unshifted S frame subtype for Receive Not Ready frame.
-     *
-     * @see #MASK_STYPE
-     */
-    public static final int STYPE_RNR = 0x04;
-    /**
-     * Unshifted S frame subtype for Reject frame.
-     *
-     * @see #MASK_STYPE
-     */
-    public static final int STYPE_REJ = 0x08;
-    /**
-     * Unshifted S frame subtype for Selective Reject frame.
-     *
-     * @see #MASK_STYPE
-     */
-    public static final int STYPE_SREJ = 0x0C;
-
-    /**
-     * String names of supervisory (S) frame subtypes (indexed after shifting).
-     *
-     * @see #MASK_STYPE
-     * @see #SHIFT_STYPE
-     */
-    private static final String[] STYPES_S = {"RR", "RNR", "REJ", "SREJ"};
-
-    /**
      * Get the Supervisory frame subtype.
      *
      * @return S frame subtype (masked but not bit-shifted from its position in ctl bitmask)
@@ -448,23 +746,6 @@ public class AX25Frame implements Serializable, AX25FrameSource, Comparable<AX25
             return (ctl & MASK_STYPE);
         }
         throw new IllegalStateException("only S frames have SType");
-    }
-
-    /**
-     * Given a string name, get the numeric S-type value for that type of AX.25 frame.
-     *
-     * @param sTypeName String name of frame type
-     * @return S-type numeric value, or -1 if no match found
-     */
-    public static int findSTypeByName(String sTypeName) {
-        int sType = STYPES_S.length - 1;
-        while (sType >= 0) {
-            if (sTypeName.equals(STYPES_S[sType])) {
-                break;
-            }
-            sType--;
-        }
-        return sType;
     }
 
     /**
@@ -494,101 +775,6 @@ public class AX25Frame implements Serializable, AX25FrameSource, Comparable<AX25
     }
 
     /**
-     * Bitmask to extract unnumbered (U) frame subtype from the ctl byte.
-     *
-     * @see #ctl
-     */
-    public static final int MASK_UTYPE = 0xEC;
-    /**
-     * Bitmask to extract poll/final bit from unnumbered (U) frame ctl byte, mod 8 format.
-     *
-     * @see #ctl
-     */
-    public static final int MASK_U_P = 0x10;
-    /**
-     * Bitmask to extract poll/final bit from I/S frame 2nd ctl byte, mod 128 format.
-     *
-     * @see #ctl2
-     */
-    public static final int MASK_U_P128 = 0x01;
-    /**
-     * Bit shift to get least significant bit of U frame subtype into least significant bit of integer.
-     */
-    public static final int SHIFT_UTYPE = 2;
-
-    /**
-     * Unshifted U frame subtype for Unnumbered Information (UI).
-     */
-    public static final int UTYPE_UI = 0x00;
-    /**
-     * Unshifted U frame subtype for Disconnected Mode (DM).
-     */
-    public static final int UTYPE_DM = 0x0C;
-    /**
-     * Unshifted U frame subtype for Set Asynchronous Balanced Mode (SABM). Only allowed window sizing for AX.25 V2.0 stations.
-     */
-    public static final int UTYPE_SABM = 0x2C;
-    /**
-     * Unshifted U frame subtype for Disconnect (DISC).
-     */
-    public static final int UTYPE_DISC = 0x40;
-    /**
-     * Unshifted U frame subtype for Unnumbered Acknowledge (UA).
-     */
-    public static final int UTYPE_UA = 0x60;
-    /**
-     * Unshifted U frame subtype for Set Asynchronous Balanced Mode Extended (SABME). Only usable between AX.25 V2.2 stations.
-     *
-     * @since 2.2
-     */
-    public static final int UTYPE_SABME = 0x6C;
-    /**
-     * Unshifted U frame subtype for obsolete Frame Reject (FRMR).
-     *
-     * @deprecated 2.0
-     */
-    public static final int UTYPE_FRMR = 0x84;
-    /**
-     * Unshifted U frame subtype for Exchange Identification (XID).
-     */
-    public static final int UTYPE_XID = 0xAC;
-    /**
-     * Unshifted U frame subtype for Test (TEST).
-     */
-    public static final int UTYPE_TEST = 0xE0;
-
-    /**
-     * String names of unnumbered (U) frame subtypes (indexed after shifting).
-     *
-     * @see #MASK_UTYPE
-     * @see #SHIFT_UTYPE
-     */
-    private static final String[] UTYPES_S = {"UI", "?1", "?2", "DM", "?4", "?5", "?6", "?7", "?8", "?9", "?10", "SABM",
-            "?12", "?13", "?14", "?15", "DISC", "?17", "?18", "?19", "?20", "?21", "?22", "?23", "UA", "?25", "?26", "SABME", "?28", "?29", "?30", "?31",
-            "?32", "FRMR", "?34", "35?", "?36", "?37", "?38", "?39", "?40", "?41", "?42", "XID", "?44", "?45", "?46", "?47",
-            "?48", "?49", "?50", "?51", "?52", "?53", "?54", "?55", "TEST", "?57", "?58", "?59", "?60", "?61", "?62", "?63"};
-
-    // unused UTYPE's: 0x04, 0x08, 0x20, 0x24, 0x28, 0x44, 0x48, 0x4C, 0x64, 0x68,
-    //  0x80, 0x88, 0x8C, 0xA0, 0xA4, 0xA8, 0xC0, 0xC4, 0xC8, 0xCC, 0xE4, 0xE8, 0xEC
-
-    /**
-     * Given a string name, get the numeric U-type value for that type of AX.25 frame.
-     *
-     * @param uTypeName String name of frame type
-     * @return U-type numeric value, or -1 if no match found
-     */
-    public static int findUTypeByName(String uTypeName) {
-        int uType = UTYPES_S.length - 1;
-        while (uType >= 0) {
-            if (uTypeName.equals(UTYPES_S[uType])) {
-                break;
-            }
-            uType--;
-        }
-        return uType;
-    }
-
-    /**
      * Get Unordered frame subtype.
      *
      * @return U frame subtype (masked but not bit-shifted from its position in ctl bitmask)
@@ -608,99 +794,6 @@ public class AX25Frame implements Serializable, AX25FrameSource, Comparable<AX25
         }
         throw new IllegalStateException("only U frames have UType");
     }
-
-    /**
-     * Hashmap of Information (I) or Unnumbered Information (UI) frame protocol ID to protocol name strings.
-     *
-     * @see #pid
-     */
-    private static final HashMap<Byte, String> PTYPES_S_hidden = new HashMap<Byte, String>();
-
-    /**
-     * Protocol ID for CCITT X.25 PLP (also used by the ROSE network).
-     */
-    public static final byte PID_X25_PLP = (byte) 0x01;
-    /**
-     * Protocol ID for Van Jacobson compressed TCP/IP packet, per RFC 1144.
-     */
-    public static final byte PID_VJC_TCPIP = (byte) 0x06;
-    /**
-     * Protocol ID for Van Jacobson uncompressed TCP/IP packet, per RFC 1144.
-     */
-    public static final byte PID_VJUC_TCPIP = (byte) 0x07;
-    /**
-     * Protocol ID for AX.25 segmentation fragment.
-     */
-    public static final byte PID_SEG_FRAG = (byte) 0x08;
-    /**
-     * Protocol ID for OpenTRAC.
-     */
-    public static final byte PID_OPENTRAC = (byte) 0x77;
-    /**
-     * Protocol ID for TEXNET datagram.
-     */
-    public static final byte PID_TEXNET = (byte) 0xC3;
-    /**
-     * Protocol ID for Link Quality Protocol.
-     */
-    public static final byte PID_LQP = (byte) 0xC4;
-    /**
-     * Protocol ID for Appletalk.
-     */
-    public static final byte PID_ATALK = (byte) 0xCA;
-    /**
-     * Protocol ID for Appletalk Address Resolution Protocol (ARP).
-     */
-    public static final byte PID_AARP = (byte) 0xCB;
-    /**
-     * Protocol ID for ARPA Internet Protocol.
-     */
-    public static final byte PID_IP = (byte) 0xCC;
-    /**
-     * Protocol ID for ARPA Internet Address Resolution Protocol (ARP).
-     */
-    public static final byte PID_IARP = (byte) 0xCD;
-    /**
-     * Protocol ID for FlexNet.
-     */
-    public static final byte PID_FLEXNET = (byte) 0xCE;
-    /**
-     * Protocol ID for NET/ROM.
-     */
-    public static final byte PID_NETROM = (byte) 0xCF;
-    /**
-     * Protocol ID for no level 3 protocol (also used for APRS).
-     */
-    public static final byte PID_NOLVL3 = (byte) 0xF0;
-    /**
-     * Protocol ID for escape code indicating second byte of PID (not supported).
-     */
-    public static final byte PID_ESCAPE = (byte) 0xFF;
-
-    static {
-        PTYPES_S_hidden.put(PID_X25_PLP, "X.25-PLP");
-        PTYPES_S_hidden.put(PID_VJC_TCPIP, "VJC-TCP/IP");
-        PTYPES_S_hidden.put(PID_VJUC_TCPIP, "VJuc-TCP/IP");
-        PTYPES_S_hidden.put(PID_SEG_FRAG, "seg_frag");
-        PTYPES_S_hidden.put(PID_OPENTRAC, "OpenTRAC");
-        PTYPES_S_hidden.put(PID_TEXNET, "TEXNET");
-        PTYPES_S_hidden.put(PID_LQP, "LQP");
-        PTYPES_S_hidden.put(PID_ATALK, "Appletalk");
-        PTYPES_S_hidden.put(PID_AARP, "Appletalk-ARP");
-        PTYPES_S_hidden.put(PID_IP, "IP");
-        PTYPES_S_hidden.put(PID_IARP, "IP-ARP");
-        PTYPES_S_hidden.put(PID_FLEXNET, "FlexNet");
-        PTYPES_S_hidden.put(PID_NETROM, "NET/ROM");
-        PTYPES_S_hidden.put(PID_NOLVL3, "No_LVL3");
-        PTYPES_S_hidden.put(PID_ESCAPE, "-escape-");
-    }
-
-    /**
-     * Hashmap of Information (I) or Unnumbered Information (UI) frame protocol ID to protocol name strings.
-     *
-     * @see #pid
-     */
-    public static final Map<Byte, String> PTYPES_S = Collections.unmodifiableMap(PTYPES_S_hidden);
 
     /**
      * Transmit this AX25Frame to an output byte stream.
@@ -822,113 +915,6 @@ public class AX25Frame implements Serializable, AX25FrameSource, Comparable<AX25
      */
     public Connector getConnector() {
         return null;
-    }
-
-    /**
-     * Test if a callsign looks like a real callsign (at least one digit somewhere other than
-     * the last character, all letters uppercase). Note this will automatically strip off the SSID
-     * (if any) before testing. Note this is safe for empty strings, and will properly report them
-     * as not being a valid real-station callsign,
-     *
-     * @param callsign String callsign to test
-     * @return boolean true if callsign looks like real
-     */
-    public static boolean isRealCallsign(String callsign) {
-        boolean hasDigit = false;
-        boolean hasLetter = false;
-        boolean allUppercase = true;
-        int lastCharPos = callsign.length() - 1;
-        int hyphenPos = callsign.lastIndexOf('-', lastCharPos);
-        if (hyphenPos > 0 && hyphenPos < lastCharPos) {
-            lastCharPos = hyphenPos - 1;
-        } else /*if (-1 == hyphenPos)*/ {
-            hyphenPos = callsign.lastIndexOf(' ', lastCharPos); // handle possible Dstar callsigns in object names
-            if (hyphenPos > 0 && hyphenPos < lastCharPos) {
-                lastCharPos = hyphenPos - 1;
-                while (lastCharPos > 0 && callsign.charAt(lastCharPos) == ' ') {
-                    lastCharPos--;
-                }
-            }
-        }
-        if (lastCharPos >= 6 || lastCharPos <= 2) {
-            return false; // too long or short to be real
-        }
-        for (int i = lastCharPos; i >= 0; i--) {
-            char ch = callsign.charAt(i);
-            if (i < lastCharPos && ch >= '0' && ch <= '9') {
-                hasDigit = true;
-            } else if (ch >= 'A' && ch <= 'Z') {
-                hasLetter = true;
-            } else if (ch >= 'a' && ch <= 'z') {
-                allUppercase = false;
-            } else {
-                return false; // not a legal character for a callsign
-            }
-        }
-        return hasDigit && hasLetter && allUppercase;
-    }
-
-    /**
-     * Get the first actual digipeated digipeater station callsign in the digipeater sequence.
-     *
-     * @param digipeaters array of AX25Callsigns for digipeating a message
-     * @return String of first real callsign in sequence, or empty String if no actual digipeater callsign
-     */
-    public static String getFirstDigi(AX25Callsign[] digipeaters) {
-        String first = "";
-        if (digipeaters != null) {
-            for (AX25Callsign r : digipeaters) {
-                if (!r.hasBeenRepeated()) {
-                    break;
-                } else {
-                    // doesn't matter if this is a real traced callsign or an alias (with no trace before it)
-                    first = r.toString();
-                    break;
-                }
-            }
-        }
-        return first;
-    }
-
-    /**
-     * Get the Nth digipeated digipeater station callsign in the digipeater sequence.
-     *
-     * @param digipeaters array of AX25Callsigns for digipeating a message
-     * @param index       zero-based index of digipeater to report
-     * @return String of callsign in sequence, or null if run out of repeated aliases
-     */
-    public static String getNthDigi(AX25Callsign[] digipeaters, int index) {
-        String digi = null;
-        if (digipeaters != null && digipeaters.length > index) {
-            AX25Callsign r = digipeaters[index];
-            if (r.hasBeenRepeated()) {
-                // doesn't matter if this is a real traced callsign or an alias (with no trace before it)
-                digi = r.toString();
-            }
-        }
-        return digi;
-    }
-
-    /**
-     * Find the last callsign through which a frame has been digipeated.
-     *
-     * @param digipeaters array of digipeater callsigns
-     * @return String callsign of last digipeater entry that is marked as used, or empty String if none used
-     */
-    public static String getLastDigi(AX25Callsign[] digipeaters) {
-        String last = "";
-        if (digipeaters != null) {
-            for (AX25Callsign r : digipeaters) {
-                if (!r.hasBeenRepeated()) {
-                    break;
-                } else {
-                    if (!DigipeatAliasCatalog.isRelayAStep(r)) {
-                        last = r.toString();
-                    }
-                }
-            }
-        }
-        return last;
     }
 
     /**

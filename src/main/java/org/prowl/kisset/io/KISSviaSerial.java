@@ -17,32 +17,27 @@ import java.util.List;
 
 /**
  * Implements a KISS type connection with a serial port device
- *
  */
 @InterfaceDriver(name = "KISS via Serial", description = "KISS over Serial Port", uiName = "fx/SerialPortConnectionPreference.fxml")
 public class KISSviaSerial extends Interface {
 
     private static final Log LOG = LogFactory.getLog("KISSviaSerial");
-
-    private String port;
-    private int dataBits;
-    private int stopBits;
-    private String parity;
-    private int serialBaudRate;
-    private String defaultOutgoingCallsign;
-
-    private int pacLen;
-    private int baudRate;
-    private int maxFrames;
-    private int frequency;
-    private int retries;
-
+    public String uuid;
+    private final String port;
+    private final int dataBits;
+    private final int stopBits;
+    private final String parity;
+    private final int serialBaudRate;
+    private final String defaultOutgoingCallsign;
+    private final int pacLen;
+    private final int baudRate;
+    private final int maxFrames;
+    private final int frequency;
+    private final int retries;
     private BasicTransmittingConnector connector;
-    private HierarchicalConfiguration config;
+    private final HierarchicalConfiguration config;
     private boolean running;
     private SerialPort serialPort = null; // The chosen port form our enumerated list.
-
-    public String uuid;
 
     public KISSviaSerial(HierarchicalConfiguration config) {
         this.config = config;
@@ -78,6 +73,13 @@ public class KISSviaSerial extends Interface {
             }
         }
 
+    }
+
+    public static List<SerialPort> getListOfSerialPorts() {
+        // Rather than just use the port descriptor, we'll iterate through all the ports so we can at least see
+        // what the system has available, so the user is not completely in the dark whe looking at logs.
+        SerialPort[] ports = SerialPort.getCommPorts();
+        return Arrays.asList(ports);
     }
 
     @Override
@@ -175,7 +177,6 @@ public class KISSviaSerial extends Interface {
 
     }
 
-
     /**
      * A connection has been accepted therefore we will set it up and also a listener to handle state changes
      *
@@ -218,7 +219,6 @@ public class KISSviaSerial extends Interface {
         config.setProperty("uuid", uuid);
     }
 
-
     @Override
     public boolean connect(String to, String from, ConnectionEstablishmentListener connectionEstablishmentListener) throws IOException {
 
@@ -233,21 +233,12 @@ public class KISSviaSerial extends Interface {
         running = false;
     }
 
-
     @Override
     public String toString() {
         if (serialPort == null) {
             return getClass().getSimpleName() + " (serial port not found!)";
         }
         return getClass().getSimpleName() + " (" + serialPort.toString() + "/" + serialPort.getSystemPortName() + ")";
-    }
-
-
-    public static List<SerialPort> getListOfSerialPorts() {
-        // Rather than just use the port descriptor, we'll iterate through all the ports so we can at least see
-        // what the system has available, so the user is not completely in the dark whe looking at logs.
-        SerialPort[] ports = SerialPort.getCommPorts();
-        return Arrays.asList(ports);
     }
 
 }

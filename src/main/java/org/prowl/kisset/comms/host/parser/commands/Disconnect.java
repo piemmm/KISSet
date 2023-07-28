@@ -1,7 +1,5 @@
 package org.prowl.kisset.comms.host.parser.commands;
 
-import org.prowl.kisset.KISSet;
-import org.prowl.kisset.Messages;
 import org.prowl.kisset.annotations.TNCCommand;
 import org.prowl.kisset.comms.host.parser.Mode;
 
@@ -17,9 +15,7 @@ public class Disconnect extends Command {
         }
 
 
-
         commandParser.closeDivertStream();
-
 
 
         write(CR);

@@ -1,12 +1,8 @@
 package org.prowl.kisset.io;
 
-import org.prowl.kisset.annotations.InterfaceDriver;
 import org.prowl.kisset.ax25.ConnectionEstablishmentListener;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 public abstract class Interface {
 

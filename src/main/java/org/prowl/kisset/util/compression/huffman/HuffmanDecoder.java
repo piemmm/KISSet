@@ -38,15 +38,14 @@ public final class HuffmanDecoder {
 
     /*---- Fields ----*/
 
-    // The underlying bit input stream (not null).
-    private BitInputStream input;
-
     /**
      * The code tree to use in the next {@link#read()} operation. Must be given a non-{@code null}
      * value before calling read(). The tree can be changed after each symbol decoded, as long
      * as the encoder and decoder have the same tree at the same point in the code stream.
      */
     public CodeTree codeTree;
+    // The underlying bit input stream (not null).
+    private final BitInputStream input;
 
 
 

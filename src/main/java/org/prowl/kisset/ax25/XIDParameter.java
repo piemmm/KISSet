@@ -93,6 +93,26 @@ public class XIDParameter {
     }
 
     /**
+     * Read an XIDParameter from a byte stream.
+     *
+     * @param dis DataInput to read the parameter from
+     * @return decoded XIDParameter element
+     * @throws IOException if read fails for any reason
+     */
+    public static XIDParameter read(DataInput dis) throws IOException {
+        XIDParameter p = new XIDParameter();
+        p.paramIdentifier = dis.readByte();
+        int len = dis.readUnsignedByte();
+        if (len == 0) {
+            p.paramValue = EMPTY_VALUE;
+        } else {
+            p.paramValue = new byte[len];
+            dis.readFully(p.paramValue);
+        }
+        return p;
+    }
+
+    /**
      * Get the length of the parameter's value.
      *
      * @return length of value in octets (bytes)
@@ -117,26 +137,6 @@ public class XIDParameter {
         if (length != 0) {
             dos.write(paramValue);
         }
-    }
-
-    /**
-     * Read an XIDParameter from a byte stream.
-     *
-     * @param dis DataInput to read the parameter from
-     * @return decoded XIDParameter element
-     * @throws IOException if read fails for any reason
-     */
-    public static XIDParameter read(DataInput dis) throws IOException {
-        XIDParameter p = new XIDParameter();
-        p.paramIdentifier = dis.readByte();
-        int len = dis.readUnsignedByte();
-        if (len == 0) {
-            p.paramValue = EMPTY_VALUE;
-        } else {
-            p.paramValue = new byte[len];
-            dis.readFully(p.paramValue);
-        }
-        return p;
     }
 
     /**

@@ -8,7 +8,9 @@ import java.lang.annotation.RetentionPolicy;
 public @interface InterfaceDriver {
 
     String name();
+
     String description();
+
     String uiName();
 
 }

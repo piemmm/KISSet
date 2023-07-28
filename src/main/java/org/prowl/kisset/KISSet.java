@@ -7,8 +7,8 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.prowl.kisset.fx.KISSetController;
 import org.prowl.kisset.config.Config;
+import org.prowl.kisset.fx.KISSetController;
 import org.prowl.kisset.fx.PreferencesController;
 import org.prowl.kisset.io.InterfaceHandler;
 
@@ -17,15 +17,15 @@ import java.util.Locale;
 
 public class KISSet extends Application {
 
-    public static KISSet INSTANCE;
-
     private static final Log LOG = LogFactory.getLog("KISSet");
-
+    public static KISSet INSTANCE;
+    public String myCall = "N0CALL";
     private Config configuration;
-
     private InterfaceHandler interfaceHandler;
 
-    public String myCall = "N0CALL";
+    public static void main(String[] args) {
+        launch();
+    }
 
     @Override
     public void start(Stage stage) throws IOException {
@@ -89,13 +89,9 @@ public class KISSet extends Application {
             stage.setScene(scene);
             stage.show();
             controller.setup();
-        } catch(Throwable e) {
+        } catch (Throwable e) {
             LOG.error(e.getMessage(), e);
         }
-    }
-
-    public static void main(String[] args) {
-        launch();
     }
 
     @Override
@@ -117,6 +113,7 @@ public class KISSet extends Application {
     public InterfaceHandler getInterfaceHandler() {
         return interfaceHandler;
     }
+
     /**
      * Time to shut down
      */

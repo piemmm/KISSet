@@ -11,12 +11,10 @@ import javafx.scene.control.cell.ComboBoxListCell;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 import org.apache.commons.configuration.HierarchicalConfiguration;
-import org.apache.commons.configuration.tree.ConfigurationNode;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.prowl.kisset.KISSet;
 import org.prowl.kisset.annotations.InterfaceDriver;
-import org.prowl.kisset.config.Config;
 import org.prowl.kisset.io.Interface;
 import org.reflections.Reflections;
 
@@ -29,17 +27,20 @@ import java.util.UUID;
 public class ConnectionPreferenceHost {
 
 
+    private static final Log LOG = LogFactory.getLog("ConnectionPreferenceHost");
+    private static final Set<Class<?>> ALL_TYPES = new Reflections("org.prowl.kisset.io").getTypesAnnotatedWith(InterfaceDriver.class);
     @FXML
     private ComboBox interfaceType;
-
     @FXML
     private Pane connectionContent;
-
     @FXML
     private Button okButton;
-
     @FXML
     private Button cancelButton;
+    private PreferencesController preferencesController;
+    private HierarchicalConfiguration configInterfaceNode;
+    private ConnectionPreferenceInterface connectionPreferenceClient;
+    private Class currentInterfaceClass;
 
     @FXML
     private void onInterfaceTypeSelected(ActionEvent event) {
@@ -55,28 +56,16 @@ public class ConnectionPreferenceHost {
         preferencesController.updateList(); // lazy.
 
         // Close the window
-        ((Stage)okButton.getScene().getWindow()).close();
+        ((Stage) okButton.getScene().getWindow()).close();
 
     }
 
     @FXML
     private void onCancelAction() {
         // Just close the window - no need to do anything else
-        ((Stage)cancelButton.getScene().getWindow()).close();
+        ((Stage) cancelButton.getScene().getWindow()).close();
 
     }
-
-    private static final Log LOG = LogFactory.getLog("ConnectionPreferenceHost");
-
-    private static final Set<Class<?>> ALL_TYPES = new Reflections("org.prowl.kisset.io").getTypesAnnotatedWith(InterfaceDriver.class);
-
-    private PreferencesController preferencesController;
-
-    private HierarchicalConfiguration configInterfaceNode;
-
-    private ConnectionPreferenceInterface connectionPreferenceClient;
-
-    private Class currentInterfaceClass;
 
     /**
      * Setup the controls - if null is passed in then this a new interface.
@@ -94,7 +83,7 @@ public class ConnectionPreferenceHost {
             List<HierarchicalConfiguration> interfaceList = interfacesNode.configurationsAt("interface");
             // Get the one with the correct UUID
             for (HierarchicalConfiguration interfaceNode : interfaceList) {
-                if (interfaceNode.getString("uuid").equals(interfaceToEdit.getUUID().toString())) {
+                if (interfaceNode.getString("uuid").equals(interfaceToEdit.getUUID())) {
                     configInterfaceNode = interfaceNode;
                     break;
                 }
@@ -173,7 +162,6 @@ public class ConnectionPreferenceHost {
         } catch (IOException e) {
             LOG.error(e.getMessage(), e);
         }
-
 
 
     }

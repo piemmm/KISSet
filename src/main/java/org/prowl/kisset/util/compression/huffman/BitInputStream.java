@@ -43,7 +43,7 @@ public final class BitInputStream implements AutoCloseable {
     /*---- Fields ----*/
 
     // The underlying byte stream to read from (not null).
-    private InputStream input;
+    private final InputStream input;
 
     // Either in the range [0x00, 0xFF] if bits are available, or -1 if end of stream is reached.
     private int currentByte;

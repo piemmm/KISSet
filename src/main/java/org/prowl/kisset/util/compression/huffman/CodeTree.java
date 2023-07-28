@@ -74,7 +74,7 @@ public final class CodeTree {
 
     // Stores the code for each symbol, or null if the symbol has no code.
     // For example, if symbol 5 has code 10011, then codes.get(5) is the list [1,0,0,1,1].
-    private List<List<Integer>> codes;
+    private final List<List<Integer>> codes;
 
 
     /**
@@ -98,11 +98,25 @@ public final class CodeTree {
         buildCodeList(root, new ArrayList<Integer>());  // Fill 'codes' with appropriate data
     }
 
+    // Recursive helper function for toString()
+    private static void toString(String prefix, Node node, StringBuilder sb) {
+        if (node instanceof InternalNode internalNode) {
+            toString(prefix + "0", internalNode.leftChild, sb);
+            toString(prefix + "1", internalNode.rightChild, sb);
+        } else if (node instanceof Leaf) {
+            sb.append(String.format("Code %s: Symbol %d%n", prefix, ((Leaf) node).symbol));
+        } else {
+            throw new AssertionError("Illegal node type");
+        }
+    }
+
+
+
+    /*---- Various methods ----*/
 
     // Recursive helper function for the constructor
     private void buildCodeList(Node node, List<Integer> prefix) {
-        if (node instanceof InternalNode) {
-            InternalNode internalNode = (InternalNode) node;
+        if (node instanceof InternalNode internalNode) {
 
             prefix.add(0);
             buildCodeList(internalNode.leftChild, prefix);
@@ -112,8 +126,7 @@ public final class CodeTree {
             buildCodeList(internalNode.rightChild, prefix);
             prefix.remove(prefix.size() - 1);
 
-        } else if (node instanceof Leaf) {
-            Leaf leaf = (Leaf) node;
+        } else if (node instanceof Leaf leaf) {
             if (leaf.symbol >= codes.size())
                 throw new IllegalArgumentException("Symbol exceeds symbol limit");
             if (codes.get(leaf.symbol) != null)
@@ -124,10 +137,6 @@ public final class CodeTree {
             throw new AssertionError("Illegal node type");
         }
     }
-
-
-
-    /*---- Various methods ----*/
 
     /**
      * Returns the Huffman code for the specified symbol, which is a list of 0s and 1s.
@@ -146,7 +155,6 @@ public final class CodeTree {
             return codes.get(symbol);
     }
 
-
     /**
      * Returns a string representation of this code tree,
      * useful for debugging only, and the format is subject to change.
@@ -157,20 +165,6 @@ public final class CodeTree {
         StringBuilder sb = new StringBuilder();
         toString("", root, sb);
         return sb.toString();
-    }
-
-
-    // Recursive helper function for toString()
-    private static void toString(String prefix, Node node, StringBuilder sb) {
-        if (node instanceof InternalNode) {
-            InternalNode internalNode = (InternalNode) node;
-            toString(prefix + "0", internalNode.leftChild, sb);
-            toString(prefix + "1", internalNode.rightChild, sb);
-        } else if (node instanceof Leaf) {
-            sb.append(String.format("Code %s: Symbol %d%n", prefix, ((Leaf) node).symbol));
-        } else {
-            throw new AssertionError("Illegal node type");
-        }
     }
 
 }

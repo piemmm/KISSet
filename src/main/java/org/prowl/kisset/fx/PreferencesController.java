@@ -16,7 +16,6 @@ import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.prowl.kisset.KISSet;
-import org.prowl.kisset.annotations.InterfaceDriver;
 import org.prowl.kisset.config.Config;
 import org.prowl.kisset.io.Interface;
 
@@ -24,34 +23,30 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 public class PreferencesController {
 
+    private static final Log LOG = LogFactory.getLog("PreferencesController");
     @FXML
     private Button cancelButton;
-
     @FXML
     private Button saveButton;
-
     @FXML
     private Button addInterfaceButton;
-
     @FXML
     private Button removeInterfaceButton;
-
     @FXML
     private Button editInterfaceButton;
-
     @FXML
     private Label explanatoryText;
-
     @FXML
     private ListView interfaceList;
+    private final List<Interface> interfaces = new ArrayList<>();
+    private Config config;
 
     @FXML
     public void onCancelButtonClicked() {
-        ((Stage)cancelButton.getScene().getWindow()).close();
+        ((Stage) cancelButton.getScene().getWindow()).close();
     }
 
     @FXML
@@ -63,11 +58,12 @@ public class PreferencesController {
         KISSet.INSTANCE.getConfig().loadConfig();
 
         // Probably post a configChanged event here.
-        ((Stage)saveButton.getScene().getWindow()).close();
+        ((Stage) saveButton.getScene().getWindow()).close();
     }
 
     /**
      * Return the configuration that we are modifying.
+     *
      * @return
      */
     Config getPreferencesConfiguration() {
@@ -89,15 +85,7 @@ public class PreferencesController {
         showAddInterfaceScreen((Interface) interfaceList.getSelectionModel().getSelectedItem());
     }
 
-
-
-    private static final Log LOG = LogFactory.getLog("PreferencesController");
-
-    private List<Interface> interfaces = new ArrayList<>();
-
-    private Config config;
-
-    public void setup( ) {
+    public void setup() {
 
         config = new Config(); // Load a new config we can modify without comitting.
 
@@ -130,7 +118,7 @@ public class PreferencesController {
                 Class<?> interfaceClass = Class.forName(className);
                 Constructor<?> constructor = interfaceClass.getConstructor(HierarchicalConfiguration.class);
                 Interface interfaceInstance = (Interface) constructor.newInstance(interfaceConfig);
-             //   Interface interfaceInstance = (Interface) interfaceClass.newInstance();
+                //   Interface interfaceInstance = (Interface) interfaceClass.newInstance();
                 interfaces.add(interfaceInstance);
             } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | NoSuchMethodException |
                      InvocationTargetException e) {
@@ -156,7 +144,6 @@ public class PreferencesController {
     }
 
 
-
     public void showAddInterfaceScreen(Interface interfaceToEditOrNull) {
         try {
             // Create the GUI.
@@ -169,7 +156,7 @@ public class PreferencesController {
             stage.setScene(scene);
             stage.show();
             controller.setup(interfaceToEditOrNull, this);
-        } catch(Throwable e) {
+        } catch (Throwable e) {
             LOG.error(e.getMessage(), e);
         }
     }
@@ -179,19 +166,19 @@ public class PreferencesController {
         interfaceList.getItems().remove(interfaceToRemove);
 
         String uuid = interfaceToRemove.getUUID();
-        LOG.info("uuid: "+ uuid);
+        LOG.info("uuid: " + uuid);
 
         HierarchicalConfiguration interfacesNode = config.getConfig("interfaces");
-            // Get a list of all interfaces
-            List<HierarchicalConfiguration> interfaceList = interfacesNode.configurationsAt("interface");
-            // Get the one with the correct UUID
-            for (HierarchicalConfiguration interfaceNode : interfaceList) {
-                if (interfaceNode.getString("uuid").equals(uuid)) {
-                       // Remove the interface node from the interfaces node.
-                    config.getConfig("interfaces").getRootNode().removeChild(interfaceNode.getRootNode());
-                    break;
-                }
+        // Get a list of all interfaces
+        List<HierarchicalConfiguration> interfaceList = interfacesNode.configurationsAt("interface");
+        // Get the one with the correct UUID
+        for (HierarchicalConfiguration interfaceNode : interfaceList) {
+            if (interfaceNode.getString("uuid").equals(uuid)) {
+                // Remove the interface node from the interfaces node.
+                config.getConfig("interfaces").getRootNode().removeChild(interfaceNode.getRootNode());
+                break;
             }
+        }
 //
 
 

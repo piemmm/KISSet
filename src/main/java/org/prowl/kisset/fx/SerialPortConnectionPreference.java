@@ -13,11 +13,14 @@ import java.util.List;
 
 public class SerialPortConnectionPreference implements ConnectionPreferenceInterface {
 
+    // A list of common baud rates
+    private static final Integer[] BAUD_RATES = {300, 600, 1200, 2400, 4800, 9600, 19200, 38400, 57600, 115200};
     @FXML
     private ComboBox<SerialPort> serialPortComboBox;
-
     @FXML
     private ComboBox<Integer> baudRateComboBox;
+    private PreferencesController preferencesController;
+    private HierarchicalConfiguration configInterfaceNode;
 
     @FXML
     private void serialPortChanged() {
@@ -28,12 +31,6 @@ public class SerialPortConnectionPreference implements ConnectionPreferenceInter
     private void baudRateChanged() {
 
     }
-
-    // A list of common baud rates
-    private static final Integer[] BAUD_RATES = {300, 600, 1200, 2400, 4800, 9600, 19200, 38400, 57600, 115200};
-
-    private PreferencesController preferencesController;
-    private HierarchicalConfiguration configInterfaceNode;
 
     @Override
     public void init(HierarchicalConfiguration configInterfaceNode, PreferencesController preferencesController) {
@@ -53,7 +50,7 @@ public class SerialPortConnectionPreference implements ConnectionPreferenceInter
             public void updateItem(SerialPort item, boolean empty) {
                 super.updateItem(item, empty);
                 if (item != null) {
-                    String name = item.toString() + " (" + item.getSystemPortPath() + ")";
+                    String name = item + " (" + item.getSystemPortPath() + ")";
                     setText(name);
                 }
             }
@@ -63,7 +60,7 @@ public class SerialPortConnectionPreference implements ConnectionPreferenceInter
             public void updateItem(SerialPort item, boolean empty) {
                 super.updateItem(item, empty);
                 if (item != null) {
-                    String name = item.toString() + " (" + item.getSystemPortPath() + ")";
+                    String name = item + " (" + item.getSystemPortPath() + ")";
                     setText(name);
                 }
             }
@@ -85,13 +82,13 @@ public class SerialPortConnectionPreference implements ConnectionPreferenceInter
                 }
             }
         }
-        Integer baudRate = configInterfaceNode.getInteger("baudRate",9600);
+        Integer baudRate = configInterfaceNode.getInteger("baudRate", 9600);
         baudRateComboBox.getSelectionModel().select(baudRate);
     }
 
     @Override
     public void applyToConfig(HierarchicalConfiguration configuration) {
-        SerialPort serialPort = (SerialPort) serialPortComboBox.getSelectionModel().getSelectedItem();
+        SerialPort serialPort = serialPortComboBox.getSelectionModel().getSelectedItem();
         configuration.setProperty("serialPort", serialPort.getSystemPortPath());
         configuration.setProperty("baudRate", baudRateComboBox.getSelectionModel().getSelectedItem().intValue());
     }
@@ -101,10 +98,7 @@ public class SerialPortConnectionPreference implements ConnectionPreferenceInter
         if (serialPortComboBox.getSelectionModel().getSelectedItem() == null) {
             return false;
         }
-        if (baudRateComboBox.getSelectionModel().getSelectedItem() == null) {
-            return false;
-        }
-        return true;
+        return baudRateComboBox.getSelectionModel().getSelectedItem() != null;
     }
 
 }

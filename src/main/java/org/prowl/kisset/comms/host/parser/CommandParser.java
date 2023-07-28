@@ -15,17 +15,13 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.zip.DeflaterOutputStream;
 
 public class CommandParser {
-    private static final Log LOG = LogFactory.getLog("CommandParser");
-
     // The end character for the TNC prompt
     public static final String PROMPT = ":";
-
     // Carriage return
     public static final String CR = "\r\n";
-
+    private static final Log LOG = LogFactory.getLog("CommandParser");
     // Commands that are available
     private static final Set<Class<?>> ALL_COMMANDS = new Reflections("org.prowl.kisset.comms.host.parser.commands").getTypesAnnotatedWith(TNCCommand.class);
 
@@ -34,14 +30,11 @@ public class CommandParser {
 
     // Client we are parsing for
     private final TNCHost tncHost;
-
-    // Default to command mode.
-    private Mode mode = Mode.CMD;
-
-    private OutputStream divertStream;
-
     // Stack of modes so we can go back to the previous mode from any command.
     protected List<Mode> modeStack = new ArrayList<>();
+    // Default to command mode.
+    private Mode mode = Mode.CMD;
+    private OutputStream divertStream;
 
     public CommandParser(TNCHost tncHost) {
         this.tncHost = tncHost;
@@ -58,9 +51,8 @@ public class CommandParser {
         for (Class<?> cl : ALL_COMMANDS) {
             try {
                 Object instance = cl.getDeclaredConstructor(new Class[0]).newInstance();
-                if (instance instanceof Command) {
+                if (instance instanceof Command command) {
                     // Setup the command
-                    Command command = (Command) instance;
                     command.setClient(tncHost, this);
                     commands.add(command);
                 } else {
@@ -116,7 +108,7 @@ public class CommandParser {
                 }
 
             }
-        } catch(Throwable e) {
+        } catch (Throwable e) {
             LOG.error(e.getMessage(), e);
             write("*** Error: " + e.getMessage() + CR);
 
@@ -146,12 +138,12 @@ public class CommandParser {
         }
     }
 
-    public void setMode(Mode mode) {
-        this.mode = mode;
-    }
-
     public Mode getMode() {
         return mode;
+    }
+
+    public void setMode(Mode mode) {
+        this.mode = mode;
     }
 
     public void unknownCommand() throws IOException {

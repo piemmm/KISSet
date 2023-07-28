@@ -26,13 +26,16 @@ import java.util.prefs.Preferences;
  * This class manages the list of digipeat aliases recognized by YAAC.
  */
 public class DigipeatAliasCatalog implements Iterable<DigipeatAliasRecord> {
-    private final ArrayList<DigipeatAliasRecord> aliasList = new ArrayList<DigipeatAliasRecord>();
     private static final DigipeatAliasRecord[] DEFAULT_DIGIPEAT_ALIASES = {
             new DigipeatAliasRecord("WIDE1", "true,false,true"),
             new DigipeatAliasRecord("WIDE2", "true,false,true"),
             new DigipeatAliasRecord("TEMP1", "true,true,false")
     };
     private static final DigipeatAliasCatalog instance = new DigipeatAliasCatalog();
+    private final ArrayList<DigipeatAliasRecord> aliasList = new ArrayList<DigipeatAliasRecord>();
+
+    private DigipeatAliasCatalog() {
+    }
 
     /**
      * Get a reference to the singleton DigipeatAliasCatalog.
@@ -41,9 +44,6 @@ public class DigipeatAliasCatalog implements Iterable<DigipeatAliasRecord> {
      */
     public static DigipeatAliasCatalog getInstance() {
         return instance;
-    }
-
-    private DigipeatAliasCatalog() {
     }
 
     /**
@@ -56,6 +56,34 @@ public class DigipeatAliasCatalog implements Iterable<DigipeatAliasRecord> {
             DigipeatAliasCatalog.getInstance().addRow(dar);
             dar.writeToPreferences(aliasNode);
         }
+    }
+
+    /**
+     * Test if this callsign looks like a digipeat New-N alias.
+     *
+     * @param relay digipeater AX25Callsign to test
+     * @return boolean true if it looks like a New-N alias or other known alias
+     */
+    public static boolean isRelayAStep(AX25Callsign relay) {
+        ArrayList<DigipeatAliasRecord> aliasList1 = instance.aliasList; // avoid getfield opcode
+        for (int aliasIdx = aliasList1.size() - 1; aliasIdx >= 0; aliasIdx--) {
+            DigipeatAliasRecord dar = aliasList1.get(aliasIdx);
+            String baseCallsign = relay.getBaseCallsign();
+            if (dar.isN_N) {
+                int rLen = baseCallsign.length();
+                int aLen = dar.alias.length();
+                if (rLen == aLen &&
+                        baseCallsign.startsWith(dar.alias)) {
+                    char ch1 = baseCallsign.charAt(aLen - 1);
+                    if (ch1 > '0' && ch1 <= '7') {
+                        return true;
+                    }
+                }
+            } else if (baseCallsign.regionMatches(0, dar.alias, 0, baseCallsign.length())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -142,34 +170,6 @@ public class DigipeatAliasCatalog implements Iterable<DigipeatAliasRecord> {
             }
         }
         return null;
-    }
-
-    /**
-     * Test if this callsign looks like a digipeat New-N alias.
-     *
-     * @param relay digipeater AX25Callsign to test
-     * @return boolean true if it looks like a New-N alias or other known alias
-     */
-    public static boolean isRelayAStep(AX25Callsign relay) {
-        ArrayList<DigipeatAliasRecord> aliasList1 = instance.aliasList; // avoid getfield opcode
-        for (int aliasIdx = aliasList1.size() - 1; aliasIdx >= 0; aliasIdx--) {
-            DigipeatAliasRecord dar = aliasList1.get(aliasIdx);
-            String baseCallsign = relay.getBaseCallsign();
-            if (dar.isN_N) {
-                int rLen = baseCallsign.length();
-                int aLen = dar.alias.length();
-                if (rLen == aLen &&
-                        baseCallsign.startsWith(dar.alias)) {
-                    char ch1 = baseCallsign.charAt(aLen - 1);
-                    if (ch1 > '0' && ch1 <= '7') {
-                        return true;
-                    }
-                }
-            } else if (baseCallsign.regionMatches(0, dar.alias, 0, baseCallsign.length())) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /**

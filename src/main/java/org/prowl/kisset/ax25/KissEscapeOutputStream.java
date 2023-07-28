@@ -23,7 +23,6 @@ import org.apache.commons.logging.LogFactory;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Objects;
 
 /**
  * This filtering OutputStream adds the KISS protocol escape sequences for the
@@ -33,9 +32,6 @@ import java.util.Objects;
  * @author Andrew Pavlin, KA2DDO
  */
 public class KissEscapeOutputStream extends OutputStream {
-
-
-    private static final Log LOG = LogFactory.getLog("KissEscapeOutputStream");
 
 
     /**
@@ -54,9 +50,9 @@ public class KissEscapeOutputStream extends OutputStream {
      * Escaped value for literal FESC character.
      */
     public static final int TFESC = 0xDD;
-
-    private int byteCount = 0;
+    private static final Log LOG = LogFactory.getLog("KissEscapeOutputStream");
     private final OutputStream os;
+    private int byteCount = 0;
     private byte g8bpqCrc = 0;
 
     /**
@@ -120,9 +116,9 @@ public class KissEscapeOutputStream extends OutputStream {
         }
     }
 
-    public void write(byte b[], int off, int len) throws IOException {
+    public void write(byte[] b, int off, int len) throws IOException {
         // len == 0 condition implicitly handled by loop bounds
-        for (int i = 0 ; i < len ; i++) {
+        for (int i = 0; i < len; i++) {
             write(b[off + i]);
         }
     }

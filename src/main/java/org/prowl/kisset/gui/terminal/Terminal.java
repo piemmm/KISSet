@@ -61,7 +61,7 @@ public class Terminal implements Term {
     private Color defaultfground = Color.white;
     private Color bground = Color.black;
     private Color fground = Color.white;
-    private Component term_area = null;
+    private final Component term_area = null;
     private Font font;
     private boolean bold = false;
     private boolean underline = false;
@@ -138,8 +138,8 @@ public class Terminal implements Term {
       System.out.println(fo.getMaxDecent());
       System.out.println(fo.getMaxAdvance());
       */
-            char_width = (int) (fo.charWidth((char) '@'));
-            char_height = (int) (fo.getHeight()) + (line_space * 2);
+            char_width = fo.charWidth('@');
+            char_height = fo.getHeight() + (line_space * 2);
             descent += line_space;
         }
 
@@ -376,7 +376,7 @@ public class Terminal implements Term {
     public void draw_cursor() {
         //Platform.runLater(() -> {
 
-            // cursor_graphics.fillRect(x, y - char_height, char_width, char_height);
+        // cursor_graphics.fillRect(x, y - char_height, char_width, char_height);
         //});
         // repaint(x, y - char_height, char_width, char_height);
     }
@@ -391,21 +391,21 @@ public class Terminal implements Term {
 
     public void clear_area(int x1, int y1, int x2, int y2) {
         //System.out.println("clear_area: "+x1+" "+y1+" "+x2+" "+y2);
-       // Platform.runLater(() -> {
-            graphics.setColor(getBackGround());
-            graphics.fillRect(x1, y1, x2 - x1, y2 - y1);
-            graphics.setColor(getForeGround());
-       // });
+        // Platform.runLater(() -> {
+        graphics.setColor(getBackGround());
+        graphics.fillRect(x1, y1, x2 - x1, y2 - y1);
+        graphics.setColor(getForeGround());
+        // });
     }
 
     //  public void keyPressed(KeyEvent event){}
 
     public void scroll_area(int x, int y, int w, int h, int dx, int dy) {
         //System.out.println("scroll_area: "+x+" "+y+" "+w+" "+h+" "+dx+" "+dy);
-    //    Platform.runLater(() -> {
+        //    Platform.runLater(() -> {
 
-            graphics.copyArea(x, y, w, h, dx, dy);
-      //  });
+        graphics.copyArea(x, y, w, h, dx, dy);
+        //  });
         // repaint(x + dx, y + dy, w, h);
     }
 
@@ -414,32 +414,32 @@ public class Terminal implements Term {
         //    graphics.setColor(getForeGround());
 
         //System.out.println("drawString: "+x+","+y+" "+len+" "+new String(buf, s, len));
-      //  Platform.runLater(() -> {
+        //  Platform.runLater(() -> {
 
-            graphics.drawBytes(buf, s, len, x, y - descent);
-            if (bold)
-                graphics.drawBytes(buf, s, len, x + 1, y - descent);
+        graphics.drawBytes(buf, s, len, x, y - descent);
+        if (bold)
+            graphics.drawBytes(buf, s, len, x + 1, y - descent);
 
-            if (underline) {
-                graphics.drawLine(x, y - 1, x + len * char_width, y - 1);
-            }
-     //   });
+        if (underline) {
+            graphics.drawLine(x, y - 1, x + len * char_width, y - 1);
+        }
+        //   });
 
     }
 
     public void drawString(String str, int x, int y) {
         //    clear_area(x, y, x+str.length()*char_width, y+char_height);
         //    graphics.setColor(getForeGround());
-       // Platform.runLater(() -> {
+        // Platform.runLater(() -> {
 
-            graphics.drawString(str, x, y - descent);
-            if (bold)
-                graphics.drawString(str, x + 1, y - descent);
+        graphics.drawString(str, x, y - descent);
+        if (bold)
+            graphics.drawString(str, x + 1, y - descent);
 
-            if (underline) {
-                graphics.drawLine(x, y - 1, x + str.length() * char_width, y - 1);
-            }
-     //   });
+        if (underline) {
+            graphics.drawLine(x, y - 1, x + str.length() * char_width, y - 1);
+        }
+        //   });
 
     }
 
@@ -507,11 +507,11 @@ public class Terminal implements Term {
         // Platform.runLater(() -> {
 
         bground = toColor(b);
-            Graphics2D foog = (Graphics2D) (background.getGraphics());
-            foog.setColor(getBackGround());
-            foog.fillRect(0, 0, char_width, char_height);
-            foog.dispose();
-      //  });
+        Graphics2D foog = (Graphics2D) (background.getGraphics());
+        foog.setColor(getBackGround());
+        foog.fillRect(0, 0, char_width, char_height);
+        foog.dispose();
+        //  });
     }
 
     void resetCursorGraphics() {

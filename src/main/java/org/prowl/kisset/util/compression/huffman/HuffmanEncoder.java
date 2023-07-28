@@ -39,15 +39,14 @@ public final class HuffmanEncoder {
 
     /*---- Fields ----*/
 
-    // The underlying bit output stream (not null).
-    private BitOutputStream output;
-
     /**
      * The code tree to use in the next {@link#write(int)} operation. Must be given a non-{@code null}
      * value before calling write(). The tree can be changed after each symbol encoded, as long
      * as the encoder and decoder have the same tree at the same point in the code stream.
      */
     public CodeTree codeTree;
+    // The underlying bit output stream (not null).
+    private final BitOutputStream output;
 
 
 

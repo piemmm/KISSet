@@ -13,18 +13,7 @@ import java.util.Date;
 import java.util.List;
 
 public class BasicTransmittingConnector extends Connector implements TransmittingConnector, Transmitting {
-    private static final Log LOG = LogFactory.getLog("BasicTransmittingConnector");
-    private String debugTag = "";
-    
-    private final byte[] rcvBuf = new byte[4096];
     public static final int PROTOCOL_AX25 = 4;
-    private final AX25Stack stack;
-    private transient KissEscapeOutputStream.RcvState curState = KissEscapeOutputStream.RcvState.IDLE;
-    private int wEnd = 0;
-    private transient long frameStartTime = -1L;
-
-    private static final ProtocolFamily[] PROTOCOL_FAMILIES = ProtocolFamily.values();
-
     /**
      * These four bits contain the KISS device ID to be used in KISS frames sent through this port.
      * This supports the TCP port type when talking to the DireWolf
@@ -33,14 +22,17 @@ public class BasicTransmittingConnector extends Connector implements Transmittin
      * default KISS device ID is zero.
      */
     public static final int FLAGS_MASK_KISSPORT = 0xF00;
-
     /**
      * This constant gets the number of bits to shift the above {@link #FLAGS_MASK_KISSPORT} bits right
      * to put them in the least significant bits of an integer value.
      */
     public static final int FLAGS_SHIFT_KISSPORT = 8;
-    private int retransmitCount;
-
+    private static final Log LOG = LogFactory.getLog("BasicTransmittingConnector");
+    private static final ProtocolFamily[] PROTOCOL_FAMILIES = ProtocolFamily.values();
+    private final byte[] rcvBuf = new byte[4096];
+    private final AX25Stack stack;
+    private final InputStream in;
+    private final ArrayList<AX25FrameSource> queue = new ArrayList<>();
     /**
      * This is the default callsign this connector will use for transmitting things like UI frames.
      * <p>
@@ -48,10 +40,13 @@ public class BasicTransmittingConnector extends Connector implements Transmittin
      * listen and respond to other callsigns (or ssids)
      */
     public AX25Callsign defaultCallsign;
-
-    private final InputStream in;
     KissEscapeOutputStream kos;
-
+    private String debugTag = "";
+    private transient KissEscapeOutputStream.RcvState curState = KissEscapeOutputStream.RcvState.IDLE;
+    private int wEnd = 0;
+    private transient long frameStartTime = -1L;
+    private final int retransmitCount;
+    private transient TimedQueueEntry delayQueueHead = null;
 
     public BasicTransmittingConnector(int pacLen, int maxFrames, int baudRateInBits, int retransmitCount, AX25Callsign defaultCallsign, InputStream in, OutputStream out, ConnectionRequestListener connectionRequestListener) {
         this.defaultCallsign = defaultCallsign;
@@ -68,61 +63,6 @@ public class BasicTransmittingConnector extends Connector implements Transmittin
     public void addFrameListener(AX25FrameListener l) {
         stack.addAX25FrameListener(l);
     }
-
-    /**
-     * Wrapper class for frames delay-queued for transmission.
-     */
-    private static class TimedQueueEntry implements Comparable<TimedQueueEntry> {
-        TimedQueueEntry next = null;
-        AX25FrameSource frameSource;
-        long dueTime;
-
-        TimedQueueEntry(AX25FrameSource frameSource, long dueTime) {
-            this.frameSource = frameSource;
-            this.dueTime = dueTime;
-        }
-
-        /**
-         * Compares this object with the specified object for order.  Returns a
-         * negative integer, zero, or a positive integer as this object is less
-         * than, equal to, or greater than the specified object.
-         *
-         * @param o the object to be compared.
-         * @return a negative integer, zero, or a positive integer as this object
-         * is less than, equal to, or greater than the specified object.
-         * @throws NullPointerException if the specified object is null
-         * @throws ClassCastException   if the specified object's type prevents it
-         *                              from being compared to this object.
-         */
-        public int compareTo(TimedQueueEntry o) {
-            return Long.signum(dueTime - o.dueTime);
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj instanceof TimedQueueEntry) {
-                TimedQueueEntry tqe = (TimedQueueEntry) obj;
-                if (dueTime == tqe.dueTime) {
-                    return frameSource.equals(tqe.frameSource);
-                }
-            }
-            return false;
-        }
-
-        @Override
-        public int hashCode() {
-            return (int) dueTime;
-        }
-
-        @Override
-        public String toString() {
-            return "TimedQueueEntry[@" + dueTime + ',' + frameSource + ']';
-        }
-    }
-
-
-    private final ArrayList<AX25FrameSource> queue = new ArrayList<>();
-    private transient TimedQueueEntry delayQueueHead = null;
 
     @Override
     public boolean isOpen() {
@@ -204,7 +144,6 @@ public class BasicTransmittingConnector extends Connector implements Transmittin
         notifyAll();
     }
 
-
     /**
      * Test if this callsign is addressed to the local station.
      *
@@ -236,7 +175,6 @@ public class BasicTransmittingConnector extends Connector implements Transmittin
     public int getRetransmitCount() {
         return retransmitCount;
     }
-
 
     /**
      * Transmit the specified frame out one port.
@@ -417,7 +355,7 @@ public class BasicTransmittingConnector extends Connector implements Transmittin
                 }
             } catch (Throwable e) {
                 //    stats.numBadRcvFrames++;
-                LOG.error("unhandled exception in KissOverTcpConnector:"+e.getMessage(), e);
+                LOG.error("unhandled exception in KissOverTcpConnector:" + e.getMessage(), e);
                 // discard this frame
                 curState = KissEscapeOutputStream.RcvState.IDLE;
             }
@@ -516,7 +454,6 @@ public class BasicTransmittingConnector extends Connector implements Transmittin
         tx.start();
     }
 
-
     /**
      * Set some useful debug information to be included in log messages to identify this connector/stack from others
      *
@@ -529,8 +466,9 @@ public class BasicTransmittingConnector extends Connector implements Transmittin
 
     /**
      * Makes an outgoing connection to another station.
-     * @param from Your originating callsign
-     * @param to the station you are connecting to.
+     *
+     * @param from     Your originating callsign
+     * @param to       the station you are connecting to.
      * @param listener the listener to be notified of connection establishment or failure
      */
     public void makeConnection(String from, String to, ConnectionEstablishmentListener listener) {
@@ -539,7 +477,7 @@ public class BasicTransmittingConnector extends Connector implements Transmittin
 
             AX25Frame sabmFrame = new AX25Frame();
             sabmFrame.sender = new AX25Callsign(from);
-            sabmFrame.dest =  new AX25Callsign(to);
+            sabmFrame.dest = new AX25Callsign(to);
             sabmFrame.setCmd(true);
             ConnState state = stack.getConnState(sabmFrame.sender, sabmFrame.dest, true);
             LOG.debug("Transmitter.openConnection(" + sabmFrame.dest + ',' + sabmFrame.sender + ',' + Arrays.toString(state.via) + "): sending SABM U-frame");
@@ -557,9 +495,58 @@ public class BasicTransmittingConnector extends Connector implements Transmittin
             stack.fireConnStateUpdated(state);
 
 
-
         } catch (Exception e) {
             LOG.error(e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Wrapper class for frames delay-queued for transmission.
+     */
+    private static class TimedQueueEntry implements Comparable<TimedQueueEntry> {
+        TimedQueueEntry next = null;
+        AX25FrameSource frameSource;
+        long dueTime;
+
+        TimedQueueEntry(AX25FrameSource frameSource, long dueTime) {
+            this.frameSource = frameSource;
+            this.dueTime = dueTime;
+        }
+
+        /**
+         * Compares this object with the specified object for order.  Returns a
+         * negative integer, zero, or a positive integer as this object is less
+         * than, equal to, or greater than the specified object.
+         *
+         * @param o the object to be compared.
+         * @return a negative integer, zero, or a positive integer as this object
+         * is less than, equal to, or greater than the specified object.
+         * @throws NullPointerException if the specified object is null
+         * @throws ClassCastException   if the specified object's type prevents it
+         *                              from being compared to this object.
+         */
+        public int compareTo(TimedQueueEntry o) {
+            return Long.signum(dueTime - o.dueTime);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof TimedQueueEntry tqe) {
+                if (dueTime == tqe.dueTime) {
+                    return frameSource.equals(tqe.frameSource);
+                }
+            }
+            return false;
+        }
+
+        @Override
+        public int hashCode() {
+            return (int) dueTime;
+        }
+
+        @Override
+        public String toString() {
+            return "TimedQueueEntry[@" + dueTime + ',' + frameSource + ']';
         }
     }
 }

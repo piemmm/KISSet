@@ -26,24 +26,20 @@ import java.io.PipedOutputStream;
 
 public class KISSetController {
 
+    private static final Log LOG = LogFactory.getLog("KISSetController");
     @FXML
     TextField textEntry;
 
-    @FXML
-    StackPane stackPane;
-
 //    @FXML
 //    ScrollPane mScrollPane;
-
-    private static final Log LOG = LogFactory.getLog("KISSetController");
-
-    private Terminal term;
-    private PipedInputStream inpis = new PipedInputStream();
-    private PipedOutputStream inpos = new PipedOutputStream();
-
-    private PipedInputStream outpis = new PipedInputStream();
-    private PipedOutputStream outpos = new PipedOutputStream();
+    @FXML
+    StackPane stackPane;
     TerminalCanvas canvas;
+    private Terminal term;
+    private final PipedInputStream inpis = new PipedInputStream();
+    private final PipedOutputStream inpos = new PipedOutputStream();
+    private final PipedInputStream outpis = new PipedInputStream();
+    private final PipedOutputStream outpos = new PipedOutputStream();
 
     @FXML
     protected void onQuitAction() {
@@ -69,47 +65,6 @@ public class KISSetController {
             e.printStackTrace();
         }
 
-    }
-
-    static class TerminalCanvas extends Canvas {
-
-        Terminal terminal;
-
-        private final FXGraphics2D g2;
-
-        public TerminalCanvas(Terminal terminal) {
-            this.terminal = terminal;
-            this.g2 = new FXGraphics2D(getGraphicsContext2D());
-            // Redraw canvas when size changes.
-            widthProperty().addListener(e -> draw());
-            heightProperty().addListener(e -> draw());
-
-        }
-
-
-        private void draw() {
-            Platform.runLater(() -> {
-                double width = Math.max(100, getWidth());
-                double height = Math.max(100, getHeight());
-                terminal.setSize((int) width, (int) height, false);
-                this.terminal.paintComponent(g2);
-            });
-        }
-
-        @Override
-        public boolean isResizable() {
-            return true;
-        }
-
-        @Override
-        public double prefWidth(double height) {
-            return getWidth();
-        }
-
-        @Override
-        public double prefHeight(double width) {
-            return getHeight();
-        }
     }
 
     public void setup() {
@@ -159,6 +114,46 @@ public class KISSetController {
         });
 
 
+    }
+
+    static class TerminalCanvas extends Canvas {
+
+        private final FXGraphics2D g2;
+        Terminal terminal;
+
+        public TerminalCanvas(Terminal terminal) {
+            this.terminal = terminal;
+            this.g2 = new FXGraphics2D(getGraphicsContext2D());
+            // Redraw canvas when size changes.
+            widthProperty().addListener(e -> draw());
+            heightProperty().addListener(e -> draw());
+
+        }
+
+
+        private void draw() {
+            Platform.runLater(() -> {
+                double width = Math.max(100, getWidth());
+                double height = Math.max(100, getHeight());
+                terminal.setSize((int) width, (int) height, false);
+                this.terminal.paintComponent(g2);
+            });
+        }
+
+        @Override
+        public boolean isResizable() {
+            return true;
+        }
+
+        @Override
+        public double prefWidth(double height) {
+            return getWidth();
+        }
+
+        @Override
+        public double prefHeight(double width) {
+            return getHeight();
+        }
     }
 
 

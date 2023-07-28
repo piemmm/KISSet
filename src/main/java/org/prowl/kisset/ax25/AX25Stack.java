@@ -37,8 +37,6 @@ import java.util.*;
  * @author Andrew Pavlin, KA2DDO
  */
 public class AX25Stack implements FrameListener, Runnable {
-    private static final Log LOG = LogFactory.getLog("AX25Stack");
-
     /**
      * Time interval (in milliseconds) to wait for an acknowledgement from the
      * other end of a AX.25 connection.
@@ -53,31 +51,29 @@ public class AX25Stack implements FrameListener, Runnable {
      */
     public static final long WAIT_FOR_ACK_T1_TIMER_MINIMUM = 1000L * 15L; // 15 seconds minimum
     public static final long WAIT_FOR_ACK_T1_TIMER_MAXIMUM = 1000L * 300L; // 300 seconds maximum
-
-    public long WAIT_FOR_ACK_T1_TIMER = WAIT_FOR_ACK_T1_TIMER_MINIMUM;
-    int pacLen = 112; // Sensible default for paclen.
-    public int maxFrames = 3; // Sensible default for maxframes
-    public int baudRateInBitsPerSecond = 1200; // Normally used baud rate
-
-    private final HashMap<AX25Callsign, Map<AX25Callsign, ConnState>> connMap = new LinkedHashMap<>();
-    private String[] digipeaters;
-    private String toCall;
+    private static final Log LOG = LogFactory.getLog("AX25Stack");
     private static final int MAX_FRAMES_BEFORE_FREEZE_CHECK = 50;
+    private final HashMap<AX25Callsign, Map<AX25Callsign, ConnState>> connMap = new LinkedHashMap<>();
     private final ArrayList<AX25FrameListener> ax25FrameListeners = new ArrayList<>();
     private final ArrayList<ParsedAX25MessageListener> parsedAX25MessageListenerList = new ArrayList<>();
     private final FastBlockingQueue<AX25Frame> frameParserQueue = new FastBlockingQueue<>(4096);
-    private transient ConnectionRequestListener connectionRequestListener = null;
     private final Thread parserThread;
+    private final HashMap<Byte, AX25Parser> protocolParserMap = new HashMap<>();
+    private final ReschedulableTimer retransTimer = new ReschedulableTimer("AX.25 Retransmit Timer");
+    private final ArrayList<ConnStateChangeListener> connStateListeners = new ArrayList<>();
+    public long WAIT_FOR_ACK_T1_TIMER = WAIT_FOR_ACK_T1_TIMER_MINIMUM;
+    public int maxFrames = 3; // Sensible default for maxframes
+    public int baudRateInBitsPerSecond = 1200; // Normally used baud rate
+    int pacLen = 112; // Sensible default for paclen.
+    private String[] digipeaters;
+    private String toCall;
+    private transient ConnectionRequestListener connectionRequestListener = null;
     private boolean allowInboundConnectedMode = true;
     private transient int maxBacklog = 0;
     private transient int numConsumedMsgs = 0;
     private transient boolean frozen = false;
     private AX25ParserWithDistributor aprsParser = null;
-    private final HashMap<Byte, AX25Parser> protocolParserMap = new HashMap<>();
     private Transmitting transmitting = null;
-    private final ReschedulableTimer retransTimer = new ReschedulableTimer("AX.25 Retransmit Timer");
-    private final ArrayList<ConnStateChangeListener> connStateListeners = new ArrayList<>();
-
     // Create a settable debug tag that can be useful when using multiple stacks.
     private String debugTag = "";
 
@@ -915,7 +911,7 @@ public class AX25Stack implements FrameListener, Runnable {
 
                         {
 
-                            LOG.debug(debugTag+" 1:  state.va="+state.va+"  nr="+frame.getNR());
+                            LOG.debug(debugTag + " 1:  state.va=" + state.va + "  nr=" + frame.getNR());
 
                             int newVA = frame.getNR();
                             state.xmtToRemoteBlocked = false;
@@ -923,10 +919,10 @@ public class AX25Stack implements FrameListener, Runnable {
                             // mark off the frames that were acknowledged
                             while (nextVA != newVA) {
 
-                                LOG.debug(debugTag+" 2:markingOff:"+state.transmitWindow+"  newVA="+newVA+"    nextVA="+nextVA);
+                                LOG.debug(debugTag + " 2:markingOff:" + state.transmitWindow + "  newVA=" + newVA + "    nextVA=" + nextVA);
 
                                 if (state.transmitWindow != null) {
-                                    LOG.debug(debugTag+" 2:markingOff:"+state.transmitWindow[nextVA]);
+                                    LOG.debug(debugTag + " 2:markingOff:" + state.transmitWindow[nextVA]);
                                     state.transmitWindow[nextVA] = null;
                                 }
                                 state.va = nextVA;

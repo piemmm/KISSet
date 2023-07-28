@@ -48,12 +48,12 @@ public abstract class Command {
         tncHost.send(s);
     }
 
-    public void setMode(Mode mode) {
-        commandParser.setMode(mode);
-    }
-
     public Mode getMode() {
         return commandParser.getMode();
+    }
+
+    public void setMode(Mode mode) {
+        commandParser.setMode(mode);
     }
 
     public void popModeFromStack() {

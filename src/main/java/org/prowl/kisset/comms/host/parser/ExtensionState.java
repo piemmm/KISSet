@@ -5,6 +5,6 @@ public enum ExtensionState {
     NONE,
     NEGOTIATING,
     NOT_SUPPORTED,
-    ENABLED;
+    ENABLED
 
 }

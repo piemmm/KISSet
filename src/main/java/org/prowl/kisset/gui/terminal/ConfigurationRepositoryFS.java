@@ -96,7 +96,7 @@ public class ConfigurationRepositoryFS implements ConfigurationRepository {
         prop.setProperty("jcterm." + name + ".destination", join(conf.destinations));
 
         prop.setProperty("jcterm." + name + ".font_size",
-                new Integer(conf.font_size).toString());
+                Integer.valueOf(conf.font_size).toString());
 
         prop.setProperty("jcterm." + name + ".fg_bg", join(conf.fg_bg));
 

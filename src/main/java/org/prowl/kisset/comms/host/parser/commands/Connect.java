@@ -94,16 +94,16 @@ public class Connect extends Command implements ConnectionEstablishmentListener 
                                 // If this is set then we've accepted some of the stations capabilities and we are now waiting for the
                                 // response to our 'enable these extensions' command
                                 if (extensionState == ExtensionState.NEGOTIATING) {
-                                    LOG.debug("Response string: " + responseString.toString() + "(response)");
+                                    LOG.debug("Response string: " + responseString + "(response)");
                                     // Look for and respond to the [OARC <capabilities>] response containing stuff the server enabled.
                                     if (responseString.toString().matches("\\[OARC [a-zA-Z0-9]+\\]")) {
-                                        LOG.debug("Response string: " + responseString.toString() + "(matches)");
+                                        LOG.debug("Response string: " + responseString + "(matches)");
 
                                         // We can assume everything is enabled after this response is received.
                                         enableExtensions(responseString.toString());
                                         extensionState = ExtensionState.ENABLED;
                                     } else {
-                                        LOG.debug("Response string: " + responseString.toString() + "(no match)");
+                                        LOG.debug("Response string: " + responseString + "(no match)");
                                     }
                                 }
 
@@ -210,7 +210,7 @@ public class Connect extends Command implements ConnectionEstablishmentListener 
 
             response.insert(0, "[OARC ");
             response.append("]\r");
-            LOG.debug("Sending capabilities response: " + response.toString());
+            LOG.debug("Sending capabilities response: " + response);
             out.write(response.toString().getBytes());
             out.flush();
         }

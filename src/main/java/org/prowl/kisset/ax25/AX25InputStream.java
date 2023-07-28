@@ -18,10 +18,6 @@ package org.prowl.kisset.ax25;
  *  see <http://www.gnu.org/licenses/>.
  */
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.prowl.kisset.util.Tools;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.LinkedList;
@@ -34,10 +30,10 @@ import java.util.List;
  * @author Andrew Pavlin, KA2DDO
  */
 class AX25InputStream extends InputStream {
+    private final ConnState connState;
     List<AX25Frame> frameQueue = new LinkedList<AX25Frame>();
     transient AX25Frame currentFrame = null;
     int frameBodyIndex = 0;
-    private final ConnState connState;
 
     /**
      * Create an AX25InputStream based on the specified AX.25 connection state object
@@ -127,7 +123,7 @@ class AX25InputStream extends InputStream {
      * @return the total number of bytes read into the buffer, or
      * <code>-1</code> if there is no more data because the end of
      * the stream has been reached.
-     * @throws IOException       If the first byte cannot be read for any reason
+     * @throws IOException               If the first byte cannot be read for any reason
      *                                   other than end of file, or if the input stream has been closed, or if
      *                                   some other I/O error occurs.
      * @throws NullPointerException      If <code>b</code> is <code>null</code>.

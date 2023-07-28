@@ -31,12 +31,12 @@ public interface ConnStateChangeListener {
      * @param sender AX25Callsign of originator of session
      * @param dest   AX25Callsign of recipient of session
      */
-    public void updateConnStateRow(AX25Callsign sender, AX25Callsign dest);
+    void updateConnStateRow(AX25Callsign sender, AX25Callsign dest);
 
     /**
      * Report that a ConnState session has been added or removed from the
      * {@link AX25Stack}, but we don't know which row number it is.
      * This is expected to be called from a thread other than the AWT dispatch thread.
      */
-    public void updateWholeConStateTable();
+    void updateWholeConStateTable();
 }

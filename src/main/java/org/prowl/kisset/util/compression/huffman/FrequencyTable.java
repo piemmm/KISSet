@@ -52,10 +52,9 @@ public final class FrequencyTable {
 
     /*---- Field and constructor ----*/
 
-    // Length at least 2, and every element is non-negative.
-    private int[] frequencies;
-
     public static final int REHASH = 2;
+    // Length at least 2, and every element is non-negative.
+    private final int[] frequencies;
 
     /**
      * Constructs a frequency table from the specified array of frequencies. The
@@ -78,6 +77,33 @@ public final class FrequencyTable {
     }
 
     /*---- Basic methods ----*/
+
+    /**
+     * Our default huffman frequency table
+     *
+     * @return
+     */
+    public static FrequencyTable getDefault() {
+        int[] initFreqs = new int[257];
+        for (int i = 0; i < initFreqs.length; i++) {
+            if (i == 32) {
+                initFreqs[i] = 3;
+            } else if (i > 59 && i < 122) {
+                initFreqs[i] = 2;
+            } else {
+                initFreqs[i] = 1;
+            }
+        }
+        FrequencyTable freqs = new FrequencyTable(initFreqs);
+        byte[] testString = "This is a simple test string that can be used to setup a default frequency table initially favouring plain text1234567890987654321:ANNOUNCE::>>".getBytes();
+        for (byte b : testString) {
+            freqs.increment(b);
+        }
+        freqs.buildCodeTree();
+
+
+        return freqs;
+    }
 
     /**
      * Returns the number of symbols in this frequency table. The result is always
@@ -141,6 +167,8 @@ public final class FrequencyTable {
             throw new IllegalArgumentException("Symbol out of range");
     }
 
+    /*---- Advanced methods ----*/
+
     /**
      * Returns a string representation of this frequency table, useful for debugging
      * only, and the format is subject to change.
@@ -153,8 +181,6 @@ public final class FrequencyTable {
             sb.append(String.format("%d\t%d%n", i, frequencies[i]));
         return sb.toString();
     }
-
-    /*---- Advanced methods ----*/
 
     /**
      * Returns a code tree that is optimal for the symbol frequencies in this table.
@@ -225,33 +251,6 @@ public final class FrequencyTable {
                 return 0;
         }
 
-    }
-
-    /**
-     * Our default huffman frequency table
-     *
-     * @return
-     */
-    public static final FrequencyTable getDefault() {
-        int[] initFreqs = new int[257];
-        for (int i = 0; i < initFreqs.length; i++) {
-            if (i == 32) {
-                initFreqs[i] = 3;
-            } else if (i > 59 && i < 122) {
-                initFreqs[i] = 2;
-            } else {
-                initFreqs[i] = 1;
-            }
-        }
-        FrequencyTable freqs = new FrequencyTable(initFreqs);
-        byte[] testString = "This is a simple test string that can be used to setup a default frequency table initially favouring plain text1234567890987654321:ANNOUNCE::>>".getBytes();
-        for (byte b : testString) {
-            freqs.increment(b);
-        }
-        freqs.buildCodeTree();
-
-
-        return freqs;
     }
 
 }
