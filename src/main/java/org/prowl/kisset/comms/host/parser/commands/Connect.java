@@ -42,6 +42,7 @@ public class Connect extends Command implements ConnectionEstablishmentListener 
             return true;
         }
 
+        // connect: C GB7MNK
         if (data.length == 2) {
             String station = data[1];
             Interface anInterface = KISSet.INSTANCE.getInterfaceHandler().getInterface(0);
@@ -54,9 +55,16 @@ public class Connect extends Command implements ConnectionEstablishmentListener 
             }
 
         } else if (data.length == 3) {
-//            int port = Integer.parseInt(data[1]);
-//            String station = data[2];
-//            KISSet.INSTANCE.getInterfaceHandler().connect(port, station);
+            // Connect: C 2 GB7MNK (to connect via port 2)
+            String station = data[2];
+            Interface anInterface = KISSet.INSTANCE.getInterfaceHandler().getInterface(Integer.parseInt(data[1]));
+            if (anInterface == null) {
+                write("*** No interfaces configured" + CR);
+            } else {
+                write("*** Connecting to " + data[2].toUpperCase() + CR);
+
+                anInterface.connect(data[2].toUpperCase(), KISSet.INSTANCE.getMyCall(), this);
+            }
         }
 
         write(CR);
@@ -148,7 +156,7 @@ public class Connect extends Command implements ConnectionEstablishmentListener 
     public void connectionNotEstablished(Object sessionIdentifier, Object reason) {
         try {
             write("*** Unable to connect: " + reason + CR);
-            setMode(Mode.CONNECTED_TO_STATION);
+            setMode(Mode.CMD, true);
         } catch (IOException e) {
             LOG.error("Error writing to client:" + e.getMessage(), e);
         }
@@ -159,7 +167,7 @@ public class Connect extends Command implements ConnectionEstablishmentListener 
     public void connectionClosed(Object sessionIdentifier, boolean fromOtherEnd) {
         try {
             write("*** Connection closed" + CR);
-            setMode(Mode.CMD);
+            setMode(Mode.CMD, true);
         } catch (IOException e) {
             LOG.error("Error writing to client:" + e.getMessage(), e);
         }
@@ -170,7 +178,7 @@ public class Connect extends Command implements ConnectionEstablishmentListener 
     public void connectionLost(Object sessionIdentifier, Object reason) {
         try {
             write("*** Lost connection: " + reason + CR);
-            setMode(Mode.CMD);
+            setMode(Mode.CMD, true);
         } catch (IOException e) {
             LOG.error("Error writing to client:" + e.getMessage(), e);
         }

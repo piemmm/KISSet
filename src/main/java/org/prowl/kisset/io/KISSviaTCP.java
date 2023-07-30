@@ -33,7 +33,7 @@ public class KISSviaTCP extends Interface {
     private final int frequency;
     private final int retries;
 
-    private BasicTransmittingConnector connector;
+    private BasicTransmittingConnector anInterface;
     private final HierarchicalConfiguration config;
     private boolean running;
 
@@ -114,7 +114,7 @@ public class KISSviaTCP extends Interface {
         // not just this one.
         AX25Callsign defaultCallsign = new AX25Callsign(defaultOutgoingCallsign);
 
-        connector = new BasicTransmittingConnector(pacLen, maxFrames, baudRate, retries, defaultCallsign, in, out, new ConnectionRequestListener() {
+        anInterface = new BasicTransmittingConnector(pacLen, maxFrames, baudRate, retries, defaultCallsign, in, out, new ConnectionRequestListener() {
             /**
              * Determine if we want to respond to this connection request (to *ANY* callsign) - usually we only accept
              * if we are interested in the callsign being sent a connection request.
@@ -141,7 +141,7 @@ public class KISSviaTCP extends Interface {
         //  connector.setDebugTag(Tools.getNiceFrequency(frequency));
 
         // AX Frame listener for things like mheard lists
-        connector.addFrameListener(new AX25FrameListener() {
+        anInterface.addFrameListener(new AX25FrameListener() {
             @Override
             public void consumeAX25Frame(AX25Frame frame, org.prowl.kisset.ax25.Connector connector) {
                 // Create a node to represent what we've seen - we'll merge this in things like
@@ -229,7 +229,11 @@ public class KISSviaTCP extends Interface {
     @Override
     public boolean connect(String to, String from, ConnectionEstablishmentListener connectionEstablishmentListener) throws IOException {
 
-        connector.makeConnection(from, to, connectionEstablishmentListener);
+        if (anInterface == null) {
+            throw new IOException("TCP/IP interface to '"+address+":"+port+"' did not complete startup - please check configuration");
+        }
+
+        anInterface.makeConnection(from, to, connectionEstablishmentListener);
 
         return true;
     }

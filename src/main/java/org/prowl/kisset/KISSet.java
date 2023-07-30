@@ -33,17 +33,7 @@ public class KISSet extends Application {
             // Init resource bundles.
             Messages.init();
 
-            // Load configuration and initialise everything needed.
-            configuration = new Config();
-
-            // Set our callsign
-            myCall = configuration.getConfig("callsign", "NOCALL").toUpperCase(Locale.ENGLISH);
-
-            // Init interfaces
-            interfaceHandler = new InterfaceHandler(configuration.getConfig("interfaces"));
-
-            // Start interfaces
-            interfaceHandler.start();
+            initAll();
         } catch (Throwable e) {
             LOG.error(e.getMessage(), e);
             System.exit(1);
@@ -74,6 +64,34 @@ public class KISSet extends Application {
         stage.setScene(scene);
         stage.show();
         controller.setup();
+
+    }
+
+    public void initAll() {
+        try {
+
+            // Stop any currenty running interfaces if this is a reload of the config
+            if (interfaceHandler != null) {
+                interfaceHandler.stop();
+            }
+
+            // Load configuration and initialise everything needed.
+            configuration = new Config();
+
+            // Set our callsign
+            myCall = configuration.getConfig("callsign", "NOCALL").toUpperCase(Locale.ENGLISH);
+
+            // Init interfaces
+            interfaceHandler = new InterfaceHandler(configuration.getConfig("interfaces"));
+
+            // Start interfaces
+            interfaceHandler.start();
+
+        } catch (Throwable e) {
+            LOG.error(e.getMessage(), e);
+            System.exit(1);
+        }
+
 
     }
 

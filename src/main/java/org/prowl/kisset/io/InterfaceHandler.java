@@ -44,7 +44,6 @@ public class InterfaceHandler {
             }
         }
 
-
         // If there are no connectors configured then exit as there's little point in
         // continuing.
         if (interfaces.size() == 0) {
@@ -55,7 +54,7 @@ public class InterfaceHandler {
     }
 
     public void start() {
-        LOG.info("Starting interface...");
+        LOG.info("Starting interfaces...");
         for (Interface iface : interfaces) {
             try {
                 LOG.info("Starting: " + iface.toString());
@@ -63,6 +62,21 @@ public class InterfaceHandler {
 
             } catch (Throwable e) {
                 LOG.error("Unable to start interface: " + iface.toString(), e);
+            }
+        }
+    }
+
+    /**
+     * Stop this interface handler (as we may be loading a new configuration)
+     */
+    public void stop() {
+        LOG.info("Stoppig interfaces...");
+        for (Interface iface : interfaces) {
+            try {
+                LOG.info("Stopping: " + iface.toString());
+                iface.stop();
+            } catch (Throwable e) {
+                LOG.error("Unable to stop interface: " + iface.toString(), e);
             }
         }
     }

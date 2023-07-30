@@ -78,20 +78,27 @@ public class CommandParser {
                 // If the command matches, then we will send the command. It is up to the command to check the mode we are
                 // in and act accordingly.
                 boolean commandExecuted = false;
-                for (Command command : commands) {
-                    String[] supportedCommands = command.getCommandNames();
-                    for (String supportedCommand : supportedCommands) {
-                        if (supportedCommand.equalsIgnoreCase(arguments[0])) {
-                            commandExecuted = command.doCommand(arguments) | commandExecuted;
-                            // Stop when we executed a command.
-                            if (commandExecuted) {
-                                break;
+                    try {
+                    for (Command command : commands) {
+                        String[] supportedCommands = command.getCommandNames();
+                        for (String supportedCommand : supportedCommands) {
+                            if (supportedCommand.equalsIgnoreCase(arguments[0])) {
+                                commandExecuted = command.doCommand(arguments) | commandExecuted;
+                                // Stop when we executed a command.
+                                if (commandExecuted) {
+                                    break;
+                                }
                             }
                         }
                     }
-                }
-                if (!commandExecuted && arguments[0].length() > 0) {
-                    unknownCommand();
+                    if (!commandExecuted && arguments[0].length() > 0) {
+                        unknownCommand();
+                    }
+                } catch (IOException e) {
+                        // Thrown if the command generated an error (like a connector not being setup due to a missing
+                        // serial port device.
+                        LOG.error(e.getMessage(), e);
+                        write("*** Error: " + e.getMessage() + CR);
                 }
                 sendPrompt();
             } else if (mode == Mode.CONNECTED_TO_STATION) {
@@ -144,6 +151,11 @@ public class CommandParser {
 
     public void setMode(Mode mode) {
         this.mode = mode;
+    }
+
+    public void setMode(Mode mode, boolean sendPrompt) throws IOException {
+        this.mode = mode;
+        sendPrompt();
     }
 
     public void unknownCommand() throws IOException {

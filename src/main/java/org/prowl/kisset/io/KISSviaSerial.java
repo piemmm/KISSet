@@ -34,7 +34,7 @@ public class KISSviaSerial extends Interface {
     private final int maxFrames;
     private final int frequency;
     private final int retries;
-    private BasicTransmittingConnector connector;
+    private BasicTransmittingConnector anInterface;
     private final HierarchicalConfiguration config;
     private boolean running;
     private SerialPort serialPort = null; // The chosen port form our enumerated list.
@@ -144,7 +144,7 @@ public class KISSviaSerial extends Interface {
         // not just this one.
         AX25Callsign defaultCallsign = new AX25Callsign(defaultOutgoingCallsign);
 
-        connector = new BasicTransmittingConnector(pacLen, maxFrames, baudRate, retries, defaultCallsign, in, out, new ConnectionRequestListener() {
+        anInterface = new BasicTransmittingConnector(pacLen, maxFrames, baudRate, retries, defaultCallsign, in, out, new ConnectionRequestListener() {
             /**
              * Determine if we want to respond to this connection request (to *ANY* callsign) - usually we only accept
              * if we are interested in the callsign being sent a connection request.
@@ -165,7 +165,7 @@ public class KISSviaSerial extends Interface {
         //connector.setDebugTag(Tools.getNiceFrequency(frequency));
 
         // AX Frame listener for things like mheard lists
-        connector.addFrameListener(new AX25FrameListener() {
+        anInterface.addFrameListener(new AX25FrameListener() {
             @Override
             public void consumeAX25Frame(AX25Frame frame, Connector connector) {
                 LOG.debug("Got frame: " + frame.toString() + "  body=" + Tools.byteArrayToHexString(frame.getBody()));
@@ -222,7 +222,11 @@ public class KISSviaSerial extends Interface {
     @Override
     public boolean connect(String to, String from, ConnectionEstablishmentListener connectionEstablishmentListener) throws IOException {
 
-        connector.makeConnection(from, to, connectionEstablishmentListener);
+        // Interface will be null if the interface was not setup (not connected) or if the port was not found.
+        if (anInterface == null) {
+            throw new IOException("Serial Port interface on '"+ port +"' did not complete startup - please check configuration");
+        }
+        anInterface.makeConnection(from, to, connectionEstablishmentListener);
 
         return true;
     }

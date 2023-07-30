@@ -55,7 +55,7 @@ public class PreferencesController {
         config.saveConfig();
 
         // Tell the main app to reload the new config
-        KISSet.INSTANCE.getConfig().loadConfig();
+        KISSet.INSTANCE.initAll();
 
         // Probably post a configChanged event here.
         ((Stage) saveButton.getScene().getWindow()).close();

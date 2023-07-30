@@ -52,8 +52,13 @@ public abstract class Command {
         return commandParser.getMode();
     }
 
+
     public void setMode(Mode mode) {
         commandParser.setMode(mode);
+    }
+
+    public void setMode(Mode mode, boolean sendPrompt) throws IOException {
+        commandParser.setMode(mode, sendPrompt);
     }
 
     public void popModeFromStack() {

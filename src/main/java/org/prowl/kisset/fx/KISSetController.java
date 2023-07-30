@@ -74,8 +74,11 @@ public class KISSetController {
         Graphics2D g2d = new FXGraphics2D(canvas.getGraphicsContext2D());
         stackPane.getChildren().add(canvas);
 
+        canvas.setHeight(1280);
         canvas.widthProperty().bind(stackPane.widthProperty());
-        canvas.heightProperty().bind(stackPane.heightProperty());
+        Platform.runLater(() -> {
+            canvas.heightProperty().bind(stackPane.heightProperty());
+        });
 
         canvas.setOnMouseClicked(event -> {
             textEntry.requestFocus();
