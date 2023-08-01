@@ -13,6 +13,7 @@ module org.prowl.kisset {
     requires java.prefs;
     requires org.reflections;
     requires com.fazecast.jSerialComm;
+    requires commons.lang;
 
     opens org.prowl.kisset to javafx.fxml;
     exports org.prowl.kisset;

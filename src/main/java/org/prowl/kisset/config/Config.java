@@ -49,6 +49,10 @@ public class Config {
         return configuration.configurationAt(subNode);
     }
 
+    public void setProperty(String name, Object value) {
+        configuration.setProperty(name, value);
+    }
+
     public void saveConfig() {
         LOG.info("Saving configuration to: " + new File(new File("").getAbsolutePath(), CONFIG_FILE));
         try {

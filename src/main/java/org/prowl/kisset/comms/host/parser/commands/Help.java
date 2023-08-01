@@ -18,8 +18,8 @@ public class Help extends Command {
             return false;
         }
 
-        write(CR);
-        write(Messages.get("help") + CR);
+        writeToTerminal(CR);
+        writeToTerminal(Messages.get("help") + CR);
         return true;
     }
 

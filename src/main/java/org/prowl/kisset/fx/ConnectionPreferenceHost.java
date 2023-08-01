@@ -141,13 +141,15 @@ public class ConnectionPreferenceHost {
     public void showPanelForInterfaceType(Class anInterface) {
         currentInterfaceClass = anInterface;
 
-        // Nothing selected? remove the children
+        // First remove all child gui nodes
+        connectionContent.getChildren().clear();
+
+        // Nothing selected? Then just return - nothing to display.
         if (anInterface == null) {
-            connectionContent.getChildren().clear();
             return;
         }
 
-        // Get the annotation
+        // Get the annotation for what we are about to display
         InterfaceDriver interfaceDriver = (InterfaceDriver) anInterface.getAnnotation(InterfaceDriver.class);
         String uiName = interfaceDriver.uiName();
 

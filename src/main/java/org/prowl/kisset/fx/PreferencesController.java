@@ -10,6 +10,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import javafx.scene.control.TextField;
 import javafx.scene.control.cell.ComboBoxListCell;
 import javafx.stage.Stage;
 import org.apache.commons.configuration.HierarchicalConfiguration;
@@ -41,6 +42,8 @@ public class PreferencesController {
     private Label explanatoryText;
     @FXML
     private ListView interfaceList;
+    @FXML
+    private TextField stationCallsign;
     private final List<Interface> interfaces = new ArrayList<>();
     private Config config;
 
@@ -51,6 +54,11 @@ public class PreferencesController {
 
     @FXML
     public void onSaveButtonClicked() {
+
+        // Callsign.
+        config.setProperty("callsign", stationCallsign.getText());
+
+        // Interfaces preference pane
         // Save our preferences config
         config.saveConfig();
 
@@ -103,12 +111,14 @@ public class PreferencesController {
                 }
             };
         });
-
-
         updateList();
     }
 
     public void updateList() {
+        // General preference pane
+        stationCallsign.setText(config.getConfig("callsign","N0CALL"));
+
+        // Interfaces preference pane
         interfaces.clear();
         // Get a list of interfaces
         List<HierarchicalConfiguration> interfaceConfigs = config.getConfig("interfaces").configurationsAt("interface");
@@ -139,8 +149,6 @@ public class PreferencesController {
                 removeInterfaceButton.setDisable(true);
             }
         });
-
-
     }
 
 
@@ -179,8 +187,5 @@ public class PreferencesController {
                 break;
             }
         }
-//
-
-
     }
 }

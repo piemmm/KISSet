@@ -44,7 +44,7 @@ public abstract class Command {
      * @param s
      * @throws IOException
      */
-    public void write(String s) throws IOException {
+    public void writeToTerminal(String s) throws IOException {
         tncHost.send(s);
     }
 
@@ -60,6 +60,7 @@ public abstract class Command {
     public void setMode(Mode mode, boolean sendPrompt) throws IOException {
         commandParser.setMode(mode, sendPrompt);
     }
+
 
     public void popModeFromStack() {
         commandParser.popModeFromStack();

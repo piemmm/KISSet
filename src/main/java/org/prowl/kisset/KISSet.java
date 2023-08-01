@@ -1,10 +1,13 @@
 package org.prowl.kisset;
 
 import javafx.application.Application;
+import javafx.application.Platform;
+import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.prowl.kisset.config.Config;
@@ -39,21 +42,6 @@ public class KISSet extends Application {
             System.exit(1);
         }
 
-        // All done
-        Thread t = new Thread() {
-            public void run() {
-                while (true) {
-                    try {
-                        Thread.sleep(1000);
-
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        };
-        t.start();
-
 
         // Create the GUI.
         FXMLLoader fxmlLoader = new FXMLLoader(KISSet.class.getResource("fx/KISSetController.fxml"));
@@ -64,6 +52,14 @@ public class KISSet extends Application {
         stage.setScene(scene);
         stage.show();
         controller.setup();
+
+        stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+            @Override
+            public void handle(WindowEvent t) {
+                Platform.exit();
+                System.exit(0);
+            }
+        });
 
     }
 

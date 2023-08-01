@@ -4,12 +4,15 @@ import javafx.application.Platform;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.prowl.kisset.KISSet;
 import org.prowl.kisset.Messages;
 import org.prowl.kisset.comms.host.parser.CommandParser;
+import org.prowl.kisset.io.Interface;
 import org.prowl.kisset.util.ANSI;
 import org.prowl.kisset.util.Tools;
 
 import java.io.*;
+import java.util.List;
 
 /**
  * Each TNC host
@@ -40,6 +43,8 @@ public class TNCHost {
         this.parser = new CommandParser(this);
 
         start();
+
+
     }
 
     // Start the TNC host
@@ -52,8 +57,15 @@ public class TNCHost {
 
                 try {
                     // Write welcome/init message to the client.
-                    send(CR);
+                    for (int i = 0; i < 100; i++) {
+                        send(CR);
+                    }
                     send(Messages.get("tncInit") + CR);
+
+                    checkConfiguration();
+
+                    send(Messages.get("tncHelp") + CR);
+
                     send(parser.getPrompt());
                 } catch (IOException e) {
                     LOG.error(e.getMessage(), e);
@@ -102,5 +114,21 @@ public class TNCHost {
         out.flush();
     }
 
+
+    public void checkConfiguration() {
+        // Go through each interface and check for a fail reason
+        // If there is a fail reason, then we need to display a warning to the user.
+        List<Interface> interfaces = KISSet.INSTANCE.getInterfaceHandler().getInterfaces();
+        for (Interface iface : interfaces) {
+            String failReason = iface.getFailReason();
+            if (failReason != null) {
+                try {
+                    send("*** " + failReason + CR);
+                } catch(IOException e) {
+
+                }
+            }
+        }
+    }
 
 }

@@ -37,7 +37,11 @@ public class KISSviaTCP extends Interface {
     private final HierarchicalConfiguration config;
     private boolean running;
 
+
+
+
     public KISSviaTCP(HierarchicalConfiguration config) {
+        super();
         this.config = config;
 
         // The address and port of the KISS interface we intend to connect to (KISS over IP or Direwolf, etc)
@@ -56,6 +60,10 @@ public class KISSviaTCP extends Interface {
         maxFrames = config.getInt("maxFrames", 3);
         frequency = config.getInt("frequency", 0);
         retries = config.getInt("retries", 6);
+
+        for (int i = 0; i < 10; i++) {
+
+        }
 
     }
 
@@ -106,7 +114,9 @@ public class KISSviaTCP extends Interface {
         }
 
         if (in == null || out == null) {
+            failReason = "Could not connect to remote KISS service at: " + address + ":" + port;
             LOG.error("Unable to connect to kiss service at: " + address + ":" + port + " - this connector is stopping.");
+            running = false;
             return;
         }
 
@@ -237,4 +247,5 @@ public class KISSviaTCP extends Interface {
 
         return true;
     }
+
 }

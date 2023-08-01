@@ -375,8 +375,7 @@ public class Terminal implements Term {
 
     public void draw_cursor() {
         //Platform.runLater(() -> {
-
-        // cursor_graphics.fillRect(x, y - char_height, char_width, char_height);
+        cursor_graphics.fillRect(x, y - char_height, char_width, char_height);
         //});
         // repaint(x, y - char_height, char_width, char_height);
     }

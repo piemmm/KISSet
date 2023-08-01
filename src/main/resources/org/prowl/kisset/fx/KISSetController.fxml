@@ -36,7 +36,7 @@
             <center>
                 <ScrollPane fitToHeight="true" fitToWidth="true" hbarPolicy="NEVER"
                             AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0"
-                            fx:id="mScrollPane">
+                            fx:id="theScrollPane">
 
                     <StackPane fx:id="stackPane" BorderPane.alignment="CENTER"  prefHeight="1200" prefWidth="700" />
 

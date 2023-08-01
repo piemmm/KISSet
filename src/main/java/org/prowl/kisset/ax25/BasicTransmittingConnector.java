@@ -500,6 +500,11 @@ public class BasicTransmittingConnector extends Connector implements Transmittin
         }
     }
 
+    public void disconnect() {
+
+  //TODO      stack.transmitDISC(this, local, remote, digis, true);
+    }
+
     /**
      * Wrapper class for frames delay-queued for transmission.
      */

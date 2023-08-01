@@ -40,6 +40,7 @@ public class KISSviaSerial extends Interface {
     private SerialPort serialPort = null; // The chosen port form our enumerated list.
 
     public KISSviaSerial(HierarchicalConfiguration config) {
+        super();
         this.config = config;
 
         // The address and port of the KISS interface we intend to connect to (KISS over Serial)
@@ -62,18 +63,8 @@ public class KISSviaSerial extends Interface {
         frequency = config.getInt("frequency", 0);
         retries = config.getInt("retries", 6);
 
-        // Rather than just use the port descriptor, we'll iterate through all the ports so we can at least see
-        // what the system has available, so the user is not completely in the dark whe looking at logs.
-        SerialPort[] ports = SerialPort.getCommPorts();
-        for (SerialPort testPort : ports) {
-            LOG.info("Found serial port: " + testPort.getSystemPortName());
-            if (testPort.getSystemPortPath().equals(port)) {
-                LOG.info(" ** Using serial port: " + testPort.getSystemPortName());
-                serialPort = testPort;
-            }
-        }
-
     }
+
 
     public static List<SerialPort> getListOfSerialPorts() {
         // Rather than just use the port descriptor, we'll iterate through all the ports so we can at least see
@@ -96,14 +87,15 @@ public class KISSviaSerial extends Interface {
         // what the system has available, so the user is not completely in the dark whe looking at logs.
         SerialPort[] ports = SerialPort.getCommPorts();
         for (SerialPort testPort : ports) {
-            LOG.debug("Found serial port: " + testPort.getSystemPortName());
+            LOG.debug("Found serial port: " + testPort.getSystemPortName() + " - " + testPort.getSystemPortPath() + " - " + testPort.getDescriptivePortName()+ " - " + testPort.getPortDescription());
             if (testPort.getSystemPortPath().equals(port)) {
                 serialPort = testPort;
             }
         }
 
         if (serialPort == null) {
-            LOG.warn("Configuration problem - port " + port + " needs to be set correctly");
+            failReason = "Could not find serial port: " + port;
+            LOG.warn(failReason);
             return;
         }
         LOG.debug(" ** Using serial port: " + serialPort.getSystemPortName());
@@ -114,6 +106,7 @@ public class KISSviaSerial extends Interface {
     }
 
     public void setup() {
+
         int parityInt = SerialPort.NO_PARITY;
         if (parity.equalsIgnoreCase("E")) {
             parityInt = SerialPort.EVEN_PARITY;
@@ -136,7 +129,8 @@ public class KISSviaSerial extends Interface {
 
 
         if (in == null || out == null) {
-            LOG.error("Unable to connect to kiss service at: " + port + " - this connector is stopping.");
+            LOG.error("Unable to connect to KISS device at: " + port + " - this connector is stopping.");
+            running = false;
             return;
         }
 
@@ -240,7 +234,7 @@ public class KISSviaSerial extends Interface {
     @Override
     public String toString() {
         if (serialPort == null) {
-            return getClass().getSimpleName() + " (serial port not found!)";
+            return getClass().getSimpleName() + " ("+port+")";
         }
         return getClass().getSimpleName() + " (" + serialPort.toString() + "/" + serialPort.getSystemPortName() + ")";
     }

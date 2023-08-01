@@ -2,10 +2,14 @@ package org.prowl.kisset.comms.host.parser;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.prowl.kisset.KISSet;
 import org.prowl.kisset.Messages;
 import org.prowl.kisset.annotations.TNCCommand;
 import org.prowl.kisset.comms.host.TNCHost;
 import org.prowl.kisset.comms.host.parser.commands.Command;
+import org.prowl.kisset.io.Interface;
+import org.prowl.kisset.io.InterfaceHandler;
+import org.prowl.kisset.io.Stream;
 import org.prowl.kisset.util.ANSI;
 import org.reflections.Reflections;
 
@@ -34,11 +38,15 @@ public class CommandParser {
     protected List<Mode> modeStack = new ArrayList<>();
     // Default to command mode.
     private Mode mode = Mode.CMD;
+
+    private Interface currentInterface;
+
     private OutputStream divertStream;
 
     public CommandParser(TNCHost tncHost) {
         this.tncHost = tncHost;
         makeCommands();
+        finishInit();
     }
 
     /**
@@ -66,11 +74,19 @@ public class CommandParser {
         }
     }
 
+    public void finishInit() {
+        List<Interface> interfaces = KISSet.INSTANCE.getInterfaceHandler().getInterfaces();
+        // Default to getting the first interface
+        if (interfaces.size() > 0) {
+            currentInterface = interfaces.get(0);
+        }
+    }
+
     public void parse(String c) throws IOException {
 
         try {
             // Local echo
-            write(c + CR);
+            writeToTerminal(c + CR);
 
             if (mode == Mode.CMD || mode == Mode.MESSAGE_LIST_PAGINATION || mode == Mode.MESSAGE_READ_PAGINATION) {
                 String[] arguments = c.split(" "); // Arguments[0] is the command used.
@@ -78,7 +94,7 @@ public class CommandParser {
                 // If the command matches, then we will send the command. It is up to the command to check the mode we are
                 // in and act accordingly.
                 boolean commandExecuted = false;
-                    try {
+                try {
                     for (Command command : commands) {
                         String[] supportedCommands = command.getCommandNames();
                         for (String supportedCommand : supportedCommands) {
@@ -95,10 +111,10 @@ public class CommandParser {
                         unknownCommand();
                     }
                 } catch (IOException e) {
-                        // Thrown if the command generated an error (like a connector not being setup due to a missing
-                        // serial port device.
-                        LOG.error(e.getMessage(), e);
-                        write("*** Error: " + e.getMessage() + CR);
+                    // Thrown if the command generated an error (like a connector not being setup due to a missing
+                    // serial port device.
+                    LOG.error(e.getMessage(), e);
+                    writeToTerminal("*** Error: " + e.getMessage() + CR);
                 }
                 sendPrompt();
             } else if (mode == Mode.CONNECTED_TO_STATION) {
@@ -117,7 +133,7 @@ public class CommandParser {
             }
         } catch (Throwable e) {
             LOG.error(e.getMessage(), e);
-            write("*** Error: " + e.getMessage() + CR);
+            writeToTerminal("*** Error: " + e.getMessage() + CR);
 
         }
     }
@@ -138,7 +154,7 @@ public class CommandParser {
 
     public void sendPrompt() throws IOException {
         try {
-            write(CR + getPrompt());
+            writeToTerminal(CR + getPrompt());
             tncHost.flush();
         } catch (EOFException e) {
             // Connection has gone
@@ -153,9 +169,28 @@ public class CommandParser {
         this.mode = mode;
     }
 
-    public void setMode(Mode mode, boolean sendPrompt) throws IOException {
+    public void setMode(Mode mode, boolean sendPrompt) {
         this.mode = mode;
-        sendPrompt();
+        if (sendPrompt) {
+            try {
+                sendPrompt();
+            } catch (IOException e) {
+                // Ignore this one.
+            }
+        }
+    }
+
+    public void setModeIfCurrentStream(Mode mode, Stream callerStream) {
+        if (currentInterface != null && getCurrentInterface().getCurrentStream() == callerStream) {
+          setMode(mode);
+        }
+    }
+
+
+    public void setModeIfCurrentStream(Mode mode, Stream callerStream, boolean sendPrompt) {
+        if (currentInterface != null && getCurrentInterface().getCurrentStream() == callerStream) {
+           setMode(mode, sendPrompt);
+        }
     }
 
     public void unknownCommand() throws IOException {
@@ -173,7 +208,7 @@ public class CommandParser {
      * @param s
      * @throws IOException
      */
-    public void write(String s) throws IOException {
+    public void writeToTerminal(String s) throws IOException {
         tncHost.send(s);
     }
 
@@ -202,5 +237,13 @@ public class CommandParser {
             mode = Mode.CMD;
         }
         return mode;
+    }
+
+    public void setCurrentInterface(Interface currentInterface) {
+        this.currentInterface = currentInterface;
+    }
+
+    public Interface getCurrentInterface() {
+        return currentInterface;
     }
 }

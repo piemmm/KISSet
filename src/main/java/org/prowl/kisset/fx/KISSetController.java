@@ -5,6 +5,7 @@ import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.StackPane;
 import org.apache.commons.logging.Log;
@@ -30,8 +31,8 @@ public class KISSetController {
     @FXML
     TextField textEntry;
 
-//    @FXML
-//    ScrollPane mScrollPane;
+    @FXML
+    ScrollPane theScrollPane;
     @FXML
     StackPane stackPane;
     TerminalCanvas canvas;
@@ -90,6 +91,13 @@ public class KISSetController {
             e.printStackTrace();
         }
 
+        Platform.runLater(() -> {
+
+            // Initially the scroll pane to the bottom.
+            theScrollPane.setVvalue(Double.MAX_VALUE);
+
+
+        });
 
         TNCHost tncHost = new TNCHost(KISSet.INSTANCE.getConfig().getConfig("tnc"), outpis, inpos);
         Tools.runOnThread(() -> {
