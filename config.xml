@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="ISO-8859-1" standalone="no"?>
-<!-- KISSet configuration test file -->
-<configuration>
-    <!-- Station default callsign used for outgoing connections on any interface, unless overridden
-         in the interface config itself -->
-    <callsign>G0TAI-3</callsign>
-    <interfaces>
-    </interfaces>
-</configuration>

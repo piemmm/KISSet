@@ -26,18 +26,24 @@ public class Config {
     public void loadConfig() {
         LOG.info("Loading configuration from: " + new File(new File("").getAbsolutePath(), CONFIG_FILE));
         File configFile = new File(new File("").getAbsolutePath(), CONFIG_FILE);
+
+        // No config? Use the default one
+        if (!configFile.exists()) {
+            // Does not exist, make a default config
+            makeDefaultConfig();
+            return;
+        }
+
+        // Load the configuration from disk
         try {
             configuration = new XMLConfiguration(configFile);
         } catch (Throwable e) {
-            if (configFile.exists()) {
+
                 e.printStackTrace();
                 System.err.println("Search path: " + new File("").getAbsolutePath());
                 System.err.println("Unable to load production config file, exiting:" + e.getMessage());
                 System.exit(1);
-            } else {
-                // Does not exist, make a default config
-                configuration = makeDefaultConfig();
-            }
+
         }
     }
 
@@ -62,22 +68,23 @@ public class Config {
     }
 
     public void saveConfig() {
-        LOG.info("Saving configuration to: " + new File(new File("").getAbsolutePath(), CONFIG_FILE));
+        File configFile = new File(new File("").getAbsolutePath(), CONFIG_FILE);
+        LOG.info("Saving configuration to: " +configFile);
         try {
-            configuration.save();
+            configuration.save(configFile);
         } catch (Throwable e) {
             LOG.error("Unable to save configuration file: " + e.getMessage(), e);
         }
     }
 
-    private XMLConfiguration makeDefaultConfig() {
+    private void makeDefaultConfig() {
+        LOG.info("Making new default configuration");
         try {
-            XMLConfiguration config = new XMLConfiguration(Config.class.getResource("config-default.xml"));
-            return config;
+             configuration = new XMLConfiguration(Config.class.getResource("config-default.xml"));
+            saveConfig();
         } catch(ConfigurationException e) {
             LOG.error(e.getMessage(),e);
         }
-        return null;
     }
 
 }
