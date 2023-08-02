@@ -1,68 +1,9 @@
 <?xml version="1.0" encoding="ISO-8859-1" standalone="no"?>
-<!-- KISSet configuration test file --><configuration>
+<!-- KISSet configuration test file -->
+<configuration>
     <!-- Station default callsign used for outgoing connections on any interface, unless overridden
          in the interface config itself -->
     <callsign>G0TAI-3</callsign>
-    <bluetooth>
-                                                                                
-        
-        
-        
-        
-        
-        
-        
-        
-        <deviceName>TH-D74</deviceName>
-                                                                            
-    
-    
-    
-    
-    
-    
-    
-    
-    </bluetooth>
     <interfaces>
-                                                                                
-    
-        
-        
-            
-    
-        
-        
-        
-                    
-    
-        
-        
-            
-    
-        
-        
-        <interface>
-                                    
-            
-            <uuid>3b4d8534-8a63-430c-a7cc-f17799c25b9d</uuid>
-                                    
-            
-            <serialPort>/dev/tty.usbmodem101</serialPort>
-                                    
-            
-            <baudRate>19200</baudRate>
-                                    
-            
-            <className>org.prowl.kisset.io.KISSviaSerial</className>
-                                
-        
-        </interface>
-                    
-    
     </interfaces>
-    <tnc>
-
-
-    </tnc>
 </configuration>

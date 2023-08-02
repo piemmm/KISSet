@@ -1,5 +1,7 @@
 package org.prowl.kisset;
 
+import atlantafx.base.theme.PrimerDark;
+import atlantafx.base.theme.PrimerLight;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.event.EventHandler;
@@ -33,6 +35,10 @@ public class KISSet extends Application {
     @Override
     public void start(Stage stage) throws IOException {
         try {
+
+            //Application.setUserAgentStylesheet(new PrimerLight().getUserAgentStylesheet());
+            //Application.setUserAgentStylesheet(new PrimerDark().getUserAgentStylesheet());
+
             // Init resource bundles.
             Messages.init();
 

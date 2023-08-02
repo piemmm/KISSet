@@ -14,6 +14,7 @@ module org.prowl.kisset {
     requires org.reflections;
     requires com.fazecast.jSerialComm;
     requires commons.lang;
+    requires atlantafx.base;
 
     opens org.prowl.kisset to javafx.fxml;
     exports org.prowl.kisset;
