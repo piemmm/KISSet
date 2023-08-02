@@ -33,18 +33,14 @@ public class TNCHost {
     /**
      * Create a new TNC host.
      *
-     * @param config The configuration for this host.
      * @param in     The input stream for the terminal window.
      * @param out    The output stream for the terminal window.
      */
-    public TNCHost(HierarchicalConfiguration config, InputStream in, OutputStream out) {
+    public TNCHost(InputStream in, OutputStream out) {
         this.in = in;
         this.out = out;
         this.parser = new CommandParser(this);
-
         start();
-
-
     }
 
     // Start the TNC host

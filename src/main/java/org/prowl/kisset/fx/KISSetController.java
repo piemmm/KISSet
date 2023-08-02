@@ -99,7 +99,7 @@ public class KISSetController {
 
         });
 
-        TNCHost tncHost = new TNCHost(KISSet.INSTANCE.getConfig().getConfig("tnc"), outpis, inpos);
+        TNCHost tncHost = new TNCHost(outpis, inpos);
         Tools.runOnThread(() -> {
             term.start(new Connection() {
                 @Override

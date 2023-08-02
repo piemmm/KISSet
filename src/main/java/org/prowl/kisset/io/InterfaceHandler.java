@@ -44,13 +44,6 @@ public class InterfaceHandler {
             }
         }
 
-        // If there are no connectors configured then exit as there's little point in
-        // continuing.
-        if (interfaces.size() == 0) {
-            LOG.error("Not starting as no interfaces have been configured");
-            System.exit(1);
-        }
-
     }
 
     public void start() {
