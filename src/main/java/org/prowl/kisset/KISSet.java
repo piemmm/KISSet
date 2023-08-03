@@ -2,6 +2,7 @@ package org.prowl.kisset;
 
 import atlantafx.base.theme.PrimerDark;
 import atlantafx.base.theme.PrimerLight;
+import com.jthemedetecor.OsThemeDetector;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.event.EventHandler;
@@ -38,8 +39,23 @@ public class KISSet extends Application {
     public void start(Stage stage) throws IOException {
         try {
 
-            //Application.setUserAgentStylesheet(new PrimerLight().getUserAgentStylesheet());
-            //Application.setUserAgentStylesheet(new PrimerDark().getUserAgentStylesheet());
+            // Find out if the system theme is a 'dark' or a 'light' theme.
+            final OsThemeDetector detector = OsThemeDetector.getDetector();
+            detector.registerListener(isDark -> {
+                Platform.runLater(() -> {
+                    if (isDark) {
+                        Application.setUserAgentStylesheet(new PrimerDark().getUserAgentStylesheet());
+                    } else {
+                        Application.setUserAgentStylesheet(new PrimerLight().getUserAgentStylesheet());
+                    }
+                });
+            });
+            final boolean isDarkThemeUsed = detector.isDark();
+            if (isDarkThemeUsed) {
+                Application.setUserAgentStylesheet(new PrimerDark().getUserAgentStylesheet());
+            } else {
+                Application.setUserAgentStylesheet(new PrimerLight().getUserAgentStylesheet());
+            }
 
             // Init resource bundles.
             Messages.init();
@@ -50,13 +66,12 @@ public class KISSet extends Application {
             System.exit(1);
         }
 
-
         // Create the GUI.
         FXMLLoader fxmlLoader = new FXMLLoader(KISSet.class.getResource("fx/KISSetController.fxml"));
         Parent root = fxmlLoader.load();
         KISSetController controller = fxmlLoader.getController();
         Scene scene = new Scene(root, 700, 480);
-        stage.setTitle("KISSet - TH-D74(Bluetooth)");
+        stage.setTitle("KISSet");
         stage.setScene(scene);
         stage.show();
         controller.setup();

@@ -15,6 +15,10 @@ module org.prowl.kisset {
     requires commons.lang;
     requires atlantafx.base;
     requires java.sql;
+    requires nsmenufx;
+    requires com.jthemedetector;
+    requires com.github.oshi;
+    requires versioncompare;
 
     opens org.prowl.kisset to javafx.fxml;
     exports org.prowl.kisset;

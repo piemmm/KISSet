@@ -23,10 +23,19 @@ public class Config {
         loadConfig();
     }
 
-    public void loadConfig() {
-        LOG.info("Loading configuration from: " + new File(new File("").getAbsolutePath(), CONFIG_FILE));
-        File configFile = new File(new File("").getAbsolutePath(), CONFIG_FILE);
+    public File getConfigFile() {
+        String userHome = System.getProperty("user.home");
+        File appDir = new File(userHome, ".kisset");
+        if (!appDir.exists()) {
+            appDir.mkdirs();
+        }
+        File configFile = new File(appDir, CONFIG_FILE);
+        return configFile;
+    }
 
+    public void loadConfig() {
+        LOG.info("Loading configuration from: " + getConfigFile());
+        File configFile = getConfigFile();
         // No config? Use the default one
         if (!configFile.exists()) {
             // Does not exist, make a default config
@@ -68,7 +77,7 @@ public class Config {
     }
 
     public void saveConfig() {
-        File configFile = new File(new File("").getAbsolutePath(), CONFIG_FILE);
+        File configFile = getConfigFile();
         LOG.info("Saving configuration to: " +configFile);
         try {
             configuration.save(configFile);

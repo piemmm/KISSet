@@ -1,10 +1,16 @@
 package org.prowl.kisset.fx;
 
 
+import de.jangassen.MenuToolkit;
+import de.jangassen.model.AppearanceMode;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
+import javafx.scene.control.*;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuBar;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.StackPane;
@@ -30,7 +36,10 @@ public class KISSetController {
     private static final Log LOG = LogFactory.getLog("KISSetController");
     @FXML
     TextField textEntry;
-
+    @FXML
+    MenuBar menuBar;
+    @FXML
+    MenuItem preferencesMenuItem;
     @FXML
     ScrollPane theScrollPane;
     @FXML
@@ -92,12 +101,29 @@ public class KISSetController {
         }
 
         Platform.runLater(() -> {
-
             // Initially the scroll pane to the bottom.
             theScrollPane.setVvalue(Double.MAX_VALUE);
-
-
         });
+
+        // A little messing around with menubars for macos
+        final String os = System.getProperty("os.name");
+        if (os != null && os.startsWith("Mac")) {
+            menuBar.useSystemMenuBarProperty().set(true);
+            MenuToolkit tk = MenuToolkit.toolkit();
+            tk.setAppearanceMode(AppearanceMode.AUTO);
+            Menu defaultApplicationMenu = tk.createDefaultApplicationMenu("KISSet");
+            tk.setApplicationMenu(defaultApplicationMenu);
+            Menu fileMenu = preferencesMenuItem.getParentMenu();
+            fileMenu.setVisible(false);
+            fileMenu.setDisable(true);
+            preferencesMenuItem.getParentMenu().getItems().remove(preferencesMenuItem);
+            defaultApplicationMenu.getItems().add(1, preferencesMenuItem);
+            defaultApplicationMenu.getItems().add(1, new SeparatorMenuItem());
+        } else {
+            // traditional menu bar.
+
+        }
+
 
         TNCHost tncHost = new TNCHost(outpis, inpos);
         Tools.runOnThread(() -> {

@@ -33,8 +33,8 @@ public class TNCHost {
     /**
      * Create a new TNC host.
      *
-     * @param in     The input stream for the terminal window.
-     * @param out    The output stream for the terminal window.
+     * @param in  The input stream for the terminal window.
+     * @param out The output stream for the terminal window.
      */
     public TNCHost(InputStream in, OutputStream out) {
         this.in = in;
@@ -112,18 +112,22 @@ public class TNCHost {
 
 
     public void checkConfiguration() {
-        // Go through each interface and check for a fail reason
-        // If there is a fail reason, then we need to display a warning to the user.
-        List<Interface> interfaces = KISSet.INSTANCE.getInterfaceHandler().getInterfaces();
-        for (Interface iface : interfaces) {
-            String failReason = iface.getFailReason();
-            if (failReason != null) {
-                try {
-                    send("*** " + failReason + CR);
-                } catch(IOException e) {
-
+        try {
+            // Go through each interface and check for a fail reason
+            // If there is a fail reason, then we need to display a warning to the user.
+            List<Interface> interfaces = KISSet.INSTANCE.getInterfaceHandler().getInterfaces();
+            if (interfaces.size() > 0) {
+                for (Interface iface : interfaces) {
+                    String failReason = iface.getFailReason();
+                    if (failReason != null) {
+                        send("*** " + failReason + CR);
+                    }
                 }
+            } else {
+                send(ANSI.YELLOW+"*** No interfaces configured - please set one up in the preferences"+ANSI.NORMAL + CR);
             }
+        } catch (IOException e) {
+
         }
     }
 

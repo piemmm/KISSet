@@ -51,8 +51,35 @@
 
     </properties>
 
+    <repositories>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+    </repositories>
 
     <dependencies>
+
+        <!-- https://mvnrepository.com/artifact/io.github.g00fy2/versioncompare -->
+        <dependency>
+            <groupId>io.github.g00fy2</groupId>
+            <artifactId>versioncompare</artifactId>
+            <version>1.5.0</version>
+        </dependency>
+
+
+        <!--         com.github.Dansoftowner:jSystemThemeDetector:3.6-->
+        <dependency>
+            <groupId>com.github.Dansoftowner</groupId>
+            <artifactId>jSystemThemeDetector</artifactId>
+            <version>3.8</version>
+        </dependency>
+
+        <dependency>
+            <groupId>de.jangassen</groupId>
+            <artifactId>nsmenufx</artifactId>
+            <version>3.1.0</version>
+        </dependency>
 
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -197,6 +224,12 @@
             <groupId>com.googlecode.lanterna</groupId>
             <artifactId>lanterna</artifactId>
             <version>3.0.2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.oshi</groupId>
+            <artifactId>oshi-core</artifactId>
+            <version>5.8.6</version>
+            <scope>compile</scope>
         </dependency>
 
     </dependencies>

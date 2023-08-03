@@ -24,6 +24,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class PreferencesController {
 
@@ -116,7 +117,7 @@ public class PreferencesController {
 
     public void updateList() {
         // General preference pane
-        stationCallsign.setText(config.getConfig("callsign","N0CALL"));
+        stationCallsign.setText(config.getConfig("callsign","N0CALL").toUpperCase(Locale.ENGLISH));
 
         // Interfaces preference pane
         interfaces.clear();
