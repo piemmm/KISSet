@@ -17,8 +17,10 @@ import org.prowl.kisset.fx.KISSetController;
 import org.prowl.kisset.fx.PreferencesController;
 import org.prowl.kisset.io.InterfaceHandler;
 
-import java.io.IOException;
+import java.io.*;
 import java.util.Locale;
+
+import static javax.swing.filechooser.FileSystemView.getFileSystemView;
 
 public class KISSet extends Application {
 
@@ -118,7 +120,15 @@ public class KISSet extends Application {
     public void init() throws Exception {
         super.init();
         INSTANCE = KISSet.this;
-
+        // Push debugging to a file if we are debugging a built app with no console
+//        try {
+//            File outputFile = File.createTempFile("debug", ".log", getFileSystemView().getDefaultDirectory());
+//            PrintStream output = new PrintStream(new BufferedOutputStream(new FileOutputStream(outputFile)), true);
+//            System.setOut(output);
+//            System.setErr(output);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
     }
 
 

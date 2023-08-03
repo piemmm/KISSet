@@ -19,6 +19,10 @@ public class ChangeStream extends Command {
         @Override
         public boolean doCommand(String[] data) throws IOException {
 
+            if (commandParser.getCurrentInterface() == null) {
+                writeToTerminal("*** No interface configured!");
+                return true;
+            }
             // No parameter? Just list the streams then
             if (data.length == 1) {
                 writeToTerminal(CR+ANSI.BOLD+ANSI.UNDERLINE+"Stream  Status                                      "+ANSI.NORMAL + CR);
