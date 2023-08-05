@@ -525,7 +525,7 @@
             <properties>
                 <macos.sign>--mac-sign</macos.sign>
                 <!-- You will have to replace this with your own dev information from your Apple identity -->
-                <macos.sign.identity>--mac-signing-key-user-name "Ian Hawkins. (7B7G365W57)"</macos.sign.identity>
+                <macos.sign.identity>--mac-signing-key-user-name "Ian Hawkins (7B7G365W57)"</macos.sign.identity>
             </properties>
         </profile>
 
