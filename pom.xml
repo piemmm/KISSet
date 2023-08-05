@@ -43,7 +43,7 @@
         grab a unique UUID via https://www.uuidgenerator.net -->
         <windows.upgrade.uuid>9bd2f72c-94a4-49a3-9664-9b93a23498ce</windows.upgrade.uuid>
         <!-- This is used to set many user-visible fields in the Windows Installer. See windows-jpackage.txt -->
-        <windows.vendor>"Ian Hawkins G0TAI"</windows.vendor>
+        <windows.vendor>Ian_Hawkins_G0TAI</windows.vendor>
 
         <!-- Empty properties to skip signing by default. Set with the macos-sign Maven profile -->
         <macos.sign></macos.sign>
