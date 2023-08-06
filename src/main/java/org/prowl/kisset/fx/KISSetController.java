@@ -119,6 +119,10 @@ public class KISSetController {
             preferencesMenuItem.getParentMenu().getItems().remove(preferencesMenuItem);
             defaultApplicationMenu.getItems().add(1, preferencesMenuItem);
             defaultApplicationMenu.getItems().add(1, new SeparatorMenuItem());
+
+            defaultApplicationMenu.getItems().get(defaultApplicationMenu.getItems().size()-1).setOnAction(event -> {
+                KISSet.INSTANCE.quit();
+            });
         } else {
             // traditional menu bar.
 

@@ -37,6 +37,7 @@ public class KISSet extends Application {
 
     @Override
     public void start(Stage stage) throws IOException {
+        Platform.setImplicitExit(false);
         try {
 
             // Find out if the system theme is a 'dark' or a 'light' theme.
@@ -79,8 +80,9 @@ public class KISSet extends Application {
         stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
             @Override
             public void handle(WindowEvent t) {
-                Platform.exit();
-                System.exit(0);
+                stage.hide();
+               // Platform.exit();
+               // System.exit(0);
             }
         });
 
@@ -163,6 +165,7 @@ public class KISSet extends Application {
      * Time to shut down
      */
     public void quit() {
+        Platform.exit();
         System.exit(0);
     }
 }
