@@ -172,12 +172,13 @@
             <version>[2.0.0,3.0.0)</version>
         </dependency>
 
-        <!-- Bluecove to talk to the bluetooth KISS TNCs -->
-        <dependency>
-            <groupId>net.sf.bluecove</groupId>
-            <artifactId>bluecove</artifactId>
-            <version>2.1.0</version>
-        </dependency>
+<!--        Bluecove is currently unmaintained so it seems, so on macos it doesn't pass validation(or even work)-->
+<!--        &lt;!&ndash; Bluecove to talk to the bluetooth KISS TNCs &ndash;&gt;-->
+<!--        <dependency>-->
+<!--            <groupId>net.sf.bluecove</groupId>-->
+<!--            <artifactId>bluecove</artifactId>-->
+<!--            <version>2.1.0</version>-->
+<!--        </dependency>-->
         <dependency>
             <groupId>org.junit.platform</groupId>
             <artifactId>junit-platform-runner</artifactId>
