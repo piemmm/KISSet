@@ -1,18 +1,19 @@
 package org.prowl.kisset.fx;
 
 
+import com.google.common.eventbus.Subscribe;
 import de.jangassen.MenuToolkit;
 import de.jangassen.model.AppearanceMode;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
-import javafx.scene.control.*;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.layout.StackPane;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -20,6 +21,8 @@ import org.jfree.fx.FXGraphics2D;
 import org.prowl.kisset.KISSet;
 import org.prowl.kisset.comms.host.TNCHost;
 import org.prowl.kisset.comms.host.parser.CommandParser;
+import org.prowl.kisset.eventbus.SingleThreadBus;
+import org.prowl.kisset.eventbus.events.ConfigurationChangedEvent;
 import org.prowl.kisset.gui.terminal.Connection;
 import org.prowl.kisset.gui.terminal.Term;
 import org.prowl.kisset.gui.terminal.Terminal;
@@ -46,10 +49,10 @@ public class KISSetController {
     StackPane stackPane;
     TerminalCanvas canvas;
     private Terminal term;
-    private final PipedInputStream inpis = new PipedInputStream();
-    private final PipedOutputStream inpos = new PipedOutputStream();
-    private final PipedInputStream outpis = new PipedInputStream();
-    private final PipedOutputStream outpos = new PipedOutputStream();
+    private  PipedInputStream inpis;
+    private  PipedOutputStream inpos;
+    private  PipedInputStream outpis;
+    private  PipedOutputStream outpos;
 
     @FXML
     protected void onQuitAction() {
@@ -77,11 +80,30 @@ public class KISSetController {
 
     }
 
-    public void setup() {
+    @Subscribe
+    public void onConfigChanged(ConfigurationChangedEvent event) {
+        Platform.runLater(() -> {
+            configureTerminal();
+            startTerminal();
+        });
+    }
+
+    public void configureTerminal() {
+        stackPane.getChildren().clear();
         term = new Terminal();
         term.setForeGround(Color.WHITE);
+        float fontSize = 14;
+        try {
+            fontSize = KISSet.INSTANCE.getConfig().getConfig("terminalFontSize", 14);
+        } catch (NumberFormatException e) {
+
+        }
+        LOG.debug("Configuring terminal:" + fontSize + "   " + KISSet.INSTANCE.getConfig().getConfig("terminalFont", "Monospaced"));
+
+        term.setFont(KISSet.INSTANCE.getConfig().getConfig("terminalFont", "Monospaced"), fontSize);
+
+
         canvas = new TerminalCanvas(term);
-        Graphics2D g2d = new FXGraphics2D(canvas.getGraphicsContext2D());
         stackPane.getChildren().add(canvas);
 
         canvas.setHeight(1280);
@@ -93,17 +115,24 @@ public class KISSetController {
         canvas.setOnMouseClicked(event -> {
             textEntry.requestFocus();
         });
-        try {
-            inpis.connect(inpos);
-            outpis.connect(outpos);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+
 
         Platform.runLater(() -> {
             // Initially the scroll pane to the bottom.
             theScrollPane.setVvalue(Double.MAX_VALUE);
         });
+        //  term.clear();
+        //  term.setSize(term.getTermWidth(), term.getTermHeight(), true);
+        //  term.resetAllAttributes();
+    }
+
+    public void setup() {
+        SingleThreadBus.INSTANCE.register(this);
+        configureTerminal();
+        //  Graphics2D g2d = new FXGraphics2D(canvas.getGraphicsContext2D());
+
+
+
 
         // A little messing around with menubars for macos
         final String os = System.getProperty("os.name");
@@ -120,12 +149,27 @@ public class KISSetController {
             defaultApplicationMenu.getItems().add(1, preferencesMenuItem);
             defaultApplicationMenu.getItems().add(1, new SeparatorMenuItem());
 
-            defaultApplicationMenu.getItems().get(defaultApplicationMenu.getItems().size()-1).setOnAction(event -> {
+            defaultApplicationMenu.getItems().get(defaultApplicationMenu.getItems().size() - 1).setOnAction(event -> {
                 KISSet.INSTANCE.quit();
             });
         } else {
             // traditional menu bar.
 
+        }
+        startTerminal();
+    }
+
+    public void startTerminal() {
+         inpis = new PipedInputStream();
+         inpos = new PipedOutputStream();
+          outpis = new PipedInputStream();
+        outpos = new PipedOutputStream();
+
+        try {
+            inpis.connect(inpos);
+            outpis.connect(outpos);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
 
@@ -153,8 +197,6 @@ public class KISSetController {
                 }
             });
         });
-
-
     }
 
     static class TerminalCanvas extends Canvas {

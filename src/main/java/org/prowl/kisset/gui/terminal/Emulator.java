@@ -50,6 +50,9 @@ public abstract class Emulator {
 
     public abstract void start();
 
+    public abstract void stop();
+
+
     public abstract byte[] getCodeENTER();
 
     public abstract byte[] getCodeUP();

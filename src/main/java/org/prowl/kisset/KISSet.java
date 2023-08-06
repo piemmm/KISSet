@@ -2,6 +2,7 @@ package org.prowl.kisset;
 
 import atlantafx.base.theme.PrimerDark;
 import atlantafx.base.theme.PrimerLight;
+import com.google.common.eventbus.Subscribe;
 import com.jthemedetecor.OsThemeDetector;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -14,6 +15,8 @@ import javafx.stage.WindowEvent;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.prowl.kisset.config.Config;
+import org.prowl.kisset.eventbus.SingleThreadBus;
+import org.prowl.kisset.eventbus.events.ConfigurationChangedEvent;
 import org.prowl.kisset.fx.KISSetController;
 import org.prowl.kisset.fx.PreferencesController;
 import org.prowl.kisset.io.InterfaceHandler;
@@ -37,6 +40,7 @@ public class KISSet extends Application {
 
     @Override
     public void start(Stage stage) throws IOException {
+        SingleThreadBus.INSTANCE.register(this);
         Platform.setImplicitExit(false);
         try {
 
@@ -167,5 +171,10 @@ public class KISSet extends Application {
     public void quit() {
         Platform.exit();
         System.exit(0);
+    }
+
+    @Subscribe
+    public void onConfigChanged(ConfigurationChangedEvent event) {
+        initAll();
     }
 }

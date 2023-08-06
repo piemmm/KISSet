@@ -7,18 +7,19 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.ComboBoxListCell;
+import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.prowl.kisset.KISSet;
 import org.prowl.kisset.config.Config;
+import org.prowl.kisset.eventbus.SingleThreadBus;
+import org.prowl.kisset.eventbus.events.ConfigurationChangedEvent;
 import org.prowl.kisset.io.Interface;
+import org.prowl.kisset.util.Tools;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -45,8 +46,15 @@ public class PreferencesController {
     private ListView interfaceList;
     @FXML
     private TextField stationCallsign;
+    @FXML
+    private ComboBox fontSelector;
+    @FXML
+    private ComboBox fontSize;
+
     private final List<Interface> interfaces = new ArrayList<>();
     private Config config;
+
+    private int[] FONT_SIZES = {8, 9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 26, 28, 36, 48, 72};
 
     @FXML
     public void onCancelButtonClicked() {
@@ -56,18 +64,23 @@ public class PreferencesController {
     @FXML
     public void onSaveButtonClicked() {
 
-        // Callsign.
+        // General
         config.setProperty("callsign", stationCallsign.getText());
+
+        // Terminal
+        config.setProperty("terminalFont", fontSelector.getSelectionModel().getSelectedItem());
+        config.setProperty("terminalFontSize", fontSize.getSelectionModel().getSelectedItem());
+
 
         // Interfaces preference pane
         // Save our preferences config
         config.saveConfig();
 
-        // Tell the main app to reload the new config
-        KISSet.INSTANCE.initAll();
-
         // Probably post a configChanged event here.
         ((Stage) saveButton.getScene().getWindow()).close();
+
+        // Notify anything interested
+        SingleThreadBus.INSTANCE.post(new ConfigurationChangedEvent());
     }
 
     /**
@@ -94,6 +107,11 @@ public class PreferencesController {
         showAddInterfaceScreen((Interface) interfaceList.getSelectionModel().getSelectedItem());
     }
 
+    @FXML
+    public void onFontSelected() {
+
+    }
+
     public void setup() {
 
         config = new Config(); // Load a new config we can modify without comitting.
@@ -101,23 +119,36 @@ public class PreferencesController {
         editInterfaceButton.setDisable(true);
         removeInterfaceButton.setDisable(true);
 
-        interfaceList.setCellFactory(listView -> {
-            return new ComboBoxListCell<Interface>() {
-                @Override
-                public void updateItem(Interface item, boolean empty) {
-                    super.updateItem(item, empty);
-                    if (item != null) {
-                        setText(item.toString());
-                    }
-                }
-            };
-        });
         updateList();
     }
 
     public void updateList() {
         // General preference pane
         stationCallsign.setText(config.getConfig("callsign","N0CALL").toUpperCase(Locale.ENGLISH));
+
+        fontSelector.setCellFactory(listView -> {
+            return new ComboBoxListCell<String>() {
+                @Override
+                public void updateItem(String item, boolean empty) {
+                    super.updateItem(item, empty);
+                    if (item != null) {
+                        setFont(Font.font(item));
+                        setText(item);
+                    }
+                }
+            };
+        });
+
+        // Terminal preference pane
+        Tools.getMonospacedFonts().forEach(fontSelector.getItems()::add);
+        for (int fontSizei : FONT_SIZES) {
+            fontSize.getItems().add(fontSizei);
+        }
+
+        // Set current font
+        fontSelector.getSelectionModel().select(config.getConfig("terminalFont", "Monospaced"));
+        fontSize.getSelectionModel().select(Integer.valueOf(config.getConfig("terminalFontSize", 14)));
+
 
         // Interfaces preference pane
         interfaces.clear();

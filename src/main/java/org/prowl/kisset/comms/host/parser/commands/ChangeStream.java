@@ -16,40 +16,45 @@ import java.io.IOException;
 public class ChangeStream extends Command {
 
 
-        @Override
-        public boolean doCommand(String[] data) throws IOException {
+    @Override
+    public boolean doCommand(String[] data) throws IOException {
 
-            if (commandParser.getCurrentInterface() == null) {
-                writeToTerminal("*** No interface configured!");
-                return true;
+        if (data.length > 1 && data[1].equals("?")) {
+            writeToTerminal("*** Usage: stream <stream_number>" + CR);
+            return true;
+        }
+
+        if (commandParser.getCurrentInterface() == null) {
+            writeToTerminal("*** No interface configured!");
+            return true;
+        }
+        // No parameter? Just list the streams then
+        if (data.length == 1) {
+            writeToTerminal(CR + ANSI.BOLD + ANSI.UNDERLINE + "Stream  Status                                      " + ANSI.NORMAL + CR);
+            int i = 0;
+            for (Stream stream : commandParser.getCurrentInterface().getStreams()) {
+                writeToTerminal(StringUtils.rightPad(Integer.toString(i) + ": ", 8) + StringUtils.rightPad(stream.getStreamState().name(), 30) + CR);
+                i++;
             }
-            // No parameter? Just list the streams then
-            if (data.length == 1) {
-                writeToTerminal(CR+ANSI.BOLD+ANSI.UNDERLINE+"Stream  Status                                      "+ANSI.NORMAL + CR);
-                int i = 0;
-                for (Stream stream : commandParser.getCurrentInterface().getStreams()) {
-                    writeToTerminal(StringUtils.rightPad(Integer.toString(i)+": ",8) + StringUtils.rightPad(stream.getStreamState().name(),30) + CR);
-                    i++;
-                }
-                writeToTerminal(CR);
-                return true;
-            }
+            writeToTerminal(CR);
+            return true;
+        }
 
 
-            // Prevent stream changes whilst in connecting state
-            if (commandParser.getCurrentInterface().getCurrentStream().getStreamState().equals(StreamState.CONNECTING)) {
-                writeToTerminal("*** Cannot change stream whilst connecting");
-                return false;
-            }
-
-
+        // Prevent stream changes whilst in connecting state
+        if (commandParser.getCurrentInterface().getCurrentStream().getStreamState().equals(StreamState.CONNECTING)) {
+            writeToTerminal("*** Cannot change stream whilst connecting");
             return false;
         }
 
 
-        @Override
-        public String[] getCommandNames() {
-            return new String[]{"streams", "|", "str","st"};
-        }
+        return false;
+    }
+
+
+    @Override
+    public String[] getCommandNames() {
+        return new String[]{"streams", "|", "str", "st", "stream"};
+    }
 
 }

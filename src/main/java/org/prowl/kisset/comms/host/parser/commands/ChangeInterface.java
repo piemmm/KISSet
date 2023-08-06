@@ -20,6 +20,11 @@ public class ChangeInterface extends Command {
     @Override
     public boolean doCommand(String[] data) throws IOException {
 
+        if (data.length > 1 && data[1].equals("?")) {
+            writeToTerminal("*** Usage: interface <interface_number>" + CR);
+            return true;
+        }
+
         // No parameter? Just list the interfaces then
         if (data.length == 1) {
             writeToTerminal(CR+ANSI.BOLD+ANSI.UNDERLINE+"No. Interface                                      "+ANSI.NORMAL + CR);

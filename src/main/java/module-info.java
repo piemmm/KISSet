@@ -19,6 +19,7 @@ module org.prowl.kisset {
     requires com.jthemedetector;
     requires com.github.oshi;
     requires versioncompare;
+    requires com.google.common;
 
     opens org.prowl.kisset to javafx.fxml;
     exports org.prowl.kisset;

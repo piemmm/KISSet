@@ -28,6 +28,11 @@ public class Connect extends Command {
             return false;
         }
 
+        if (commandParser.getCurrentInterface() == null) {
+            writeToTerminal("*** No interfaces configured" + CR);
+            return true;
+        }
+
         Stream stream = commandParser.getCurrentInterface().getCurrentStream();
 
         // If this stream is already connected, then the user must disconnect first
@@ -42,10 +47,11 @@ public class Connect extends Command {
             return false;
         }
 
-        if (data.length < 2) {
+        if (data.length < 2 || data[1].equals("?")) {
             writeToTerminal("*** Usage: connect [<port number>] <station>" + CR);
             return true;
         }
+
 
         // connect: C GB7MNK
         if (data.length == 2) {

@@ -12,6 +12,16 @@ public class Disconnect extends Command {
     @Override
     public boolean doCommand(String[] data) throws IOException {
 
+        if (data.length > 1 && data[1].equals("?")) {
+            writeToTerminal("*** Usage: disconnect" + CR);
+            return true;
+        }
+
+        if (commandParser.getCurrentInterface() == null) {
+            writeToTerminal("*** No interfaces configured" + CR);
+            return true;
+        }
+
         // If we're in command mode, then
         if (commandParser.getCurrentInterface().getCurrentStream().getStreamState().equals(StreamState.DISCONNECTED)) {
             writeToTerminal("*** Not connected to a station");

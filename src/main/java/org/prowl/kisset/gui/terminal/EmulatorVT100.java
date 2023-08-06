@@ -31,6 +31,7 @@ public class EmulatorVT100 extends Emulator {
 
     private static final Log LOG = LogFactory.getLog("EmulatorVT100");
 
+    private boolean running = true;
 
     private static final byte[] ENTER = {(byte) 0x0d};
     private static final byte[] UP = {(byte) 0x1b, (byte) 0x4f, (byte) 0x41};
@@ -73,7 +74,7 @@ public class EmulatorVT100 extends Emulator {
         byte b;
 
         try {
-            while (true) {
+            while (running) {
 
                 b = getChar();
 
@@ -626,5 +627,9 @@ public class EmulatorVT100 extends Emulator {
 
     public byte[] getCodeTAB() {
         return tab;
+    }
+
+    public void stop() {
+        running = false;
     }
 }

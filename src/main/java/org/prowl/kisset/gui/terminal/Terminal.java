@@ -81,9 +81,9 @@ public class Terminal implements Term {
     public Terminal() {
 
 
-        setFont("Monospaced-14");
+        setFont("Monospaced",6f);
 
-        setSize(getTermWidth(), getTermHeight(), true);
+       // setSize(getTermWidth(), getTermHeight(), true);
 
         clear();
 
@@ -119,9 +119,10 @@ public class Terminal implements Term {
         cr = _cr;
     }
 
-    void setFont(String fname) {
+    public void setFont(String fname, float size) {
 
         font = Font.decode(fname);
+       font = font.deriveFont(Font.PLAIN, size);
         BufferedImage img = new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB);
         Graphics2D graphics = (Graphics2D) (img.getGraphics());
         graphics.setFont(font);
@@ -154,6 +155,7 @@ public class Terminal implements Term {
             foog.fillRect(0, 0, char_width, char_height);
             foog.dispose();
         }
+        setSize(getTermWidth(), getTermHeight(), true);
     }
 
     public void setSize(int w, int h, boolean clear) {
@@ -209,10 +211,15 @@ public class Terminal implements Term {
         emulator = new EmulatorVT100(this, in);
         emulator.reset();
         emulator.start();
-
-
         clear();
         redraw(0, 0, getTermWidth(), getTermHeight());
+    }
+
+    public void stop() {
+        emulator.stop();
+        in = null;
+        out = null;
+        connection = null;
     }
 
     public void paintComponent(Graphics2D g) {
@@ -468,6 +475,10 @@ public class Terminal implements Term {
                 : RenderingHints.VALUE_TEXT_ANTIALIAS_OFF;
         RenderingHints hints = new RenderingHints(
                 RenderingHints.KEY_TEXT_ANTIALIASING, mode);
+        hints.put(RenderingHints.KEY_FRACTIONALMETRICS,
+                RenderingHints.VALUE_FRACTIONALMETRICS_ON);
+        hints.put(RenderingHints.KEY_RENDERING,
+                RenderingHints.VALUE_RENDER_QUALITY);
         graphics.setRenderingHints(hints);
     }
 
