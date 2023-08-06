@@ -1,5 +1,6 @@
 package org.prowl.kisset.ax25;
 
+import com.fazecast.jSerialComm.SerialPortIOException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -353,7 +354,12 @@ public class BasicTransmittingConnector extends Connector implements Transmittin
                 if (detail.indexOf(" closed") >= 0 || detail.indexOf(" reset") >= 0) {
                     //   tryToRestartConnection(detail);
                 }
+            } catch(SerialPortIOException e) {
+                LOG.info("Serial port closed (probably reopening due to configuration change)");
+                curState = KissEscapeOutputStream.RcvState.IDLE;
+                sis = null;
             } catch (Throwable e) {
+
                 //    stats.numBadRcvFrames++;
                 LOG.error("unhandled exception in KissOverTcpConnector:" + e.getMessage(), e);
                 // discard this frame

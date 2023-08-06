@@ -24,7 +24,7 @@
                 </Menu>
                 <Menu mnemonicParsing="false" text="Window">
                     <items>
-                        <MenuItem mnemonicParsing="false" text="Monitor traffic" />
+                        <MenuItem mnemonicParsing="false" onAction="#onMonitorAction" text="Monitor traffic" />
                     </items>
                 </Menu>
 

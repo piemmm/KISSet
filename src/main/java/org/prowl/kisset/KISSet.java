@@ -18,8 +18,10 @@ import org.prowl.kisset.config.Config;
 import org.prowl.kisset.eventbus.SingleThreadBus;
 import org.prowl.kisset.eventbus.events.ConfigurationChangedEvent;
 import org.prowl.kisset.fx.KISSetController;
+import org.prowl.kisset.fx.MonitorController;
 import org.prowl.kisset.fx.PreferencesController;
 import org.prowl.kisset.io.InterfaceHandler;
+import org.prowl.kisset.statistics.Statistics;
 
 import java.io.*;
 import java.util.Locale;
@@ -33,6 +35,7 @@ public class KISSet extends Application {
     public String myCall = "N0CALL";
     private Config configuration;
     private InterfaceHandler interfaceHandler;
+    private Statistics statistics;
 
     public static void main(String[] args) {
         launch();
@@ -95,6 +98,9 @@ public class KISSet extends Application {
     public void initAll() {
         try {
 
+            // Statistics (heard, etc)
+            statistics = new Statistics();
+
             // Stop any currenty running interfaces if this is a reload of the config
             if (interfaceHandler != null) {
                 interfaceHandler.stop();
@@ -116,8 +122,6 @@ public class KISSet extends Application {
             LOG.error(e.getMessage(), e);
             System.exit(1);
         }
-
-
     }
 
     public void showPreferences() {
@@ -129,6 +133,23 @@ public class KISSet extends Application {
             PreferencesController controller = fxmlLoader.getController();
             Scene scene = new Scene(root, 640, 480);
             stage.setTitle("Preferences");
+            stage.setScene(scene);
+            stage.show();
+            controller.setup();
+        } catch (Throwable e) {
+            LOG.error(e.getMessage(), e);
+        }
+    }
+
+    public void showMonitor() {
+        try {
+            // Create the GUI.
+            Stage stage = new Stage();
+            FXMLLoader fxmlLoader = new FXMLLoader(KISSet.class.getResource("fx/MonitorController.fxml"));
+            Parent root = fxmlLoader.load();
+            MonitorController controller = fxmlLoader.getController();
+            Scene scene = new Scene(root, 640, 480);
+            stage.setTitle("Packet Monitor");
             stage.setScene(scene);
             stage.show();
             controller.setup();
@@ -152,6 +173,9 @@ public class KISSet extends Application {
 //        }
     }
 
+    public Statistics getStatistics() {
+        return statistics;
+    }
 
     public String getMyCall() {
         return myCall;

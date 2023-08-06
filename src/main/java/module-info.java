@@ -24,5 +24,6 @@ module org.prowl.kisset {
     opens org.prowl.kisset to javafx.fxml;
     exports org.prowl.kisset;
     exports org.prowl.kisset.fx;
+    exports org.prowl.kisset.statistics.types;
     opens org.prowl.kisset.fx to javafx.fxml;
 }

@@ -120,6 +120,7 @@ public class StreamConnectionEstablishmentListener implements ConnectionEstablis
     @Override
     public void connectionNotEstablished(Object sessionIdentifier, Object reason) {
         try {
+            stream.setStreamState(StreamState.DISCONNECTED);
             commandParser.writeToTerminal("*** Unable to connect: " + reason + CR);
             commandParser.setModeIfCurrentStream(Mode.CMD, stream, true);
         } catch (IOException e) {
@@ -131,6 +132,7 @@ public class StreamConnectionEstablishmentListener implements ConnectionEstablis
     @Override
     public void connectionClosed(Object sessionIdentifier, boolean fromOtherEnd) {
         try {
+            stream.setStreamState(StreamState.DISCONNECTED);
             commandParser.writeToTerminal("*** Connection closed" + CR);
             commandParser.setModeIfCurrentStream(Mode.CMD, stream, true);
         } catch (IOException e) {
@@ -142,6 +144,7 @@ public class StreamConnectionEstablishmentListener implements ConnectionEstablis
     @Override
     public void connectionLost(Object sessionIdentifier, Object reason) {
         try {
+            stream.setStreamState(StreamState.DISCONNECTED);
             commandParser.writeToTerminal("*** Lost connection: " + reason + CR);
             commandParser.setModeIfCurrentStream(Mode.CMD, stream,true);
         } catch (IOException e) {

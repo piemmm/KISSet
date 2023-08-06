@@ -2,88 +2,44 @@ package org.prowl.kisset.fx;
 
 
 import com.google.common.eventbus.Subscribe;
-import de.jangassen.MenuToolkit;
-import de.jangassen.model.AppearanceMode;
 import javafx.application.Platform;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
-import javafx.scene.control.Menu;
-import javafx.scene.control.MenuBar;
-import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TextField;
-import javafx.scene.control.*;
 import javafx.scene.layout.StackPane;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jfree.fx.FXGraphics2D;
 import org.prowl.kisset.KISSet;
-import org.prowl.kisset.comms.host.TNCHost;
 import org.prowl.kisset.comms.host.parser.CommandParser;
 import org.prowl.kisset.eventbus.SingleThreadBus;
 import org.prowl.kisset.eventbus.events.ConfigurationChangedEvent;
+import org.prowl.kisset.eventbus.events.HeardNodeEvent;
 import org.prowl.kisset.gui.terminal.Connection;
 import org.prowl.kisset.gui.terminal.Term;
 import org.prowl.kisset.gui.terminal.Terminal;
 import org.prowl.kisset.util.Tools;
 
 import java.awt.*;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
+import java.io.*;
 
-public class KISSetController {
+public class MonitorController {
 
-    private static final Log LOG = LogFactory.getLog("KISSetController");
-    @FXML
-    TextField textEntry;
-    @FXML
-    MenuBar menuBar;
-    @FXML
-    MenuItem preferencesMenuItem;
+    private static final Log LOG = LogFactory.getLog("MonitorController");
+    public static final String CR = CommandParser.CR;
+
+
     @FXML
     ScrollPane theScrollPane;
     @FXML
     StackPane stackPane;
     TerminalCanvas canvas;
     private Terminal term;
-    private  PipedInputStream inpis;
-    private  PipedOutputStream inpos;
-    private  PipedInputStream outpis;
-    private  PipedOutputStream outpos;
+    private PipedInputStream inpis;
+    private PipedOutputStream inpos;
+    private PipedInputStream outpis;
+    private PipedOutputStream outpos;
 
-    @FXML
-    protected void onQuitAction() {
-        // Ask the user if they really want to quit?
-
-        // Quit the application
-        KISSet.INSTANCE.quit();
-    }
-
-    @FXML
-    protected void onPreferencesAction() {
-        KISSet.INSTANCE.showPreferences();
-    }
-
-    @FXML
-    protected void onMonitorAction() {
-        KISSet.INSTANCE.showMonitor();
-    }
-
-    @FXML
-    protected void onTextEnteredAction(ActionEvent event) {
-        try {
-            outpos.write(textEntry.getText().getBytes());
-            outpos.write(CommandParser.CR.getBytes());
-            outpos.flush();
-            textEntry.clear();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-    }
 
     @Subscribe
     public void onConfigChanged(ConfigurationChangedEvent event) {
@@ -117,57 +73,23 @@ public class KISSetController {
             canvas.heightProperty().bind(stackPane.heightProperty());
         });
 
-        canvas.setOnMouseClicked(event -> {
-            textEntry.requestFocus();
-        });
-
-
         Platform.runLater(() -> {
             // Initially the scroll pane to the bottom.
             theScrollPane.setVvalue(Double.MAX_VALUE);
         });
-        //  term.clear();
-        //  term.setSize(term.getTermWidth(), term.getTermHeight(), true);
-        //  term.resetAllAttributes();
+
     }
 
     public void setup() {
         SingleThreadBus.INSTANCE.register(this);
         configureTerminal();
-        //  Graphics2D g2d = new FXGraphics2D(canvas.getGraphicsContext2D());
-
-
-
-
-        // A little messing around with menubars for macos
-        final String os = System.getProperty("os.name");
-        if (os != null && os.startsWith("Mac")) {
-            menuBar.useSystemMenuBarProperty().set(true);
-            MenuToolkit tk = MenuToolkit.toolkit();
-            tk.setAppearanceMode(AppearanceMode.AUTO);
-            Menu defaultApplicationMenu = tk.createDefaultApplicationMenu("KISSet");
-            tk.setApplicationMenu(defaultApplicationMenu);
-            Menu fileMenu = preferencesMenuItem.getParentMenu();
-            fileMenu.setVisible(false);
-            fileMenu.setDisable(true);
-            preferencesMenuItem.getParentMenu().getItems().remove(preferencesMenuItem);
-            defaultApplicationMenu.getItems().add(1, preferencesMenuItem);
-            defaultApplicationMenu.getItems().add(1, new SeparatorMenuItem());
-
-            defaultApplicationMenu.getItems().get(defaultApplicationMenu.getItems().size() - 1).setOnAction(event -> {
-                KISSet.INSTANCE.quit();
-            });
-        } else {
-            // traditional menu bar.
-
-        }
         startTerminal();
     }
 
     public void startTerminal() {
-         inpis = new PipedInputStream();
-         inpos = new PipedOutputStream();
-          outpis = new PipedInputStream();
+        inpis = new PipedInputStream();
+        inpos = new PipedOutputStream();
+        outpis = new PipedInputStream();
         outpos = new PipedOutputStream();
 
         try {
@@ -177,8 +99,6 @@ public class KISSetController {
             e.printStackTrace();
         }
 
-
-        TNCHost tncHost = new TNCHost(outpis, inpos);
         Tools.runOnThread(() -> {
             term.start(new Connection() {
                 @Override
@@ -202,7 +122,29 @@ public class KISSetController {
                 }
             });
         });
+
+        //inpis and outpos.
+        try {
+            inpos.write(("Traffic Monitor"+CR).getBytes());
+            inpos.flush();
+        } catch (IOException e) {
+            LOG.error(e.getMessage(),e);
+        }
     }
+
+    @Subscribe
+    public void packetReceived(HeardNodeEvent node) {
+        Platform.runLater(() -> {
+            try {
+
+                inpos.write((node.getNode().getFrame().toString() + CR).getBytes());
+                inpos.flush();
+            } catch (IOException e) {
+                LOG.error(e.getMessage(), e);
+            }
+        });
+    }
+
 
     static class TerminalCanvas extends Canvas {
 

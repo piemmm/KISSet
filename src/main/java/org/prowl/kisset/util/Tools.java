@@ -57,4 +57,10 @@ public class Tools {
         return found;
     }
 
+
+    public static boolean isValidITUCallsign(String callsignToValidate) {
+        return callsignToValidate.matches("\\A\\d?[a-zA-Z]{1,2}\\d{1,4}[a-zA-Z]{1,3}(-\\d+)?\\Z");
+    }
+
+
 }
