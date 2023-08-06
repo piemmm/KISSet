@@ -29,7 +29,7 @@ public class StreamConnectionEstablishmentListener implements ConnectionEstablis
 //    private InputStream in;
 //    private OutputStream out;
 
-    public StreamConnectionEstablishmentListener(CommandParser commandPaser, Stream stream) {
+    public StreamConnectionEstablishmentListener(CommandParser commandParser, Stream stream) {
         this.commandParser = commandParser;
         this.stream = stream;
     }
