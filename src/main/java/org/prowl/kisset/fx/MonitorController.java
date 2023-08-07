@@ -174,10 +174,10 @@ public class MonitorController {
             if (node.getFrame().getFrameType() == AX25Frame.FRAMETYPE_I) {
                 write(" NS="+node.getFrame().getNS());
             }
-            write(" CTL=0x"+Integer.toString(node.getFrame().ctl,16));
+            write(" CTL=0x"+Integer.toString(node.getFrame().ctl & 0xFF,16));
             String mod128 = "";
             if (node.getFrame().mod128) {
-                write(" CTL2=0x"+Integer.toString(node.getFrame().ctl,16));
+                write(" CTL2=0x"+Integer.toString(node.getFrame().ctl & 0xFF,16));
                 mod128 = "MOD128";
             }
             write(" PID=0x"+Integer.toString(node.getFrame().getPid() & 0xFF, 16));
@@ -193,7 +193,13 @@ public class MonitorController {
             if (node.getFrame().getByteFrame().length > 0) {
                 write(":");
                 write(CR);
-                write(Tools.readableTextOnlyFromByteArray(node.getFrame().getByteFrame()));
+                if (node.getFrame().getPid() == AX25Frame.PID_NETROM) {
+                     // NetRom frame
+                     write(ANSI.MAGENTA+Tools.decodeNetROMToText(node)+ANSI.NORMAL);
+                } else {
+                    // Normal I (or unknown payload) frame
+                    write(Tools.readableTextOnlyFromByteArray(node.getFrame().getByteFrame()));
+                }
             }
             write(CR);
 

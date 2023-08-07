@@ -1,7 +1,5 @@
 package org.prowl.kisset.util;
 
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontPosture;
 import javafx.scene.text.FontWeight;
@@ -12,6 +10,7 @@ import org.prowl.aprslib.parser.Parser;
 import org.prowl.kisset.ax25.AX25Frame;
 import org.prowl.kisset.core.Capability;
 import org.prowl.kisset.core.Node;
+import org.prowl.kisset.netrom.NetROMRoutingPacket;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,7 +44,7 @@ public class Tools {
     }
 
     /**
-    * Get a list of all the monospaced fonts available on the system.
+     * Get a list of all the monospaced fonts available on the system.
      */
     public static List<String> getMonospacedFonts() {
         List<String> found = new ArrayList<>();
@@ -108,6 +107,7 @@ public class Tools {
     /**
      * Return a readable string of bytes from a supplied byte array - we strip everything that isn't a printable character.
      * CR and LF are allowed through as well as printable extended ASCII.
+     *
      * @param data
      * @return A human readable string.
      */
@@ -122,6 +122,16 @@ public class Tools {
             }
         }
         return sb.toString();
+    }
+
+
+    public static String decodeNetROMToText(Node node) {
+
+        NetROMRoutingPacket netROMRoutingPacket = new NetROMRoutingPacket(node);
+
+        return netROMRoutingPacket.toString();
+
+
     }
 
 }

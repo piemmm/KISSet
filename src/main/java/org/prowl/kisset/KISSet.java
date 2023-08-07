@@ -21,6 +21,7 @@ import org.prowl.kisset.fx.KISSetController;
 import org.prowl.kisset.fx.MonitorController;
 import org.prowl.kisset.fx.PreferencesController;
 import org.prowl.kisset.io.InterfaceHandler;
+import org.prowl.kisset.netrom.RoutingListener;
 import org.prowl.kisset.statistics.Statistics;
 
 import java.io.*;
@@ -36,6 +37,7 @@ public class KISSet extends Application {
     private Config configuration;
     private InterfaceHandler interfaceHandler;
     private Statistics statistics;
+
 
     public static void main(String[] args) {
         launch();
@@ -115,6 +117,10 @@ public class KISSet extends Application {
 
             // Start interfaces
             interfaceHandler.start();
+
+            // Start listening for route broadcasts
+            new RoutingListener();
+
 
         } catch (Throwable e) {
             LOG.error(e.getMessage(), e);
