@@ -4,5 +4,5 @@ A terminal program for connecting to TNCs that only support kiss (NinoTNC, TH-D7
 
 This code is in development and is not usable yet.
 
-![Picture of running node](./doc/screen.png)
+![Picture of running node](./doc/screen2.png)
 
