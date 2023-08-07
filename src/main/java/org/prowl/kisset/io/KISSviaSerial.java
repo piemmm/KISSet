@@ -7,6 +7,9 @@ import org.apache.commons.logging.LogFactory;
 import org.prowl.kisset.KISSet;
 import org.prowl.kisset.annotations.InterfaceDriver;
 import org.prowl.kisset.ax25.*;
+import org.prowl.kisset.core.Node;
+import org.prowl.kisset.eventbus.SingleThreadBus;
+import org.prowl.kisset.eventbus.events.HeardNodeEvent;
 import org.prowl.kisset.util.Tools;
 
 import java.io.IOException;
@@ -164,8 +167,13 @@ public class KISSviaSerial extends Interface {
             public void consumeAX25Frame(AX25Frame frame, Connector connector) {
                 LOG.debug("Got frame: " + frame.toString() + "  body=" + Tools.byteArrayToHexString(frame.getBody()));
 
+                Node node = new Node(KISSviaSerial.this, frame.sender.toString(), frame.rcptTime, frame.dest.toString(), frame);
+
+                // Determine the nodes capabilities from the frame type and add this to the node
+                Tools.determineCapabilities(node, frame);
+
                 // Fire off to anything that wants to know about nodes heard
-                //ServerBus.INSTANCE.post(new HeardNodeEvent(node));
+                SingleThreadBus.INSTANCE.post(new HeardNodeEvent(node));
             }
         });
 

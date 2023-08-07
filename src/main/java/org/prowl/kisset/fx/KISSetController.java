@@ -49,10 +49,10 @@ public class KISSetController {
     StackPane stackPane;
     TerminalCanvas canvas;
     private Terminal term;
-    private  PipedInputStream inpis;
-    private  PipedOutputStream inpos;
-    private  PipedInputStream outpis;
-    private  PipedOutputStream outpos;
+    private PipedInputStream inpis;
+    private PipedOutputStream inpos;
+    private PipedInputStream outpis;
+    private PipedOutputStream outpos;
 
     @FXML
     protected void onQuitAction() {
@@ -126,22 +126,15 @@ public class KISSetController {
             // Initially the scroll pane to the bottom.
             theScrollPane.setVvalue(Double.MAX_VALUE);
         });
-        //  term.clear();
-        //  term.setSize(term.getTermWidth(), term.getTermHeight(), true);
-        //  term.resetAllAttributes();
+
     }
 
     public void setup() {
         SingleThreadBus.INSTANCE.register(this);
-        configureTerminal();
-        //  Graphics2D g2d = new FXGraphics2D(canvas.getGraphicsContext2D());
-
-
-
 
         // A little messing around with menubars for macos
         final String os = System.getProperty("os.name");
-        if (os != null && os.startsWith("Mac")) {
+        if (os != null && os.toLowerCase().startsWith("mac")) {
             menuBar.useSystemMenuBarProperty().set(true);
             MenuToolkit tk = MenuToolkit.toolkit();
             tk.setAppearanceMode(AppearanceMode.AUTO);
@@ -153,21 +146,21 @@ public class KISSetController {
             preferencesMenuItem.getParentMenu().getItems().remove(preferencesMenuItem);
             defaultApplicationMenu.getItems().add(1, preferencesMenuItem);
             defaultApplicationMenu.getItems().add(1, new SeparatorMenuItem());
-
             defaultApplicationMenu.getItems().get(defaultApplicationMenu.getItems().size() - 1).setOnAction(event -> {
                 KISSet.INSTANCE.quit();
             });
         } else {
             // traditional menu bar.
-
         }
+        
+        configureTerminal();
         startTerminal();
     }
 
     public void startTerminal() {
-         inpis = new PipedInputStream();
-         inpos = new PipedOutputStream();
-          outpis = new PipedInputStream();
+        inpis = new PipedInputStream();
+        inpos = new PipedOutputStream();
+        outpis = new PipedInputStream();
         outpos = new PipedOutputStream();
 
         try {
@@ -204,7 +197,7 @@ public class KISSetController {
         });
     }
 
-    static class TerminalCanvas extends Canvas {
+    class TerminalCanvas extends Canvas {
 
         private final FXGraphics2D g2;
         Terminal terminal;

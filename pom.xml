@@ -30,7 +30,8 @@
         <!-- This property is used to specify the modules included in the (custom) JVM image. -->
         <!-- Reminder: javafx.web (the embedded browser component) is not included in this project by default due
         to GitHub template size restrictions. You can download the full SDK from https://openjfx.io -->
-        <jvm.modules>javafx.media,javafx.controls,javafx.fxml,java.sql,java.logging,javafx.web,javafx.swing,java.prefs</jvm.modules>
+        <jvm.modules>javafx.media,javafx.controls,javafx.fxml,java.sql,java.logging,javafx.web,javafx.swing,java.prefs
+        </jvm.modules>
 
         <!-- Set the project to UTF-8, avoiding warnings in the build logs -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -60,7 +61,7 @@
 
     <dependencies>
 
-<!--        These are required for the menu and theme stuff.-->
+        <!--        These are required for the menu and theme stuff.-->
         <dependency>
             <groupId>io.github.g00fy2</groupId>
             <artifactId>versioncompare</artifactId>
@@ -78,8 +79,7 @@
         </dependency>
 
 
-
-<!--        Logging support-->
+        <!--        Logging support-->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
@@ -115,6 +115,15 @@
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
             <version>32.0.0-jre</version>
+        </dependency>
+
+        <!-- Our modified (and unit tested) aprslib -->
+        <dependency>
+            <groupId>org.prowl</groupId>
+            <artifactId>aprslib</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/aprslib-1.0.0-SNAPSHOT.jar</systemPath>
         </dependency>
 
         <!-- Reflections, for finding classes in the classpath -->
@@ -180,13 +189,13 @@
             <version>[2.0.0,3.0.0)</version>
         </dependency>
 
-<!--        Bluecove is currently unmaintained so it seems, so on macos it doesn't pass validation(or even work)-->
-<!--        &lt;!&ndash; Bluecove to talk to the bluetooth KISS TNCs &ndash;&gt;-->
-<!--        <dependency>-->
-<!--            <groupId>net.sf.bluecove</groupId>-->
-<!--            <artifactId>bluecove</artifactId>-->
-<!--            <version>2.1.0</version>-->
-<!--        </dependency>-->
+        <!--        Bluecove is currently unmaintained so it seems, so on macos it doesn't pass validation(or even work)-->
+        <!--        &lt;!&ndash; Bluecove to talk to the bluetooth KISS TNCs &ndash;&gt;-->
+        <!--        <dependency>-->
+        <!--            <groupId>net.sf.bluecove</groupId>-->
+        <!--            <artifactId>bluecove</artifactId>-->
+        <!--            <version>2.1.0</version>-->
+        <!--        </dependency>-->
         <dependency>
             <groupId>org.junit.platform</groupId>
             <artifactId>junit-platform-runner</artifactId>

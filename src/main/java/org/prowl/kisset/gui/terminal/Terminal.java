@@ -33,18 +33,8 @@ import java.io.OutputStream;
 
 
 public class Terminal implements Term {
-    private static final ConfigurationRepository defaultCR =
-            new ConfigurationRepository() {
-                private final Configuration conf = new Configuration();
 
-                public Configuration load(String name) {
-                    return conf;
-                }
 
-                public void save(Configuration conf) {
-                }
-            };
-    private static ConfigurationRepository cr = defaultCR;
     private final Object[] colors = {Color.black, Color.red, Color.green,
             Color.yellow, Color.blue, Color.magenta, Color.cyan, Color.white};
     OutputStream out;
@@ -109,15 +99,7 @@ public class Terminal implements Term {
         return Color.white;
     }
 
-    public static synchronized ConfigurationRepository getCR() {
-        return cr;
-    }
 
-    public static synchronized void setCR(ConfigurationRepository _cr) {
-        if (_cr == null)
-            _cr = defaultCR;
-        cr = _cr;
-    }
 
     public void setFont(String fname, float size) {
 
