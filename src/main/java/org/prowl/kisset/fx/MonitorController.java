@@ -174,11 +174,21 @@ public class MonitorController {
             if (node.getFrame().getFrameType() == AX25Frame.FRAMETYPE_I) {
                 write(" NS="+node.getFrame().getNS());
             }
+            write(" CTL=0x"+Integer.toString(node.getFrame().ctl,16));
+            String mod128 = "";
+            if (node.getFrame().mod128) {
+                write(" CTL2=0x"+Integer.toString(node.getFrame().ctl,16));
+                mod128 = "MOD128";
+            }
+            write(" PID=0x"+Integer.toString(node.getFrame().getPid() & 0xFF, 16));
 
+            // Put the mod128 identifier in nice place
+            if (mod128.length() > 0) {
+                write(" " + mod128);
+            }
+            write("]");
             write(ANSI.GREEN);
             write(pidToString(node.getFrame().getPid()));
-            write(ANSI.YELLOW);
-            write("]");
             write(ANSI.NORMAL);
             if (node.getFrame().getByteFrame().length > 0) {
                 write(":");
@@ -194,7 +204,6 @@ public class MonitorController {
     private String pidToString(byte pid) {
 
         StringBuilder pidString = new StringBuilder();
-        pidString.append("PID=0x"+Integer.toString(pid & 0xFF, 16)+"");
         switch(pid) {
             case AX25Frame.PID_X25_PLP:
                 pidString.append("{CCITT X.25 PLP/ROSE}");
@@ -236,7 +245,7 @@ public class MonitorController {
                 pidString.append("{Net/ROM}");
                 break;
             case AX25Frame.PID_NOLVL3:
-                pidString.append("{No layer 3 protocol}");
+                pidString.append("{No LVL3}");
                 break;
             case AX25Frame.PID_ESCAPE:
                 pidString.append("{Reserved for AX.25 (escape character)}");

@@ -78,7 +78,7 @@ public class KISSet extends Application {
         FXMLLoader fxmlLoader = new FXMLLoader(KISSet.class.getResource("fx/KISSetController.fxml"));
         Parent root = fxmlLoader.load();
         KISSetController controller = fxmlLoader.getController();
-        Scene scene = new Scene(root, 700, 480);
+        Scene scene = new Scene(root, 750, 480);
         stage.setTitle("KISSet");
         stage.setScene(scene);
         stage.show();
@@ -88,8 +88,6 @@ public class KISSet extends Application {
             @Override
             public void handle(WindowEvent t) {
                 stage.hide();
-               // Platform.exit();
-               // System.exit(0);
             }
         });
 
@@ -148,7 +146,7 @@ public class KISSet extends Application {
             FXMLLoader fxmlLoader = new FXMLLoader(KISSet.class.getResource("fx/MonitorController.fxml"));
             Parent root = fxmlLoader.load();
             MonitorController controller = fxmlLoader.getController();
-            Scene scene = new Scene(root, 640, 480);
+            Scene scene = new Scene(root, 800, 280);
             stage.setTitle("Packet Monitor");
             stage.setScene(scene);
             stage.show();
