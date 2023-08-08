@@ -21,6 +21,7 @@ import org.prowl.kisset.gui.terminal.Connection;
 import org.prowl.kisset.gui.terminal.Term;
 import org.prowl.kisset.gui.terminal.Terminal;
 import org.prowl.kisset.util.ANSI;
+import org.prowl.kisset.util.PacketTools;
 import org.prowl.kisset.util.Tools;
 
 import java.awt.*;
@@ -195,7 +196,7 @@ public class MonitorController {
                 write(CR);
                 if (node.getFrame().getPid() == AX25Frame.PID_NETROM) {
                      // NetRom frame
-                     write(ANSI.MAGENTA+Tools.decodeNetROMToText(node)+ANSI.NORMAL);
+                     write(ANSI.MAGENTA+ PacketTools.decodeNetROMToText(node)+ANSI.NORMAL);
                 } else {
                     // Normal I (or unknown payload) frame
                     write(Tools.readableTextOnlyFromByteArray(node.getFrame().getByteFrame()));

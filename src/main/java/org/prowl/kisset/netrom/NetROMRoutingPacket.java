@@ -2,8 +2,8 @@ package org.prowl.kisset.netrom;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.prowl.kisset.ax25.AX25Frame;
 import org.prowl.kisset.core.Node;
+import org.prowl.kisset.util.PacketTools;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -28,42 +28,25 @@ public class NetROMRoutingPacket {
         ByteBuffer buffer = ByteBuffer.wrap(node.getFrame().getBody());
 
         // Signature, should always be 0xFF
-        if ((buffer.get() & 0xFF) != 0xFF) {
-            throw new IllegalArgumentException("Not a Net/ROM routing packet");
-        }
+        int firstByte = buffer.get() & 0xFF;
+        if (firstByte == 0xFF) {
+            sendingNode = PacketTools.getData(buffer, 6, false);
 
-        sendingNode = getCallsign(buffer, 6, false);
-
-        LOG.debug("Buffer size: + " + buffer.remaining() + " bytes");
-        while (buffer.hasRemaining()) {
-            try {
-                String destinationNodeCallsign = getCallsign(buffer, 7, true);
-                String destinationNodeMnemonic = getCallsign(buffer, 6, false);
-                String neighbourNodeCallsign = getCallsign(buffer, 7, true);
-                int bestQualityValue = buffer.get() & 0xFF;
-                LOG.debug("Adding routing entry: " + destinationNodeCallsign+"/"+destinationNodeMnemonic+" via "+neighbourNodeCallsign+" with quality "+bestQualityValue);
-                NetROMNode routedNode = new NetROMNode(node.getInterface(), destinationNodeCallsign, destinationNodeMnemonic, neighbourNodeCallsign, bestQualityValue);
-                nodesInThisPacket.add(routedNode);
-            } catch(Throwable e) {
-                LOG.error(e.getMessage(),e);
+            LOG.debug("Buffer size: + " + buffer.remaining() + " bytes");
+            while (buffer.hasRemaining()) {
+                try {
+                    String destinationNodeCallsign = PacketTools.getData(buffer, 7, true);
+                    String destinationNodeMnemonic = PacketTools.getData(buffer, 6, false);
+                    String neighbourNodeCallsign = PacketTools.getData(buffer, 7, true);
+                    int bestQualityValue = buffer.get() & 0xFF;
+                    LOG.debug("Adding routing entry: " + destinationNodeCallsign + "/" + destinationNodeMnemonic + " via " + neighbourNodeCallsign + " with quality " + bestQualityValue);
+                    NetROMNode routedNode = new NetROMNode(node.getInterface(), destinationNodeCallsign, destinationNodeMnemonic, neighbourNodeCallsign, bestQualityValue);
+                    nodesInThisPacket.add(routedNode);
+                } catch (Throwable e) {
+                    LOG.error(e.getMessage(), e);
+                }
             }
         }
-    }
-
-    /**
-     * Get a sequence of 6 or 7 bytes representing a callsign with optional bit shifting
-     */
-    public String getCallsign(ByteBuffer buffer, int length, boolean shift) {
-        byte[] callsign = new byte[length];
-        for (int i = 0; i < length; i++) {
-            if (shift) {
-                callsign[i] = (byte) ((buffer.get() & 0xFF) >> 1);
-            } else {
-                callsign[i] = buffer.get();
-            }
-        }
-
-        return new String(callsign).trim();
     }
 
     /**

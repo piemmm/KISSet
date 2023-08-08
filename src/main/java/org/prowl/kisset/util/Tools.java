@@ -4,6 +4,8 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontPosture;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.prowl.aprslib.parser.APRSPacket;
 import org.prowl.aprslib.parser.APRSTypes;
 import org.prowl.aprslib.parser.Parser;
@@ -11,11 +13,16 @@ import org.prowl.kisset.ax25.AX25Frame;
 import org.prowl.kisset.core.Capability;
 import org.prowl.kisset.core.Node;
 import org.prowl.kisset.netrom.NetROMRoutingPacket;
+import org.prowl.kisset.netrom.inp3.L3RTTPacket;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Tools {
+
+    private static final Log LOG = LogFactory.getLog("Tools");
+
 
     public static final void runOnThread(Runnable runme) {
         Thread t = new Thread(runme);
@@ -125,13 +132,19 @@ public class Tools {
     }
 
 
-    public static String decodeNetROMToText(Node node) {
-
-        NetROMRoutingPacket netROMRoutingPacket = new NetROMRoutingPacket(node);
-
-        return netROMRoutingPacket.toString();
-
-
+    public static String byteArrayToReadableASCIIString(byte[] data) {
+        StringBuilder sb = new StringBuilder();
+        for (byte b: data) {
+            if (b<0x20 || b>0x7E) {
+                sb.append("<");
+                sb.append(String.format("%02X", b));
+                sb.append(">");
+            } else {
+                sb.append((char)b);
+            }
+        }
+        return sb.toString();
     }
+
 
 }
