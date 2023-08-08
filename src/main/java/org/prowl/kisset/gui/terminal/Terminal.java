@@ -64,7 +64,7 @@ public class Terminal implements Term {
     private int char_width;
     private int char_height;
     //private int line_space=0;
-    private int line_space = -2;
+    private int line_space = -1;
     private int compression = 0;
     private boolean antialiasing = true;
 
