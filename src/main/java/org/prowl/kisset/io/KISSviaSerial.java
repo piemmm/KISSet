@@ -234,6 +234,16 @@ public class KISSviaSerial extends Interface {
     }
 
     @Override
+    public void cancelConnection(Stream stream) {
+        anInterface.cancelConnection(KISSet.INSTANCE.getMyCall(), stream.getRemoteCall());
+    }
+
+    @Override
+    public void disconnect(Stream currentStream) {
+        anInterface.disconnect(KISSet.INSTANCE.getMyCall(), currentStream.getRemoteCall());
+    }
+
+    @Override
     public void stop() {
         // ServerBus.INSTANCE.unregister(this);
         running = false;

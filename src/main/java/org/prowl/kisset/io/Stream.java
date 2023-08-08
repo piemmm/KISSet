@@ -16,6 +16,8 @@ public class Stream {
 
     private ExtensionState extensionState = ExtensionState.NONE;
 
+    private String remoteCall;
+
     private Interface anInterface;
 
     public Stream(Interface anInterface) {
@@ -28,6 +30,9 @@ public class Stream {
     }
 
     public void setStreamState(StreamState streamState) {
+        if (streamState.equals(StreamState.DISCONNECTED)) {
+            remoteCall = null;
+        }
         this.streamState = streamState;
     }
 
@@ -76,4 +81,11 @@ public class Stream {
         streamState = StreamState.DISCONNECTED;
     }
 
+    public String getRemoteCall() {
+        return remoteCall;
+    }
+
+    public void setRemoteCall(String remoteCall) {
+        this.remoteCall = remoteCall;
+    }
 }

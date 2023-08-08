@@ -39,7 +39,7 @@ public class Routes extends Command {
                 writeToTerminal(node.toString() + CR);
             }
         } else {
-            writeToTerminal("No routes seen yet" + CR);
+            writeToTerminal("***  No routes seen yet" + CR);
         }
 
         return true;

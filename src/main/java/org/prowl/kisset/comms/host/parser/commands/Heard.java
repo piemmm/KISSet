@@ -29,7 +29,7 @@ public class Heard extends Command {
         List<Interface> connectors = KISSet.INSTANCE.getInterfaceHandler().getInterfaces();
         List<Node> nodes = heard.listHeard();
         if (nodes.size() == 0) {
-            writeToTerminal("No nodes heard" + CR);
+            writeToTerminal("*** No nodes heard" + CR);
         } else {
             writeToTerminal(ANSI.UNDERLINE + ANSI.BOLD + "Int  Callsign  Last Heard             Capabilities" + ANSI.NORMAL + CR);
             for (Node node : nodes) {

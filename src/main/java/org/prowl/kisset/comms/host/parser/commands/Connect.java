@@ -52,30 +52,29 @@ public class Connect extends Command {
             return true;
         }
 
+        Interface anInterface = commandParser.getCurrentInterface();
+        if (anInterface == null) {
+            writeToTerminal("*** No interfaces configured" + CR);
+            return true;
+        }
 
+        Stream currentStream = anInterface.getCurrentStream();
         // connect: C GB7MNK
         if (data.length == 2) {
-            String station = data[1];
-            Interface anInterface = commandParser.getCurrentInterface();
-            if (anInterface == null) {
-                writeToTerminal("*** No interfaces configured" + CR);
-            } else {
-                writeToTerminal("*** Connecting to " + data[1].toUpperCase() + CR);
-                anInterface.connect(data[1].toUpperCase(), KISSet.INSTANCE.getMyCall(), new StreamConnectionEstablishmentListener(commandParser, stream));
-                anInterface.getCurrentStream().setStreamState(StreamState.CONNECTING);
-            }
+            String station = data[1].toUpperCase();
+            writeToTerminal("*** Connecting to " + station + CR);
+            currentStream.setRemoteCall(station);
+            anInterface.connect(data[1].toUpperCase(), KISSet.INSTANCE.getMyCall(), new StreamConnectionEstablishmentListener(commandParser, stream));
+            anInterface.getCurrentStream().setStreamState(StreamState.CONNECTING);
 
         } else if (data.length == 3) {
             // Connect: C 2 GB7MNK (to connect via port 2)
-            String station = data[2];
-            Interface anInterface = KISSet.INSTANCE.getInterfaceHandler().getInterface(Integer.parseInt(data[1]));
-            if (anInterface == null) {
-                writeToTerminal("*** No interfaces configured" + CR);
-            } else {
-                writeToTerminal("*** Connecting to " + data[2].toUpperCase() + CR);
-                anInterface.getCurrentStream().setStreamState(StreamState.CONNECTING);
-                anInterface.connect(data[2].toUpperCase(), KISSet.INSTANCE.getMyCall(), new StreamConnectionEstablishmentListener(commandParser, stream));
-            }
+            String station = data[2].toUpperCase();
+            writeToTerminal("*** Connecting to " + station + CR);
+            anInterface.getCurrentStream().setStreamState(StreamState.CONNECTING);
+            currentStream.setRemoteCall(station);
+            anInterface.connect(data[2].toUpperCase(), KISSet.INSTANCE.getMyCall(), new StreamConnectionEstablishmentListener(commandParser, stream));
+
         }
 
         writeToTerminal(CR);

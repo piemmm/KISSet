@@ -19,14 +19,14 @@ public class Monitor  extends Command {
         }
 
         if (data.length == 1) {
-            writeToTerminal("Monitor is " + (tncHost.isMonitorEnabled() ? "on" : "off") + CR);
+            writeToTerminal("*** Monitor is " + (tncHost.isMonitorEnabled() ? "on" : "off") + CR);
         } else {
             if (data[1].equalsIgnoreCase("on")) {
                 tncHost.setMonitor(true);
-                writeToTerminal("Monitor is on" + CR);
+                writeToTerminal("*** Monitor is on" + CR);
             } else if (data[1].equalsIgnoreCase("off")) {
                 tncHost.setMonitor(false);
-                writeToTerminal("Monitor is off" + CR);
+                writeToTerminal("*** Monitor is off" + CR);
             } else {
                 writeToTerminal("*** Usage: mon [on|off]" + CR);
             }

@@ -241,4 +241,14 @@ public class KISSviaTCP extends Interface {
         return true;
     }
 
+    @Override
+    public void cancelConnection(Stream stream) {
+        anInterface.cancelConnection(KISSet.INSTANCE.getMyCall(), stream.getRemoteCall());
+    }
+
+    @Override
+    public void disconnect(Stream currentStream) {
+        anInterface.disconnect(KISSet.INSTANCE.getMyCall(), currentStream.getRemoteCall());
+    }
+
 }

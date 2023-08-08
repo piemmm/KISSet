@@ -8,7 +8,6 @@ import org.prowl.kisset.annotations.TNCCommand;
 import org.prowl.kisset.comms.host.TNCHost;
 import org.prowl.kisset.comms.host.parser.commands.Command;
 import org.prowl.kisset.io.Interface;
-import org.prowl.kisset.io.InterfaceHandler;
 import org.prowl.kisset.io.Stream;
 import org.prowl.kisset.util.ANSI;
 import org.reflections.Reflections;
@@ -182,14 +181,14 @@ public class CommandParser {
 
     public void setModeIfCurrentStream(Mode mode, Stream callerStream) {
         if (currentInterface != null && getCurrentInterface().getCurrentStream() == callerStream) {
-          setMode(mode);
+            setMode(mode);
         }
     }
 
 
     public void setModeIfCurrentStream(Mode mode, Stream callerStream, boolean sendPrompt) {
         if (currentInterface != null && getCurrentInterface().getCurrentStream() == callerStream) {
-           setMode(mode, sendPrompt);
+            setMode(mode, sendPrompt);
         }
     }
 
@@ -242,6 +241,8 @@ public class CommandParser {
     public void setCurrentInterface(Interface currentInterface) {
         this.currentInterface = currentInterface;
     }
+
+
 
     public Interface getCurrentInterface() {
         return currentInterface;

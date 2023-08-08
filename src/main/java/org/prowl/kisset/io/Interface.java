@@ -29,6 +29,10 @@ public abstract class Interface {
 
     public abstract boolean connect(String to, String from, ConnectionEstablishmentListener connectionEstablishmentListener) throws IOException;
 
+    public abstract void disconnect(Stream currentStream);
+
+    public abstract void cancelConnection(Stream stream);
+
     public Stream getStream(int stream) {
         return streams.get(stream);
     }

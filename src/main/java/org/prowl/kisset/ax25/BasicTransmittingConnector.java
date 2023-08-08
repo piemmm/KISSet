@@ -8,10 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.SocketException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 public class BasicTransmittingConnector extends Connector implements TransmittingConnector, Transmitting {
     public static final int PROTOCOL_AX25 = 4;
@@ -48,6 +45,8 @@ public class BasicTransmittingConnector extends Connector implements Transmittin
     private transient long frameStartTime = -1L;
     private final int retransmitCount;
     private transient TimedQueueEntry delayQueueHead = null;
+    private TimerTask connectionTask;
+    private Timer connectTimer = new Timer();
 
     public BasicTransmittingConnector(int pacLen, int maxFrames, int baudRateInBits, int retransmitCount, AX25Callsign defaultCallsign, InputStream in, OutputStream out, ConnectionRequestListener connectionRequestListener) {
         this.defaultCallsign = defaultCallsign;
@@ -476,39 +475,89 @@ public class BasicTransmittingConnector extends Connector implements Transmittin
      * @param from     Your originating callsign
      * @param to       the station you are connecting to.
      * @param listener the listener to be notified of connection establishment or failure
+     * @return true if the connection was successfully initiated, false if there is already a connection in progress
      */
-    public void makeConnection(String from, String to, ConnectionEstablishmentListener listener) {
+    public synchronized boolean makeConnection(String from, String to, ConnectionEstablishmentListener listener) {
 
-        try {
+        // If there is already a connection in progress, return false
+        if (connectionTask != null) {
+            return false;
+        }
 
-            AX25Frame sabmFrame = new AX25Frame();
-            sabmFrame.sender = new AX25Callsign(from);
-            sabmFrame.dest = new AX25Callsign(to);
-            sabmFrame.setCmd(true);
-            ConnState state = stack.getConnState(sabmFrame.sender, sabmFrame.dest, true);
-            LOG.debug("Transmitter.openConnection(" + sabmFrame.dest + ',' + sabmFrame.sender + ',' + Arrays.toString(state.via) + "): sending SABM U-frame");
-            state.connType = ConnState.ConnType.MOD8;
-            state.transition = ConnState.ConnTransition.LINK_UP;
-            //sabmFrame.digipeaters = state.via;
-            sabmFrame.ctl = (byte) (AX25Frame.FRAMETYPE_U | AX25Frame.UTYPE_SABM);
-            sabmFrame.body = new byte[0];
-            state.listener = listener;
+        // Create a timer task to handle the connection process
+        connectionTask = new TimerTask() {
+            private int tries = 5;
+            @Override
+            public void run() {
 
-            queue(sabmFrame);
-            state.setConnector(this);
-            state.setResendableFrame(sabmFrame, getRetransmitCount());
-            state.updateSessionTime();
-            stack.fireConnStateUpdated(state);
+                if (tries-- == 0) {
+                    connectionTask = null;
+                    cancel();
+                    listener.connectionNotEstablished(this, "Connection timed out");
+                }
 
+                // Send a single SABM frame to the remote station
+                try {
+                    AX25Frame sabmFrame = new AX25Frame();
+                    sabmFrame.sender = new AX25Callsign(from);
+                    sabmFrame.dest = new AX25Callsign(to);
+                    sabmFrame.setCmd(true);
+                    ConnState state = stack.getConnState(sabmFrame.sender, sabmFrame.dest, true);
 
-        } catch (Exception e) {
-            LOG.error(e.getMessage(), e);
+                    if (state.transition == ConnState.ConnTransition.STEADY || state.transition == ConnState.ConnTransition.LINK_DOWN) {
+                        // Connected/refused so stop sending SABM frames
+                        connectionTask = null;
+                        cancel();
+                    }
+
+                    LOG.debug("Transmitter.openConnection(" + sabmFrame.dest + ',' + sabmFrame.sender + ',' + Arrays.toString(state.via) + "): sending SABM U-frame");
+                    state.connType = ConnState.ConnType.MOD8;
+                    state.transition = ConnState.ConnTransition.LINK_UP;
+                    //sabmFrame.digipeaters = state.via;
+                    sabmFrame.ctl = (byte) (AX25Frame.FRAMETYPE_U | AX25Frame.UTYPE_SABM);
+                    sabmFrame.body = new byte[0];
+                    state.listener = listener;
+
+                    //queue(sabmFrame);
+                    sendFrame(sabmFrame);
+                    state.setConnector(BasicTransmittingConnector.this);
+                    //state.setResendableFrame(sabmFrame, getRetransmitCount());
+                    state.updateSessionTime();
+                    stack.fireConnStateUpdated(state);
+                } catch (Exception e) {
+                    connectionTask = null;
+                    LOG.error(e.getMessage(), e);
+                    cancel();
+                }
+            }
+        };
+
+        // Send a SABM at 10 second intervale.  If we don't get a response after 5 tries, give up.
+        connectTimer.schedule(connectionTask, 0, 10000);
+        return true;
+    }
+
+    /**
+     * Cancel a current connection setup attempt
+     * @param from
+     * @param to
+     */
+    public void cancelConnection(String from, String to) {
+        ConnState state = stack.getConnState(new AX25Callsign(from), new AX25Callsign(to), false);
+        if (state != null) {
+            state.transition = ConnState.ConnTransition.LINK_DOWN;
+            state.listener.connectionNotEstablished(this, "Connection cancelled");
+        }
+        if (connectionTask != null) {
+            connectionTask.cancel();
         }
     }
 
-    public void disconnect() {
-
-  //TODO      stack.transmitDISC(this, local, remote, digis, true);
+    public void disconnect(String from, String to) {
+        ConnState state = stack.getConnState(new AX25Callsign(from), new AX25Callsign(to), false);
+        if (state != null) {
+            stack.transmitDISC(this, state.getSrc(),state.getDst(), new AX25Callsign[]{}, true);
+        }
     }
 
     /**

@@ -1,7 +1,9 @@
 package org.prowl.kisset.comms.host.parser.commands;
 
+import org.prowl.kisset.KISSet;
 import org.prowl.kisset.annotations.TNCCommand;
 import org.prowl.kisset.comms.host.parser.Mode;
+import org.prowl.kisset.io.Stream;
 import org.prowl.kisset.io.StreamState;
 
 import java.io.IOException;
@@ -22,6 +24,9 @@ public class Disconnect extends Command {
             return true;
         }
 
+        // Get the current stream we are using
+        Stream currentStream = commandParser.getCurrentInterface().getCurrentStream();
+
         // If we're in command mode, then
         if (commandParser.getCurrentInterface().getCurrentStream().getStreamState().equals(StreamState.DISCONNECTED)) {
             writeToTerminal("*** Not connected to a station");
@@ -30,7 +35,7 @@ public class Disconnect extends Command {
 
         // Cancel the current connection attempt on the current interface
         if (commandParser.getCurrentInterface().getCurrentStream().getStreamState().equals(StreamState.CONNECTING)) {
-          //TODO  commandParser.getCurrentInterface().cancelConnectionAttempt();
+            commandParser.getCurrentInterface().cancelConnection(currentStream);
             writeToTerminal("*** Connection attempt cancelled");
             return true;
         }
@@ -39,10 +44,11 @@ public class Disconnect extends Command {
         if (commandParser.getCurrentInterface().getCurrentStream().getStreamState().equals(StreamState.CONNECTED)) {
             writeToTerminal("*** Disconnecting");
             commandParser.getCurrentInterface().getCurrentStream().disconnect();
+            commandParser.getCurrentInterface().disconnect(currentStream);
             return true;
         }
 
-        if (commandParser.getCurrentInterface().getCurrentStream().getStreamState().equals(StreamState.CONNECTED)) {
+        if (commandParser.getCurrentInterface().getCurrentStream().getStreamState().equals(StreamState.DISCONNECTING)) {
             commandParser.getCurrentInterface().getCurrentStream().disconnectNow();
             writeToTerminal("*** Disconnected");
             return true;

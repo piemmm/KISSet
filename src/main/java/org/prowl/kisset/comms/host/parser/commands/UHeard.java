@@ -32,7 +32,7 @@ public class UHeard extends Command {
         List<Interface> connectors = KISSet.INSTANCE.getInterfaceHandler().getInterfaces();
         List<Node> nodes = heard.listHeard();
         if (nodes.size() == 0) {
-            writeToTerminal("No nearby nodes unheard yet" + CR);
+            writeToTerminal("*** No nearby nodes unheard yet" + CR);
         } else {
             writeToTerminal(ANSI.UNDERLINE + ANSI.BOLD + "Int  Callsign  Last UnHeard       CanReach" + ANSI.NORMAL + CR);
 
