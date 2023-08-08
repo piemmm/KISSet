@@ -6,6 +6,9 @@ import org.apache.commons.logging.LogFactory;
 import org.prowl.kisset.KISSet;
 import org.prowl.kisset.annotations.InterfaceDriver;
 import org.prowl.kisset.ax25.*;
+import org.prowl.kisset.core.Node;
+import org.prowl.kisset.eventbus.SingleThreadBus;
+import org.prowl.kisset.eventbus.events.HeardNodeEvent;
 import org.prowl.kisset.util.Tools;
 
 import java.io.*;
@@ -60,10 +63,6 @@ public class KISSviaTCP extends Interface {
         maxFrames = config.getInt("maxFrames", 3);
         frequency = config.getInt("frequency", 0);
         retries = config.getInt("retries", 6);
-
-        for (int i = 0; i < 10; i++) {
-
-        }
 
     }
 
@@ -136,12 +135,6 @@ public class KISSviaTCP extends Interface {
              */
             @Override
             public boolean acceptInbound(ConnState state, AX25Callsign originator, org.prowl.kisset.ax25.Connector port) {
-
-                LOG.info("Incoming connection request from " + originator + " to " + state.getDst());
-
-
-                // Do not accept (possibly replace this with a default handler to display a message in the future?)
-                // Maybe use the remoteUISwitch to do it?
                 LOG.info("Rejecting connection request from " + originator + " to " + state.getDst() + " as no service is registered for this callsign");
                 return false;
             }
@@ -153,16 +146,16 @@ public class KISSviaTCP extends Interface {
         // AX Frame listener for things like mheard lists
         anInterface.addFrameListener(new AX25FrameListener() {
             @Override
-            public void consumeAX25Frame(AX25Frame frame, org.prowl.kisset.ax25.Connector connector) {
-                // Create a node to represent what we've seen - we'll merge this in things like
-                // mheard lists if there is another node there so that capability lists can grow
-//                Node node = new Node(KISSviaTCP.this, frame.sender.toString(), frame.rcptTime, frame.dest.toString(), frame);
-//
-//                // Determine the nodes capabilities from the frame type and add this to the node
-//                PacketTools.determineCapabilities(node, frame);
-//
-//                // Fire off to anything that wants to know about nodes heard
-//                ServerBus.INSTANCE.post(new HeardNodeEvent(node));
+            public void consumeAX25Frame(AX25Frame frame, Connector connector) {
+                LOG.debug("Got frame: " + frame.toString() + "  body=" + Tools.byteArrayToHexString(frame.getBody()));
+
+                Node node = new Node(KISSviaTCP.this, frame.sender.toString(), frame.rcptTime, frame.dest.toString(), frame);
+
+                // Determine the nodes capabilities from the frame type and add this to the node
+                Tools.determineCapabilities(node, frame);
+
+                // Fire off to anything that wants to know about nodes heard
+                SingleThreadBus.INSTANCE.post(new HeardNodeEvent(node));
             }
         });
 
