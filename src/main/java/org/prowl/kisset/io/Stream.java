@@ -69,12 +69,13 @@ public class Stream {
 
     // Send a disconnect frame and the wait for the ax.25 stack to disconnect
     public void disconnect() throws IOException {
+        anInterface.disconnect(this);
         in.close();
         out.close();
         streamState = StreamState.DISCONNECTING;
     }
 
-    // Disconnect immediately without sending a request frame.
+    // Disconnect immediately without sending a disconnect request frame.
     public void disconnectNow() throws IOException {
         in.close();
         out.close();

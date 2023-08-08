@@ -28,28 +28,27 @@ public class Disconnect extends Command {
         Stream currentStream = commandParser.getCurrentInterface().getCurrentStream();
 
         // If we're in command mode, then
-        if (commandParser.getCurrentInterface().getCurrentStream().getStreamState().equals(StreamState.DISCONNECTED)) {
+        if (currentStream.getStreamState().equals(StreamState.DISCONNECTED)) {
             writeToTerminal("*** Not connected to a station");
             return true;
         }
 
         // Cancel the current connection attempt on the current interface
-        if (commandParser.getCurrentInterface().getCurrentStream().getStreamState().equals(StreamState.CONNECTING)) {
+        if (currentStream.getStreamState().equals(StreamState.CONNECTING)) {
             commandParser.getCurrentInterface().cancelConnection(currentStream);
             writeToTerminal("*** Connection attempt cancelled");
             return true;
         }
 
         // Disconnect the current stream
-        if (commandParser.getCurrentInterface().getCurrentStream().getStreamState().equals(StreamState.CONNECTED)) {
+        if (currentStream.getStreamState().equals(StreamState.CONNECTED)) {
             writeToTerminal("*** Disconnecting");
-            commandParser.getCurrentInterface().getCurrentStream().disconnect();
-            commandParser.getCurrentInterface().disconnect(currentStream);
+            currentStream.disconnect();
             return true;
         }
 
-        if (commandParser.getCurrentInterface().getCurrentStream().getStreamState().equals(StreamState.DISCONNECTING)) {
-            commandParser.getCurrentInterface().getCurrentStream().disconnectNow();
+        if (currentStream.getStreamState().equals(StreamState.DISCONNECTING)) {
+            currentStream.disconnectNow();
             writeToTerminal("*** Disconnected");
             return true;
         }
