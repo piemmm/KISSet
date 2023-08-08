@@ -28,7 +28,7 @@ public class Monitor  extends Command {
                 tncHost.setMonitor(false);
                 writeToTerminal("Monitor is off" + CR);
             } else {
-                writeToTerminal("Usage: mon [on|off]" + CR);
+                writeToTerminal("*** Usage: mon [on|off]" + CR);
             }
         }
         return true;

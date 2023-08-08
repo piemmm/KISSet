@@ -26,6 +26,10 @@ public class NetROMNode {
         return destinationNodeCallsign;
     }
 
+    public String getDestinationNodeMnemonic() {
+        return destinationNodeMnemonic;
+    }
+
     public String getNeighbourNodeCallsign() {
         return neighbourNodeCallsign;
     }

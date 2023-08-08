@@ -18,7 +18,8 @@ public enum RoutingTable {
         // Remove any existing node with the same callsign
         for (NetROMNode existingNode : nodes) {
             if (existingNode.getDestinationNodeCallsign().equals(node.getDestinationNodeCallsign())
-             && existingNode.getNeighbourNodeCallsign().equals(node.getNeighbourNodeCallsign())) {
+             && existingNode.getNeighbourNodeCallsign().equals(node.getNeighbourNodeCallsign())
+            && existingNode.getDestinationNodeMnemonic().equals(node.getDestinationNodeMnemonic())) {
                 nodes.remove(existingNode);
                 break;
             }
