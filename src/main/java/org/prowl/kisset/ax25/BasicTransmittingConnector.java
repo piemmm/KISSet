@@ -491,9 +491,11 @@ public class BasicTransmittingConnector extends Connector implements Transmittin
             public void run() {
 
                 if (tries-- == 0) {
+                    LOG.debug("Connection timed out");
                     connectionTask = null;
                     cancel();
                     listener.connectionNotEstablished(this, "Connection timed out");
+                    return;
                 }
 
                 // Send a single SABM frame to the remote station
@@ -503,11 +505,14 @@ public class BasicTransmittingConnector extends Connector implements Transmittin
                     sabmFrame.dest = new AX25Callsign(to);
                     sabmFrame.setCmd(true);
                     ConnState state = stack.getConnState(sabmFrame.sender, sabmFrame.dest, true);
+                    LOG.debug("State:"+ state.transition);
 
-                    if (state.transition == ConnState.ConnTransition.STEADY || state.transition == ConnState.ConnTransition.LINK_DOWN) {
+                    if (state.isOpen()) {
                         // Connected/refused so stop sending SABM frames
                         connectionTask = null;
+                        LOG.debug("Cancelling connection task:"+ state.transition);
                         cancel();
+                        return;
                     }
 
                     LOG.debug("Transmitter.openConnection(" + sabmFrame.dest + ',' + sabmFrame.sender + ',' + Arrays.toString(state.via) + "): sending SABM U-frame");
@@ -544,12 +549,18 @@ public class BasicTransmittingConnector extends Connector implements Transmittin
      */
     public void cancelConnection(String from, String to) {
         ConnState state = stack.getConnState(new AX25Callsign(from), new AX25Callsign(to), false);
+        LOG.debug("Cancel connection: " + from + " to " + to + ", stack=" + stack);
+
         if (state != null) {
             state.transition = ConnState.ConnTransition.LINK_DOWN;
-            state.listener.connectionNotEstablished(this, "Connection cancelled");
+            if (state.listener != null) {
+                state.listener.connectionNotEstablished(this, "Connection cancelled");
+            }
         }
         if (connectionTask != null) {
+            LOG.debug("Cancelling connection task");
             connectionTask.cancel();
+            connectionTask = null;
         }
     }
 
