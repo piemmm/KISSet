@@ -11,6 +11,7 @@ import org.prowl.kisset.comms.host.parser.Mode;
 import org.prowl.kisset.eventbus.SingleThreadBus;
 import org.prowl.kisset.eventbus.events.HeardNodeEvent;
 import org.prowl.kisset.io.Interface;
+import org.prowl.kisset.io.StreamState;
 import org.prowl.kisset.util.ANSI;
 import org.prowl.kisset.util.PacketTools;
 import org.prowl.kisset.util.Tools;
@@ -166,12 +167,19 @@ public class TNCHost {
      */
     @Subscribe
     public void packetReceived(HeardNodeEvent event) {
+        // Monitor must be enabled
         if (!monitorEnabled) {
             return;
         }
+        // And we should be in command mode
         if (parser.getMode() != Mode.CMD) {
             return;
         }
+        // As well as being disconnected in the currently selected stream
+        if (parser.getCurrentInterface() != null && !parser.getCurrentInterface().getCurrentStream().getStreamState().equals(StreamState.DISCONNECTED)) {
+            return;
+        }
+
         try {
             send(PacketTools.monitorPacketToString(event));
             flush();
