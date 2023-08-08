@@ -15,6 +15,7 @@ import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.prowl.kisset.KISSet;
+import org.prowl.kisset.config.Conf;
 import org.prowl.kisset.config.Config;
 import org.prowl.kisset.eventbus.SingleThreadBus;
 import org.prowl.kisset.eventbus.events.ConfigurationChangedEvent;
@@ -65,11 +66,11 @@ public class PreferencesController {
     public void onSaveButtonClicked() {
 
         // General
-        config.setProperty("callsign", stationCallsign.getText());
+        config.setProperty(Conf.callsign, stationCallsign.getText());
 
         // Terminal
-        config.setProperty("terminalFont", fontSelector.getSelectionModel().getSelectedItem());
-        config.setProperty("terminalFontSize", fontSize.getSelectionModel().getSelectedItem());
+        config.setProperty(Conf.terminalFont, fontSelector.getSelectionModel().getSelectedItem());
+        config.setProperty(Conf.terminalFontSize, fontSize.getSelectionModel().getSelectedItem());
 
 
         // Interfaces preference pane
@@ -124,7 +125,7 @@ public class PreferencesController {
 
     public void updateList() {
         // General preference pane
-        stationCallsign.setText(config.getConfig("callsign","N0CALL").toUpperCase(Locale.ENGLISH));
+        stationCallsign.setText(config.getConfig(Conf.callsign,"N0CALL").toUpperCase(Locale.ENGLISH));
 
         fontSelector.setCellFactory(listView -> {
             return new ComboBoxListCell<String>() {
@@ -146,8 +147,8 @@ public class PreferencesController {
         }
 
         // Set current font
-        fontSelector.getSelectionModel().select(config.getConfig("terminalFont", "Monospaced"));
-        fontSize.getSelectionModel().select(Integer.valueOf(config.getConfig("terminalFontSize", 14)));
+        fontSelector.getSelectionModel().select(config.getConfig(Conf.terminalFont, "Monospaced"));
+        fontSize.getSelectionModel().select(Integer.valueOf(config.getConfig(Conf.terminalFontSize, 14)));
 
 
         // Interfaces preference pane

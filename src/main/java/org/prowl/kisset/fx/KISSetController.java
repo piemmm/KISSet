@@ -26,6 +26,7 @@ import org.prowl.kisset.KISSet;
 import org.prowl.kisset.comms.host.TNCHost;
 import org.prowl.kisset.comms.host.parser.CommandParser;
 import org.prowl.kisset.comms.host.parser.Mode;
+import org.prowl.kisset.config.Conf;
 import org.prowl.kisset.eventbus.SingleThreadBus;
 import org.prowl.kisset.eventbus.events.ConfigurationChangedEvent;
 import org.prowl.kisset.gui.terminal.Connection;
@@ -115,13 +116,13 @@ public class KISSetController {
         term.setForeGround(Color.WHITE);
         float fontSize = 14;
         try {
-            fontSize = KISSet.INSTANCE.getConfig().getConfig("terminalFontSize", 14);
+            fontSize = KISSet.INSTANCE.getConfig().getConfig(Conf.terminalFontSize, 14);
         } catch (NumberFormatException e) {
 
         }
-        LOG.debug("Configuring terminal:" + fontSize + "   " + KISSet.INSTANCE.getConfig().getConfig("terminalFont", "Monospaced"));
+        LOG.debug("Configuring terminal:" + fontSize + "   " + KISSet.INSTANCE.getConfig().getConfig(Conf.terminalFont, "Monospaced"));
 
-        term.setFont(KISSet.INSTANCE.getConfig().getConfig("terminalFont", "Monospaced"), fontSize);
+        term.setFont(KISSet.INSTANCE.getConfig().getConfig(Conf.terminalFont, "Monospaced"), fontSize);
 
 
         canvas = new TerminalCanvas(term);

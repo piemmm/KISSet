@@ -14,6 +14,7 @@ import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.prowl.kisset.config.Conf;
 import org.prowl.kisset.config.Config;
 import org.prowl.kisset.eventbus.SingleThreadBus;
 import org.prowl.kisset.eventbus.events.ConfigurationChangedEvent;
@@ -110,7 +111,7 @@ public class KISSet extends Application {
             configuration = new Config();
 
             // Set our callsign
-            myCall = configuration.getConfig("callsign", "").toUpperCase(Locale.ENGLISH);
+            myCall = configuration.getConfig(Conf.callsign, "").toUpperCase(Locale.ENGLISH);
 
             // Init interfaces
             interfaceHandler = new InterfaceHandler(configuration.getConfig("interfaces"));
@@ -183,6 +184,10 @@ public class KISSet extends Application {
 
     public String getMyCall() {
         return myCall;
+    }
+
+    public void setMyCall(String myCall) {
+        this.myCall = myCall.toUpperCase(Locale.ENGLISH);
     }
 
     public Config getConfig() {

@@ -56,24 +56,25 @@ public class Config {
         }
     }
 
-    public String getConfig(String name, String defaultVal) {
-        return configuration.getString(name, defaultVal);
+    public String getConfig(Conf name, String defaultVal) {
+        return configuration.getString(name.name(), defaultVal);
     }
 
-    public int getConfig(String name, int defaultVal) {
-        return configuration.getInt(name, defaultVal);
+    public int getConfig(Conf name, int defaultVal) {
+        return configuration.getInt(name.name(), defaultVal);
     }
 
-    public boolean getConfig(String name, boolean defaultValue) {
-        return configuration.getBoolean(name, defaultValue);
+    public boolean getConfig(Conf name, boolean defaultValue) {
+        return configuration.getBoolean(name.name(), defaultValue);
     }
 
     public SubnodeConfiguration getConfig(String subNode) {
         return configuration.configurationAt(subNode);
     }
 
-    public void setProperty(String name, Object value) {
-        configuration.setProperty(name, value);
+    public Config setProperty(Conf name, Object value) {
+        configuration.setProperty(name.name(), value);
+        return this;
     }
 
     public void saveConfig() {

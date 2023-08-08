@@ -8,6 +8,7 @@ import org.prowl.kisset.KISSet;
 import org.prowl.kisset.Messages;
 import org.prowl.kisset.comms.host.parser.CommandParser;
 import org.prowl.kisset.comms.host.parser.Mode;
+import org.prowl.kisset.config.Conf;
 import org.prowl.kisset.eventbus.SingleThreadBus;
 import org.prowl.kisset.eventbus.events.HeardNodeEvent;
 import org.prowl.kisset.io.Interface;
@@ -50,7 +51,7 @@ public class TNCHost {
         this.parser = new CommandParser(this);
 
         // Get monitor state
-        monitorEnabled = KISSet.INSTANCE.getConfig().getConfig("monitor",false);
+        monitorEnabled = KISSet.INSTANCE.getConfig().getConfig(Conf.monitor,false);
 
         SingleThreadBus.INSTANCE.register(this);
         start();
@@ -152,7 +153,7 @@ public class TNCHost {
         this.monitorEnabled = enabled;
 
         // Update config
-        KISSet.INSTANCE.getConfig().setProperty("monitor", enabled);
+        KISSet.INSTANCE.getConfig().setProperty(Conf.monitor, enabled);
         KISSet.INSTANCE.getConfig().saveConfig();
     }
 
