@@ -27,5 +27,6 @@ module org.prowl.kisset {
     exports org.prowl.kisset.fx;
     exports org.prowl.kisset.statistics.types;
     exports org.prowl.kisset.netrom;
+    exports org.prowl.kisset.comms.host;
     opens org.prowl.kisset.fx to javafx.fxml;
 }

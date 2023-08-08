@@ -1,21 +1,25 @@
 package org.prowl.kisset.comms.host;
 
+import com.google.common.eventbus.Subscribe;
 import javafx.application.Platform;
-import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.prowl.kisset.KISSet;
 import org.prowl.kisset.Messages;
 import org.prowl.kisset.comms.host.parser.CommandParser;
+import org.prowl.kisset.comms.host.parser.Mode;
+import org.prowl.kisset.eventbus.SingleThreadBus;
+import org.prowl.kisset.eventbus.events.HeardNodeEvent;
 import org.prowl.kisset.io.Interface;
 import org.prowl.kisset.util.ANSI;
+import org.prowl.kisset.util.PacketTools;
 import org.prowl.kisset.util.Tools;
 
 import java.io.*;
 import java.util.List;
 
 /**
- * Each TNC host
+ * Each TNC host window is represented by an instance of this class.
  */
 public class TNCHost {
     // The end character for the TNC prompt
@@ -30,6 +34,9 @@ public class TNCHost {
     // Terminal window output stream
     private final OutputStream out;
 
+    // True if the TNC monitor mode is enabled
+    private boolean monitorEnabled;
+
     /**
      * Create a new TNC host.
      *
@@ -40,14 +47,17 @@ public class TNCHost {
         this.in = in;
         this.out = out;
         this.parser = new CommandParser(this);
+
+        // Get monitor state
+        monitorEnabled = KISSet.INSTANCE.getConfig().getConfig("monitor",false);
+
+        SingleThreadBus.INSTANCE.register(this);
         start();
     }
 
     // Start the TNC host
     public void start() {
-
-
-        Platform.runLater(new Runnable() {
+       Platform.runLater(new Runnable() {
             @Override
             public void run() {
 
@@ -125,10 +135,44 @@ public class TNCHost {
                     }
                 }
             } else {
-                send(ANSI.YELLOW+"*** No interfaces configured - please set one up in the preferences"+ANSI.NORMAL + CR);
+                send(ANSI.YELLOW + "*** No interfaces configured - please set one up in the preferences" + ANSI.NORMAL + CR);
             }
         } catch (IOException e) {
+            LOG.error(e.getMessage(), e);
+        }
+    }
 
+    public void setMonitor(boolean enabled) {
+
+        this.monitorEnabled = enabled;
+
+        // Update config
+        KISSet.INSTANCE.getConfig().setProperty("monitor", enabled);
+        KISSet.INSTANCE.getConfig().saveConfig();
+    }
+
+    public boolean isMonitorEnabled() {
+        return monitorEnabled;
+    }
+
+
+    /**
+     * Show packets when monitor mode is enabled
+     * @param event
+     */
+    @Subscribe
+    public void packetReceived(HeardNodeEvent event) {
+        if (!monitorEnabled) {
+            return;
+        }
+        if (parser.getMode() != Mode.CMD) {
+            return;
+        }
+        try {
+            send(PacketTools.monitorPacketToString(event));
+            flush();
+        } catch (IOException e) {
+            LOG.error(e.getMessage(), e);
         }
     }
 
