@@ -38,7 +38,7 @@
         <BorderPane VBox.vgrow="ALWAYS">
 
             <bottom>
-                <TextField fx:id="textEntry" onAction="#onTextEnteredAction" promptText="Enter commands here" BorderPane.alignment="CENTER" />
+                <TextField fx:id="textEntry" onAction="#onTextEnteredAction" onKeyPressed="#onKeyPressed" promptText="Enter commands here" BorderPane.alignment="CENTER" />
             </bottom>
             <center>
                 <ScrollPane fx:id="theScrollPane" fitToHeight="true" fitToWidth="true" hbarPolicy="NEVER" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">

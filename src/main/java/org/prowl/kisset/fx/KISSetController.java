@@ -14,6 +14,10 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.control.*;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.StackPane;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -21,6 +25,7 @@ import org.jfree.fx.FXGraphics2D;
 import org.prowl.kisset.KISSet;
 import org.prowl.kisset.comms.host.TNCHost;
 import org.prowl.kisset.comms.host.parser.CommandParser;
+import org.prowl.kisset.comms.host.parser.Mode;
 import org.prowl.kisset.eventbus.SingleThreadBus;
 import org.prowl.kisset.eventbus.events.ConfigurationChangedEvent;
 import org.prowl.kisset.gui.terminal.Connection;
@@ -37,6 +42,9 @@ import java.io.PipedOutputStream;
 public class KISSetController {
 
     private static final Log LOG = LogFactory.getLog("KISSetController");
+
+    private static final KeyCombination CTRL_C = new KeyCodeCombination(KeyCode.C, KeyCombination.CONTROL_DOWN);
+
     @FXML
     TextField textEntry;
     @FXML
@@ -53,6 +61,7 @@ public class KISSetController {
     private PipedOutputStream inpos;
     private PipedInputStream outpis;
     private PipedOutputStream outpos;
+    private TNCHost tncHost;
 
     @FXML
     protected void onQuitAction() {
@@ -83,6 +92,13 @@ public class KISSetController {
             e.printStackTrace();
         }
 
+    }
+
+    @FXML
+    protected void onKeyPressed(KeyEvent event) {
+        if (CTRL_C.match(event)) {
+            tncHost.setMode(Mode.CMD, true);
+        }
     }
 
     @Subscribe
@@ -171,7 +187,7 @@ public class KISSetController {
         }
 
 
-        TNCHost tncHost = new TNCHost(outpis, inpos);
+        tncHost = new TNCHost(outpis, inpos);
         Tools.runOnThread(() -> {
             term.start(new Connection() {
                 @Override

@@ -55,6 +55,10 @@ public class TNCHost {
         start();
     }
 
+    public void setMode(Mode mode, boolean sendPrompt) {
+        parser.setMode(mode, sendPrompt);
+    }
+
     // Start the TNC host
     public void start() {
        Platform.runLater(new Runnable() {
