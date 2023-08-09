@@ -603,8 +603,9 @@ public class AX25Stack implements FrameListener, Runnable {
                     fireConnStateUpdated(state);
                 }
             } else if (uType == AX25Frame.UTYPE_UA) {
-                LOG.debug(debugTag + " rcvd: " + frame.getFrameTypeString() + (frame.getP() ? " F " : ' ') + frame.sender + "->" + frame.dest);
+                LOG.debug(debugTag + " UTYPE_UA rcvd: " + frame.getFrameTypeString() + (frame.getP() ? " F " : ' ') + frame.sender + "->" + frame.dest);
                 if ((state = getConnState(frame.dest, frame.sender, false)) != null) {
+                    LOG.debug("Connstate: "+state);
                     switch (state.transition) {
                         case LINK_UP:
                             state.transition = ConnState.ConnTransition.STEADY;
@@ -624,6 +625,16 @@ public class AX25Stack implements FrameListener, Runnable {
                             state.connector = (TransmittingConnector) connector;
                             state.updateSessionTime();
                             fireConnStateUpdated(state);
+                            break;
+                        case STEADY: // ijh
+                            state.transition = ConnState.ConnTransition.LINK_DOWN;
+                            state.setConnType(ConnState.ConnType.CLOSED);
+                            if (state.listener != null) {
+                                state.listener.connectionClosed(state.sessionIdentifier, false);
+                            }
+                            state.clearResendableFrame();
+                            removeConnState(state);
+                            fireConnStateAddedOrRemoved();
                             break;
                         case LINK_DOWN:
                             state.transition = ConnState.ConnTransition.STEADY;

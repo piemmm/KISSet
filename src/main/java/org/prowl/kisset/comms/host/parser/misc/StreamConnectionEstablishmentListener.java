@@ -37,6 +37,11 @@ public class StreamConnectionEstablishmentListener implements ConnectionEstablis
     @Override
     public void connectionEstablished(Object sessionIdentifier, ConnState conn) {
         try {
+            // If our state prevents us from connecting, then we need to abort. (ie: connection is torn down and this listener is no longer valid)
+            if (stream.getRemoteCall() == null) {
+                return;
+            }
+
             commandParser.writeToTerminal("*** Connected to " + conn.getDst().toString().toUpperCase() + CR);
             commandParser.setModeIfCurrentStream(Mode.CONNECTED_TO_STATION, stream);
             commandParser.getCurrentInterface().getCurrentStream().setStreamState(StreamState.CONNECTED);
