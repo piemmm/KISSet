@@ -139,10 +139,10 @@ public class Tools {
     public static String byteArrayToReadableASCIIString(byte[] data) {
         StringBuilder sb = new StringBuilder();
         for (byte b: data) {
-            if (b<0x20 || b>0x7E) {
-                sb.append("<");
+            if (b<0x20 || b>0xFA) {
+                sb.append(ANSI.YELLOW+"<");
                 sb.append(String.format("%02X", b));
-                sb.append(">");
+                sb.append(">"+ANSI.NORMAL);
             } else {
                 sb.append((char)b);
             }

@@ -136,7 +136,7 @@ public class PacketTools {
         if (node.getFrame().getByteFrame().length > 0) {
             builder.append(":");
             builder.append(CR);
-            builder.append("Raw Frame:" +Tools.readableTextOnlyFromByteArray(node.getFrame().getByteFrame())+CR);
+            builder.append(Tools.byteArrayToReadableASCIIString(node.getFrame().getByteFrame())+CR);
 
             // Print out anything we can decode
             AX25Frame frame = node.getFrame();
