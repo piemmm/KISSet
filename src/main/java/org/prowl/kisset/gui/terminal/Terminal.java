@@ -457,8 +457,6 @@ public class Terminal implements Term {
                 : RenderingHints.VALUE_TEXT_ANTIALIAS_OFF;
         RenderingHints hints = new RenderingHints(
                 RenderingHints.KEY_TEXT_ANTIALIASING, mode);
-        hints.put(RenderingHints.KEY_FRACTIONALMETRICS,
-                RenderingHints.VALUE_FRACTIONALMETRICS_ON);
         hints.put(RenderingHints.KEY_RENDERING,
                 RenderingHints.VALUE_RENDER_QUALITY);
         graphics.setRenderingHints(hints);
