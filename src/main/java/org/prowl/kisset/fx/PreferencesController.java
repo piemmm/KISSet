@@ -10,6 +10,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.ComboBoxListCell;
 import javafx.scene.text.Font;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.logging.Log;
@@ -121,9 +122,10 @@ public class PreferencesController {
         removeInterfaceButton.setDisable(true);
 
         updateList();
+        updateControls();
     }
 
-    public void updateList() {
+    public void updateControls() {
         // General preference pane
         stationCallsign.setText(config.getConfig(Conf.callsign,Conf.callsign.stringDefault()).toUpperCase(Locale.ENGLISH));
 
@@ -149,8 +151,9 @@ public class PreferencesController {
         // Set current font
         fontSelector.getSelectionModel().select(config.getConfig(Conf.terminalFont, Conf.terminalFont.stringDefault()));
         fontSize.getSelectionModel().select(Integer.valueOf(config.getConfig(Conf.terminalFontSize, Conf.terminalFontSize.intDefault())));
+    }
 
-
+    public void updateList() {
         // Interfaces preference pane
         interfaces.clear();
         // Get a list of interfaces
@@ -198,6 +201,7 @@ public class PreferencesController {
 
 
     public void showAddInterfaceScreen(Interface interfaceToEditOrNull) {
+
         try {
             // Create the GUI.
             Stage stage = new Stage();
@@ -206,9 +210,11 @@ public class PreferencesController {
             ConnectionPreferenceHost controller = fxmlLoader.getController();
             Scene scene = new Scene(root, 640, 480);
             stage.setTitle("KISS interface settings");
+            stage.initOwner(addInterfaceButton.getScene().getWindow());
+            stage.initModality(Modality.WINDOW_MODAL);
             stage.setScene(scene);
-            stage.show();
             controller.setup(interfaceToEditOrNull, this);
+            stage.showAndWait();
         } catch (Throwable e) {
             LOG.error(e.getMessage(), e);
         }

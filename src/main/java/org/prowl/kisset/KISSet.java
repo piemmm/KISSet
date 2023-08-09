@@ -34,7 +34,7 @@ public class KISSet extends Application {
 
     private static final Log LOG = LogFactory.getLog("KISSet");
     public static KISSet INSTANCE;
-    public String myCall = "N0CALL";
+    public String myCall = "";
     private Config configuration;
     private InterfaceHandler interfaceHandler;
     private Statistics statistics;
