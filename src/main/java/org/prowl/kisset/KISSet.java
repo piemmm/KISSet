@@ -111,7 +111,7 @@ public class KISSet extends Application {
             configuration = new Config();
 
             // Set our callsign
-            myCall = configuration.getConfig(Conf.callsign, "").toUpperCase(Locale.ENGLISH);
+            myCall = configuration.getConfig(Conf.callsign, Conf.callsign.stringDefault()).toUpperCase(Locale.ENGLISH);
 
             // Init interfaces
             interfaceHandler = new InterfaceHandler(configuration.getConfig("interfaces"));

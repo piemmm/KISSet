@@ -125,7 +125,7 @@ public class PreferencesController {
 
     public void updateList() {
         // General preference pane
-        stationCallsign.setText(config.getConfig(Conf.callsign,"N0CALL").toUpperCase(Locale.ENGLISH));
+        stationCallsign.setText(config.getConfig(Conf.callsign,Conf.callsign.stringDefault()).toUpperCase(Locale.ENGLISH));
 
         fontSelector.setCellFactory(listView -> {
             return new ComboBoxListCell<String>() {
@@ -147,8 +147,8 @@ public class PreferencesController {
         }
 
         // Set current font
-        fontSelector.getSelectionModel().select(config.getConfig(Conf.terminalFont, "Monospaced"));
-        fontSize.getSelectionModel().select(Integer.valueOf(config.getConfig(Conf.terminalFontSize, 14)));
+        fontSelector.getSelectionModel().select(config.getConfig(Conf.terminalFont, Conf.terminalFont.stringDefault()));
+        fontSize.getSelectionModel().select(Integer.valueOf(config.getConfig(Conf.terminalFontSize, Conf.terminalFontSize.intDefault())));
 
 
         // Interfaces preference pane

@@ -116,13 +116,13 @@ public class KISSetController {
         term.setForeGround(Color.WHITE);
         float fontSize = 14;
         try {
-            fontSize = KISSet.INSTANCE.getConfig().getConfig(Conf.terminalFontSize, 14);
+            fontSize = KISSet.INSTANCE.getConfig().getConfig(Conf.terminalFontSize, Conf.terminalFontSize.intDefault());
         } catch (NumberFormatException e) {
 
         }
-        LOG.debug("Configuring terminal:" + fontSize + "   " + KISSet.INSTANCE.getConfig().getConfig(Conf.terminalFont, "Monospaced"));
+        LOG.debug("Configuring terminal:" + fontSize + "   " + KISSet.INSTANCE.getConfig().getConfig(Conf.terminalFont,  Conf.terminalFont.stringDefault()));
 
-        term.setFont(KISSet.INSTANCE.getConfig().getConfig(Conf.terminalFont, "Monospaced"), fontSize);
+        term.setFont(KISSet.INSTANCE.getConfig().getConfig(Conf.terminalFont, Conf.terminalFont.stringDefault()), fontSize);
 
 
         canvas = new TerminalCanvas(term);

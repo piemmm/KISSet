@@ -51,7 +51,7 @@ public class TNCHost {
         this.parser = new CommandParser(this);
 
         // Get monitor state
-        monitorEnabled = KISSet.INSTANCE.getConfig().getConfig(Conf.monitor,false);
+        monitorEnabled = KISSet.INSTANCE.getConfig().getConfig(Conf.monitor,Conf.monitor.boolDefault());
 
         SingleThreadBus.INSTANCE.register(this);
         start();
