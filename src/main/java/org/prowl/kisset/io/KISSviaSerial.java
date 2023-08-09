@@ -245,8 +245,10 @@ public class KISSviaSerial extends Interface {
 
     @Override
     public void stop() {
-        // ServerBus.INSTANCE.unregister(this);
+        SingleThreadBus.INSTANCE.unregister(this);
+        anInterface.stop();
         running = false;
+        serialPort.closePort();
     }
 
     @Override

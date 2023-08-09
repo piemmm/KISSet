@@ -8,9 +8,11 @@ import org.prowl.kisset.eventbus.events.HeardNodeEvent;
 /**
  * Listen to node packets and use it to build a list of routes
  */
-public class RoutingListener {
+public enum RoutingListener {
 
-    public RoutingListener() {
+    INSTANCE;
+
+    RoutingListener() {
         SingleThreadBus.INSTANCE.register(this);
     }
 

@@ -29,7 +29,7 @@ public class BasicTransmittingConnector extends Connector implements Transmittin
     private static final ProtocolFamily[] PROTOCOL_FAMILIES = ProtocolFamily.values();
     private final byte[] rcvBuf = new byte[4096];
     private final AX25Stack stack;
-    private final InputStream in;
+    private InputStream in;
     private final ArrayList<AX25FrameSource> queue = new ArrayList<>();
     /**
      * This is the default callsign this connector will use for transmitting things like UI frames.
@@ -263,15 +263,20 @@ public class BasicTransmittingConnector extends Connector implements Transmittin
         return true;
     }
 
-    public final void getbuf(InputStream sis) {
+    public void stop() {
+       try { in.close(); } catch(Throwable e) { }
+       in = null;
+    }
+
+    public final void getbuf() {
         byte[] shortBuf = new byte[1];
-        while (sis != null) {
+        while (in != null) {
             int newData;
             try {
                 int availBytes;
-                if ((availBytes = sis.available()) > 0) {
+                if ((availBytes = in.available()) > 0) {
                     for (int count = 0; count < availBytes; count++) {
-                        if (sis == null) {
+                        if (in == null) {
                             break;
                         }
                         // The read(b[], off, len) method is used instead of read() because
@@ -279,7 +284,7 @@ public class BasicTransmittingConnector extends Connector implements Transmittin
                         // byte array and then calls read(b[], off, len) on that array for each
                         // byte. This way, we save CPU time and stop malloc'ing so many tiny
                         // buffer arrays.
-                        if (sis.read(shortBuf, 0, 1) > 0) {
+                        if (in.read(shortBuf, 0, 1) > 0) {
                             newData = shortBuf[0] & 0xFF;
                             switch (curState) {
                                 case IDLE:
@@ -356,7 +361,7 @@ public class BasicTransmittingConnector extends Connector implements Transmittin
             } catch(SerialPortIOException e) {
                 LOG.info("Serial port closed (probably reopening due to configuration change)");
                 curState = KissEscapeOutputStream.RcvState.IDLE;
-                sis = null;
+                in = null;
             } catch (Throwable e) {
 
                 //    stats.numBadRcvFrames++;
@@ -379,7 +384,7 @@ public class BasicTransmittingConnector extends Connector implements Transmittin
     public void startRxThread() {
         Thread rx = new Thread(() -> {
             try {
-                getbuf(in);
+                getbuf();
             } catch (Throwable e) {
                 e.printStackTrace();
                 System.exit(1);

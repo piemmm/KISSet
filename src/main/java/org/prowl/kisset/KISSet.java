@@ -120,8 +120,7 @@ public class KISSet extends Application {
             interfaceHandler.start();
 
             // Start listening for route broadcasts
-            new RoutingListener();
-
+            RoutingListener routingListener = RoutingListener.INSTANCE;
 
         } catch (Throwable e) {
             LOG.error(e.getMessage(), e);
