@@ -38,13 +38,11 @@ public class KISSviaSerial extends Interface {
     private final int frequency;
     private final int retries;
     private BasicTransmittingConnector anInterface;
-    private final HierarchicalConfiguration config;
     private boolean running;
     private SerialPort serialPort = null; // The chosen port form our enumerated list.
 
     public KISSviaSerial(HierarchicalConfiguration config) {
-        super();
-        this.config = config;
+        super(config);
 
         // The address and port of the KISS interface we intend to connect to (KISS over Serial)
         port = config.getString("serialPort");
@@ -212,14 +210,6 @@ public class KISSviaSerial extends Interface {
         };
     }
 
-    @Override
-    public String getUUID() {
-        return config.getString("uuid");
-    }
-
-    public void setUUID(String uuid) {
-        config.setProperty("uuid", uuid);
-    }
 
     @Override
     public boolean connect(String to, String from, ConnectionEstablishmentListener connectionEstablishmentListener) throws IOException {

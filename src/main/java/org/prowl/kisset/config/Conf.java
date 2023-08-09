@@ -7,6 +7,7 @@ public enum Conf {
 
     callsign(""),
     monitor(false),
+    uuid(""),
     terminalFont("Monospaced"),
     terminalFontSize(12);
 

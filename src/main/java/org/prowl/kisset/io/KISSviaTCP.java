@@ -37,15 +37,13 @@ public class KISSviaTCP extends Interface {
     private final int retries;
 
     private BasicTransmittingConnector anInterface;
-    private final HierarchicalConfiguration config;
     private boolean running;
 
 
 
 
     public KISSviaTCP(HierarchicalConfiguration config) {
-        super();
-        this.config = config;
+        super(config);
 
         // The address and port of the KISS interface we intend to connect to (KISS over IP or Direwolf, etc)
         address = config.getString("ipAddress");
@@ -80,14 +78,6 @@ public class KISSviaTCP extends Interface {
         });
     }
 
-    @Override
-    public String getUUID() {
-        return config.getString("uuid");
-    }
-
-    public void setUUID(String uuid) {
-        config.setProperty("uuid", uuid);
-    }
 
     public void setup() {
 

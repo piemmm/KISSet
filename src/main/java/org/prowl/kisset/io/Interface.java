@@ -1,10 +1,13 @@
 package org.prowl.kisset.io;
 
+import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.prowl.kisset.ax25.ConnectionEstablishmentListener;
+import org.prowl.kisset.config.Conf;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public abstract class Interface {
 
@@ -12,8 +15,12 @@ public abstract class Interface {
     String failReason;
     private int currentStream = 0;
     private List<Stream> streams = new ArrayList<>();
+    protected HierarchicalConfiguration config;
+    private String uuid;
 
-    public Interface() {
+    public Interface(HierarchicalConfiguration config) {
+        this.config = config;
+        getUUID();
 
         // Create default streams.
         for (int i = 0; i < 7; i++) {
@@ -24,8 +31,6 @@ public abstract class Interface {
     public abstract void start() throws IOException;
 
     public abstract void stop();
-
-    public abstract String getUUID();
 
     public abstract boolean connect(String to, String from, ConnectionEstablishmentListener connectionEstablishmentListener) throws IOException;
 
@@ -51,5 +56,29 @@ public abstract class Interface {
 
     public String getFailReason() {
         return failReason;
+    }
+
+
+    public String getUUID() {
+        uuid = config.getString(Conf.uuid.name());
+        return uuid;
+    }
+
+    public void setUUID(String uuid) {
+        this.uuid = uuid;
+        config.setProperty(Conf.uuid.name(), uuid);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Interface that = (Interface) o;
+        return Objects.equals(uuid, that.uuid);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(uuid);
     }
 }
