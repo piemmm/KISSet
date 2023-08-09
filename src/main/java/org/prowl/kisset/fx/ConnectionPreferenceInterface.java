@@ -4,7 +4,7 @@ import org.apache.commons.configuration.HierarchicalConfiguration;
 
 public interface ConnectionPreferenceInterface {
 
-    void init(HierarchicalConfiguration configInterfaceNode, PreferencesController controller);
+    void init(HierarchicalConfiguration configInterfaceNode, PreferencesController controller, ConnectionPreferenceHost host);
 
     boolean validate();
 

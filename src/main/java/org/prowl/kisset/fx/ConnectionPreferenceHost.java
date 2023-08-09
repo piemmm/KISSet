@@ -74,7 +74,7 @@ public class ConnectionPreferenceHost {
      */
     public void setup(Interface interfaceToEdit, PreferencesController preferencesController) {
         this.preferencesController = preferencesController;
-
+        okButton.setDisable(true);
         HierarchicalConfiguration interfacesNode = preferencesController.getPreferencesConfiguration().getConfig("interfaces");
 
         // If passed in an interafce, then get the correct config.
@@ -146,6 +146,7 @@ public class ConnectionPreferenceHost {
 
         // Nothing selected? Then just return - nothing to display.
         if (anInterface == null) {
+            okButton.setDisable(true);
             return;
         }
 
@@ -159,9 +160,10 @@ public class ConnectionPreferenceHost {
 
             // Get the controller we are using.
             connectionPreferenceClient = fxmlLoader.getController();
-            connectionPreferenceClient.init(configInterfaceNode, preferencesController);
+            connectionPreferenceClient.init(configInterfaceNode, preferencesController, this);
             connectionContent.getChildren().add(root);
         } catch (IOException e) {
+            okButton.setDisable(true);
             LOG.error(e.getMessage(), e);
         }
 
@@ -173,8 +175,9 @@ public class ConnectionPreferenceHost {
     }
 
 
-    public void validateConfig() {
-
+    public void setValidation(boolean validated) {
+        // If validation ok, then enable the button.
+        okButton.setDisable(!validated);
     }
 
 }

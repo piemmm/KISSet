@@ -16,6 +16,7 @@ public class TCPConnectionPreference implements ConnectionPreferenceInterface {
 
     private PreferencesController preferencesController;
     private HierarchicalConfiguration configInterfaceNode;
+    private ConnectionPreferenceHost connectionPreferenceHost;
 
     @Override
     public boolean validate() {
@@ -36,10 +37,22 @@ public class TCPConnectionPreference implements ConnectionPreferenceInterface {
         return true;
     }
 
+    @FXML
+    private void onIPChanged() {
+        connectionPreferenceHost.setValidation(validate());
+    }
+
+    @FXML
+    private void onPortChanged() {
+        connectionPreferenceHost.setValidation(validate());
+    }
+
+
     @Override
-    public void init(HierarchicalConfiguration configInterfaceNode, PreferencesController preferencesController) {
+    public void init(HierarchicalConfiguration configInterfaceNode, PreferencesController preferencesController, ConnectionPreferenceHost host) {
         this.preferencesController = preferencesController;
         this.configInterfaceNode = configInterfaceNode;
+        this.connectionPreferenceHost = host;
 
         // Nothing to do if no configuration
         if (configInterfaceNode == null) {
@@ -47,10 +60,14 @@ public class TCPConnectionPreference implements ConnectionPreferenceInterface {
         }
         ipAddressTextField.setText(configInterfaceNode.getString("ipAddress"));
         portTextField.setText(configInterfaceNode.getString("port"));
+        connectionPreferenceHost.setValidation(validate());
     }
 
     public void applyToConfig(HierarchicalConfiguration configuration) {
         configuration.setProperty("ipAddress", ipAddressTextField.getText());
         configuration.setProperty("port", portTextField.getText());
     }
+
+
+
 }

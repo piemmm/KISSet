@@ -21,21 +21,23 @@ public class SerialPortConnectionPreference implements ConnectionPreferenceInter
     private ComboBox<Integer> baudRateComboBox;
     private PreferencesController preferencesController;
     private HierarchicalConfiguration configInterfaceNode;
+    private ConnectionPreferenceHost connectionPreferenceHost;
 
     @FXML
     private void serialPortChanged() {
-
+        connectionPreferenceHost.setValidation(validate());
     }
 
     @FXML
     private void baudRateChanged() {
-
+        connectionPreferenceHost.setValidation(validate());
     }
 
     @Override
-    public void init(HierarchicalConfiguration configInterfaceNode, PreferencesController preferencesController) {
+    public void init(HierarchicalConfiguration configInterfaceNode, PreferencesController preferencesController, ConnectionPreferenceHost host) {
         this.preferencesController = preferencesController;
         this.configInterfaceNode = configInterfaceNode;
+        this.connectionPreferenceHost = host;
 
         List<SerialPort> ports = KISSviaSerial.getListOfSerialPorts();
         serialPortComboBox.setItems(FXCollections.observableList(ports));

@@ -35,9 +35,11 @@ public class InterfaceHandler {
             String className = interfaceConfiguration.getString("className");
             Interface anInterface = null;
             try {
-                anInterface = (Interface) Class.forName(className).getConstructor(HierarchicalConfiguration.class).newInstance(interfaceConfiguration);
-                interfaces.add(anInterface);
-                LOG.info("Added interface: " + className);
+                if (className != null) {
+                    anInterface = (Interface) Class.forName(className).getConstructor(HierarchicalConfiguration.class).newInstance(interfaceConfiguration);
+                    interfaces.add(anInterface);
+                    LOG.info("Added interface: " + className);
+                }
             } catch (Throwable e) {
                 // Something blew up. Log it and carry on.
                 LOG.error("Unable to add interface: " + className, e);

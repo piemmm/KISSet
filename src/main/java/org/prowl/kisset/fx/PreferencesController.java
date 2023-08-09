@@ -157,14 +157,26 @@ public class PreferencesController {
         List<HierarchicalConfiguration> interfaceConfigs = config.getConfig("interfaces").configurationsAt("interface");
         for (HierarchicalConfiguration interfaceConfig : interfaceConfigs) {
             String className = interfaceConfig.getString("className");
+            String uuid = interfaceConfig.getString("uuid");
+
             try {
-                Class<?> interfaceClass = Class.forName(className);
-                Constructor<?> constructor = interfaceClass.getConstructor(HierarchicalConfiguration.class);
-                Interface interfaceInstance = (Interface) constructor.newInstance(interfaceConfig);
-                //   Interface interfaceInstance = (Interface) interfaceClass.newInstance();
-                interfaces.add(interfaceInstance);
-            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | NoSuchMethodException |
-                     InvocationTargetException e) {
+                if (className != null) {
+                    Class<?> interfaceClass = Class.forName(className);
+                    if (interfaceClass != null) {
+
+                        Constructor<?> constructor = interfaceClass.getConstructor(HierarchicalConfiguration.class);
+                        Interface interfaceInstance = (Interface) constructor.newInstance(interfaceConfig);
+                        //   Interface interfaceInstance = (Interface) interfaceClass.newInstance();
+                        interfaces.add(interfaceInstance);
+                    } else {
+                        LOG.error("Could not find interface class " + className);
+                        removeInterface(uuid);
+                    }
+                } else {
+                    LOG.error("Interface class name was null " + className);
+                    removeInterface(uuid);
+                }
+            } catch (Throwable e) {
                 LOG.error(e.getMessage(), e);
             }
         }
@@ -209,6 +221,24 @@ public class PreferencesController {
         String uuid = interfaceToRemove.getUUID();
         LOG.info("uuid: " + uuid);
 
+        HierarchicalConfiguration interfacesNode = config.getConfig("interfaces");
+        // Get a list of all interfaces
+        List<HierarchicalConfiguration> interfaceList = interfacesNode.configurationsAt("interface");
+        // Get the one with the correct UUID
+        for (HierarchicalConfiguration interfaceNode : interfaceList) {
+            if (interfaceNode.getString("uuid").equals(uuid)) {
+                // Remove the interface node from the interfaces node.
+                config.getConfig("interfaces").getRootNode().removeChild(interfaceNode.getRootNode());
+                break;
+            }
+        }
+    }
+
+    /**
+     * Remove a uuid from the config only - this is used for cleanup of any classes that are removed from app.
+     * @param uuid
+     */
+    public void removeInterface(String uuid) {
         HierarchicalConfiguration interfacesNode = config.getConfig("interfaces");
         // Get a list of all interfaces
         List<HierarchicalConfiguration> interfaceList = interfacesNode.configurationsAt("interface");
