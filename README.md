@@ -1,8 +1,7 @@
 # KISSet
 
-A terminal program for connecting to TNCs that only support kiss (NinoTNC, TH-D74, etc)
+A terminal program for connecting to a TNC or modem that only support the KISS protocol (NinoTNC, TH-D74, etc)
 
-This code is in development and is not usable yet.
 
 ![Picture of running node](./doc/screen2.png)
 
