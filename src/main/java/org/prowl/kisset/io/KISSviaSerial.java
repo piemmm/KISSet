@@ -91,7 +91,7 @@ public class KISSviaSerial extends Interface {
         SerialPort[] ports = SerialPort.getCommPorts();
         for (SerialPort testPort : ports) {
             LOG.debug("Found serial port: " + testPort.getSystemPortName() + " - " + testPort.getSystemPortPath() + " - " + testPort.getDescriptivePortName()+ " - " + testPort.getPortDescription());
-            if (testPort.getSystemPortPath().equals(port)) {
+            if (testPort.getSystemPortPath().contains(port)) {
                 serialPort = testPort;
             }
         }
