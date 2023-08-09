@@ -45,8 +45,6 @@ public class BasicTransmittingConnector extends Connector implements Transmittin
     private transient long frameStartTime = -1L;
     private final int retransmitCount;
     private transient TimedQueueEntry delayQueueHead = null;
-    private TimerTask connectionTask;
-    private Timer connectTimer = new Timer();
 
     public BasicTransmittingConnector(int pacLen, int maxFrames, int baudRateInBits, int retransmitCount, AX25Callsign defaultCallsign, InputStream in, OutputStream out, ConnectionRequestListener connectionRequestListener) {
         this.defaultCallsign = defaultCallsign;
@@ -494,41 +492,14 @@ public class BasicTransmittingConnector extends Connector implements Transmittin
      */
     public synchronized boolean makeConnection(String from, String to, ConnectionEstablishmentListener listener) {
 
-        // If there is already a connection in progress, return false
-        if (connectionTask != null) {
-            return false;
-        }
 
-        // Create a timer task to handle the connection process
-        connectionTask = new TimerTask() {
-            private int tries = 5;
-            @Override
-            public void run() {
-
-                if (tries-- == 0) {
-                    LOG.debug("Connection timed out");
-                    connectionTask = null;
-                    cancel();
-                    listener.connectionNotEstablished(this, "Connection timed out");
-                    return;
-                }
-
-                // Send a single SABM frame to the remote station
-                try {
+        try {
                     AX25Frame sabmFrame = new AX25Frame();
                     sabmFrame.sender = new AX25Callsign(from);
                     sabmFrame.dest = new AX25Callsign(to);
                     sabmFrame.setCmd(true);
                     ConnState state = stack.getConnState(sabmFrame.sender, sabmFrame.dest, true);
                     LOG.debug("State:"+ state.transition);
-
-                    if (state.isOpen()) {
-                        // Connected/refused so stop sending SABM frames
-                        connectionTask = null;
-                        LOG.debug("Cancelling connection task:"+ state.transition);
-                        cancel();
-                        return;
-                    }
 
                     LOG.debug("Transmitter.openConnection(" + sabmFrame.dest + ',' + sabmFrame.sender + ',' + Arrays.toString(state.via) + "): sending SABM U-frame");
                     state.connType = ConnState.ConnType.MOD8;
@@ -538,22 +509,16 @@ public class BasicTransmittingConnector extends Connector implements Transmittin
                     sabmFrame.body = new byte[0];
                     state.listener = listener;
 
-                    //queue(sabmFrame);
+                    state.clearResendableFrame();
                     sendFrame(sabmFrame);
                     state.setConnector(BasicTransmittingConnector.this);
-                    //state.setResendableFrame(sabmFrame, getRetransmitCount());
+                    state.setResendableFrame(sabmFrame, getRetransmitCount());
                     state.updateSessionTime();
                     stack.fireConnStateUpdated(state);
                 } catch (Exception e) {
-                    connectionTask = null;
                     LOG.error(e.getMessage(), e);
-                    cancel();
                 }
-            }
-        };
 
-        // Send a SABM at 10 second intervale.  If we don't get a response after 5 tries, give up.
-        connectTimer.schedule(connectionTask, 0, 10000);
         return true;
     }
 
@@ -571,11 +536,6 @@ public class BasicTransmittingConnector extends Connector implements Transmittin
             if (state.listener != null) {
                 state.listener.connectionNotEstablished(this, "Connection cancelled");
             }
-        }
-        if (connectionTask != null) {
-            LOG.debug("Cancelling connection task");
-            connectionTask.cancel();
-            connectionTask = null;
         }
     }
 

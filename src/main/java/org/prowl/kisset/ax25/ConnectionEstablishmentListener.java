@@ -56,4 +56,5 @@ public interface ConnectionEstablishmentListener {
      * @param reason            object explaining why the connection was lost
      */
     void connectionLost(Object sessionIdentifier, Object reason);
+
 }
