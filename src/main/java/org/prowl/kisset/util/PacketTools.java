@@ -2,6 +2,11 @@ package org.prowl.kisset.util;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.prowl.aprslib.parser.*;
+import org.prowl.aprslib.position.Ambiguity;
+import org.prowl.aprslib.position.Position;
+import org.prowl.aprslib.position.PositionPacket;
+import org.prowl.kisset.KISSet;
 import org.prowl.kisset.ax25.AX25Frame;
 import org.prowl.kisset.core.Node;
 import org.prowl.kisset.eventbus.events.HeardNodeEvent;
@@ -84,6 +89,16 @@ public class PacketTools {
         StringBuilder builder = new StringBuilder();
 
         builder.append(CR);
+        builder.append(ANSI.BOLD_WHITE);
+
+
+        // Only show interface number if there is more than one interface
+        if (KISSet.INSTANCE.getInterfaceHandler().getInterfaces().size() > 1) {
+            builder.append(KISSet.INSTANCE.getInterfaceHandler().getInterfaces().indexOf(node.getInterface()));
+            builder.append(": ");
+            builder.append(ANSI.NORMAL);
+        }
+
         builder.append(ANSI.YELLOW);
         builder.append(node.getCallsign());
         builder.append(">");
@@ -121,15 +136,35 @@ public class PacketTools {
         if (node.getFrame().getByteFrame().length > 0) {
             builder.append(":");
             builder.append(CR);
-            if (node.getFrame().getPid() == AX25Frame.PID_NETROM) {
+            builder.append("Raw Frame:" +Tools.readableTextOnlyFromByteArray(node.getFrame().getByteFrame())+CR);
+
+            // Print out anything we can decode
+            AX25Frame frame = node.getFrame();
+            byte pid = frame.getPid();
+            if (pid == AX25Frame.PID_NETROM) {
                 // NetRom frame
-                builder.append(ANSI.MAGENTA + PacketTools.decodeNetROMToText(node) + ANSI.NORMAL);
+                builder.append(ANSI.MAGENTA + PacketTools.decodeNetROMToText(node) + CR+ANSI.NORMAL);
             } else {
-                // Normal I (or unknown payload) frame
-                builder.append(Tools.readableTextOnlyFromByteArray(node.getFrame().getByteFrame()));
+                if (pid == AX25Frame.PID_NOLVL3) {
+                    boolean isAprs = false;
+                    try {
+                        String aprsString = frame.sender.toString() + ">" + frame.dest.toString() + ":" + frame.getAsciiFrame();
+                        APRSPacket packet = Parser.parse(aprsString);
+                        isAprs = packet.getType() != APRSTypes.UNSPECIFIED;//packet.isAprs();
+                        if (isAprs) {
+                            builder.append(readableTextFromAPRSFrame(packet));
+
+                        }
+                    } catch (Throwable e) {
+                        // Ignore - probably not aprs. or unable to parse MICe
+                    }
+
+                }
             }
+        } else {
+            builder.append(CR);
         }
-        builder.append(CR);
+
         return builder.toString();
     }
 
@@ -192,4 +227,69 @@ public class PacketTools {
         return pidString.toString();
     }
 
+    public static String readableTextFromAPRSFrame(APRSPacket packet) {
+        StringBuilder builder = new StringBuilder();
+        builder.append(ANSI.MAGENTA);
+        builder.append("APRS Packet:");
+        builder.append(" Type:" + packet.getType() + CR);
+        InformationField info = packet.getAprsInformation();
+        if (info != null) {
+            if (info instanceof PositionPacket) {
+                Position position = ((PositionPacket) info).getPosition();
+                builder.append(" Latitude: " + position.getLatitude() + CR);
+                builder.append(" Longitude: " + position.getLongitude() + CR);
+                builder.append(" Altitude: " + position.getAltitude() + CR);
+
+                Ambiguity ambiguity = position.getPositionAmbiguity();
+                if (ambiguity != null) {
+                    builder.append(" Ambiguity: " + ambiguity + CR);
+                }
+            }
+        }
+
+
+        DataExtension extension = packet.getAprsInformation().getExtension();
+        if (extension != null) {
+            if (extension instanceof PHGExtension) {
+                PHGExtension phg = (PHGExtension) extension;
+                builder.append(" PHG: " + CR);
+                builder.append("  Power: " + phg.getPower() + CR);
+                builder.append("  Height:" + phg.getHeight() + CR);
+                builder.append("  Gain:" + phg.getGain() + CR);
+                builder.append("  Directivity:" + phg.getDirectivity() + CR);
+            } else if (extension instanceof RangeExtension) {
+                RangeExtension range = (RangeExtension) extension;
+                builder.append(" Range: " + range.getRange() + CR);
+//            } else if (extension instanceof StatusExtension) {
+//                StatusExtension status = (StatusExtension) extension;
+//                builder.append(" Status: "+status.getStatus()+CR);
+//            } else if (extension instanceof TelemetryExtension) {
+//                TelemetryExtension telemetry = (TelemetryExtension) extension;
+//                builder.append(" Telemetry: "+telemetry.getTelemetry()+CR);
+//            } else if (extension instanceof WeatherExtension) {
+//                WeatherExtension weather = (WeatherExtension) extension;
+//                builder.append(" Weather: "+weather.getWeather()+CR);
+//            } else if (extension instanceof ObjectExtension) {
+//                ObjectExtension object = (ObjectExtension) extension;
+//                builder.append(" Object: "+object.getObject()+CR);
+//            } else if (extension instanceof MessageExtension) {
+//                MessageExtension message = (MessageExtension) extension;
+//                builder.append(" Message: "+message.getMessage()+CR);
+//            } else if (extension instanceof ItemExtension) {
+//                ItemExtension item = (ItemExtension) extension;
+//                builder.append(" Item: "+item.getItem()+CR);
+//            } else if (extension instanceof MicEExtension) {
+//                MicEExtension micE = (MicEExtension) extension;
+//                builder.append(" MicE: "+micE.getMicE()+CR);
+//            } else if (extension instanceof UserDefinedExtension) {
+//                UserDefinedExtension userDefined = (UserDefinedExtension) extension;
+//                builder.append(" User Defined: "+userDefined.getUserDefined()+CR);
+//            }
+            }
+        }
+        if (packet.getAprsInformation().getComment() != null) {
+            builder.append(" Comment: " + packet.getAprsInformation().getComment() + ANSI.NORMAL + CR);
+        }
+        return builder.toString();
+    }
 }

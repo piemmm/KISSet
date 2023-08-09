@@ -125,8 +125,12 @@ public class Tools {
                 sb.append((char) b);
             } else if (b == 0x0D || b == 0x0A) {
                 sb.append("\r\n");
-
             }
+        }
+
+        // Strip trailing newlines
+        while (sb.length() > 0 && sb.charAt(sb.length() - 1) == '\n') {
+            sb.deleteCharAt(sb.length() - 1);
         }
         return sb.toString();
     }
