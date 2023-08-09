@@ -48,6 +48,28 @@ public class ChangeInterface extends Command {
             return false;
         }
 
+        // If a stream number is specified, change to that stream.
+        try {
+            int interfaceNumber = Integer.parseInt(data[1]);
+            if (interfaceNumber < 0 || interfaceNumber > KISSet.INSTANCE.getInterfaceHandler().getInterfaces().size() - 1) {
+                writeToTerminal("*** Invalid stream number");
+                return true;
+            }
+
+            // Change the interfaces
+            commandParser.setCurrentInterface(KISSet.INSTANCE.getInterfaceHandler().getInterface(interfaceNumber));
+
+            // Change the stream (and output stream) to stream 0
+            commandParser.getCurrentInterface().setCurrentStream(0);
+            commandParser.setDivertStream(commandParser.getCurrentInterface().getCurrentStream().getOutputStream());
+
+        } catch(NumberFormatException e) {
+            writeToTerminal("*** Invalid stream number");
+            return true;
+        }
+
+
+
         return false;
     }
 

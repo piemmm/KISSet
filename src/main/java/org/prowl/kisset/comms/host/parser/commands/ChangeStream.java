@@ -40,15 +40,31 @@ public class ChangeStream extends Command {
             return true;
         }
 
-
         // Prevent stream changes whilst in connecting state
-        if (commandParser.getCurrentInterface().getCurrentStream().getStreamState().equals(StreamState.CONNECTING)) {
-            writeToTerminal("*** Cannot change stream whilst connecting");
-            return false;
+        if (commandParser.getCurrentInterface().getCurrentStream().getStreamState().equals(StreamState.CONNECTING) ||
+                commandParser.getCurrentInterface().getCurrentStream().getStreamState().equals(StreamState.DISCONNECTING)) {
+            writeToTerminal("*** Cannot change stream whilst connecting/disconnecting");
+            return true;
         }
 
+        // If a stream number is specified, change to that stream.
+        try {
+            int streamNumber = Integer.parseInt(data[1]);
+            if (streamNumber < 0 || streamNumber > commandParser.getCurrentInterface().getStreams().size() - 1) {
+                writeToTerminal("*** Invalid stream number");
+                return true;
+            }
 
-        return false;
+            // Change the stream (and output stream) to the new ax25 connected stream
+            commandParser.getCurrentInterface().setCurrentStream(streamNumber);
+            commandParser.setDivertStream(commandParser.getCurrentInterface().getCurrentStream().getOutputStream());
+
+        } catch(NumberFormatException e) {
+            writeToTerminal("*** Invalid stream number");
+            return true;
+        }
+
+        return true;
     }
 
 
