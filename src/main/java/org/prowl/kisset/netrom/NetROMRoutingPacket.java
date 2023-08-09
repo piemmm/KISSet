@@ -40,7 +40,7 @@ public class NetROMRoutingPacket {
                     String neighbourNodeCallsign = PacketTools.getData(buffer, 7, true);
                     int bestQualityValue = buffer.get() & 0xFF;
                     LOG.debug("Adding routing entry: " + destinationNodeCallsign + "/" + destinationNodeMnemonic + " via " + neighbourNodeCallsign + " with quality " + bestQualityValue);
-                    NetROMNode routedNode = new NetROMNode(node.getInterface(), destinationNodeCallsign, destinationNodeMnemonic, neighbourNodeCallsign, bestQualityValue);
+                    NetROMNode routedNode = new NetROMNode(node.getInterface(), node.getCallsign(), destinationNodeCallsign, destinationNodeMnemonic, neighbourNodeCallsign, bestQualityValue);
                     nodesInThisPacket.add(routedNode);
                 } catch (Throwable e) {
                     LOG.error(e.getMessage(), e);
