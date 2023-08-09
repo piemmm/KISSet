@@ -31,7 +31,7 @@ public class Heard extends Command {
         if (nodes.size() == 0) {
             writeToTerminal("*** No nodes heard" + CR);
         } else {
-            writeToTerminal(ANSI.UNDERLINE + ANSI.BOLD + "Int  Callsign  Last Heard             Capabilities" + ANSI.NORMAL + CR);
+            writeToTerminal(ANSI.UNDERLINE + ANSI.BOLD + "Int  Callsign  Last Heard         Capabilities" + ANSI.NORMAL + CR);
             for (Node node : nodes) {
                 writeToTerminal(StringUtils.rightPad(Integer.toString(connectors.indexOf(node.getInterface())), 5) + StringUtils.rightPad(node.getCallsign(), 10) + StringUtils.rightPad(sdf.format(node.getLastHeard()), 18) + " " + StringUtils.rightPad(listCapabilities(node), 14) + CR);
             }
