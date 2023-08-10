@@ -9,7 +9,8 @@ public enum Conf {
     monitor(false),
     uuid(""),
     terminalFont("Monospaced"),
-    terminalFontSize(12);
+    terminalFontSize(12),
+    monitorTransparency(0);
 
     public Object defaultSetting;
 

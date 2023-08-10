@@ -159,6 +159,15 @@ public class MonitorController {
         });
     }
 
+    // Update the opacity when the configuration is updated
+    @Subscribe
+    public void onConfigurationChanged(ConfigurationChangedEvent event) {
+        Platform.runLater(() -> {
+            stackPane.getScene().getWindow().setOpacity(1-(KISSet.INSTANCE.getConfig().getConfig(Conf.monitorTransparency, Conf.monitorTransparency.intDefault()) / 100.0));
+        });
+    }
+
+
     // Convenience write class
     private void write(String s) {
         try {

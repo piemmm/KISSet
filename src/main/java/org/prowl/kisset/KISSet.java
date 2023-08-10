@@ -13,6 +13,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import org.apache.commons.logging.Log;
@@ -235,6 +236,7 @@ public class KISSet extends Application {
             Scene scene = new Scene(root, 800, 280);
             stage.setTitle("Packet Monitor");
             stage.setScene(scene);
+            stage.setOpacity(1-(configuration.getConfig(Conf.monitorTransparency, Conf.monitorTransparency.intDefault())/100.0));
             stage.show();
             controller.setup();
         } catch (Throwable e) {
