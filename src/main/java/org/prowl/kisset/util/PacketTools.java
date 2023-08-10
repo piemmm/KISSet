@@ -81,7 +81,7 @@ public class PacketTools {
             LOG.error(e.getMessage(), e);
         }
 
-        return "Unknown NetROM packet type:" + Tools.byteArrayToReadableASCIIString(node.getFrame().getBody());
+        return "Unknown NetROM packet type/Not implemented decode yet";
     }
 
     public static String monitorPacketToString(HeardNodeEvent event) {
