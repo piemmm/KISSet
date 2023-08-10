@@ -3,7 +3,6 @@ package org.prowl.kisset.fx;
 
 import com.google.common.eventbus.Subscribe;
 import de.jangassen.MenuToolkit;
-import de.jangassen.dialogs.about.AboutStageBuilder;
 import de.jangassen.model.AppearanceMode;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -20,8 +19,6 @@ import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.StackPane;
-import javafx.scene.web.WebView;
-import javafx.stage.Stage;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jfree.fx.FXGraphics2D;
@@ -64,8 +61,6 @@ public class KISSetController {
     TerminalCanvas canvas;
     private Terminal term;
     private PipedInputStream inpis;
-    private PipedOutputStream inpos;
-    private PipedInputStream outpis;
     private PipedOutputStream outpos;
     private TNCHost tncHost;
 
@@ -125,7 +120,7 @@ public class KISSetController {
         } catch (NumberFormatException e) {
 
         }
-        LOG.debug("Configuring terminal:" + fontSize + "   " + KISSet.INSTANCE.getConfig().getConfig(Conf.terminalFont,  Conf.terminalFont.stringDefault()));
+        LOG.debug("Configuring terminal:" + fontSize + "   " + KISSet.INSTANCE.getConfig().getConfig(Conf.terminalFont, Conf.terminalFont.stringDefault()));
 
         term.setFont(KISSet.INSTANCE.getConfig().getConfig(Conf.terminalFont, Conf.terminalFont.stringDefault()), fontSize);
 
@@ -160,7 +155,7 @@ public class KISSetController {
             MenuToolkit tk = MenuToolkit.toolkit();
 
             menuBar.useSystemMenuBarProperty().set(true);
-            menuBar.getMenus().add(0,tk.createDefaultApplicationMenu("KISSet"));
+            menuBar.getMenus().add(0, tk.createDefaultApplicationMenu("KISSet"));
             tk.setGlobalMenuBar(menuBar);
 
             tk.setAppearanceMode(AppearanceMode.AUTO);
@@ -197,8 +192,8 @@ public class KISSetController {
 
     public void startTerminal() {
         inpis = new PipedInputStream();
-        inpos = new PipedOutputStream();
-        outpis = new PipedInputStream();
+        PipedOutputStream inpos = new PipedOutputStream();
+        PipedInputStream outpis = new PipedInputStream();
         outpos = new PipedOutputStream();
 
         try {

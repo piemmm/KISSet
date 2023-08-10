@@ -252,7 +252,7 @@ public class KISSet extends Application {
         String versionInfo = "Unknown/Development";
 
         try {
-            versionInfo = new Scanner(KISSet.class.getResourceAsStream("/version.txt"), "UTF-8").useDelimiter("\\A").next();
+            versionInfo = new Scanner(KISSet.class.getResourceAsStream("/version.txt"), StandardCharsets.UTF_8).useDelimiter("\\A").next();
         } catch (Throwable e) {
             LOG.error(e.getMessage(), e);
         }
