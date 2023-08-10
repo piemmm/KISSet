@@ -236,6 +236,13 @@ public class KISSet extends Application {
             Scene scene = new Scene(root, 800, 280);
             stage.setTitle("Packet Monitor");
             stage.setScene(scene);
+            stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+                @Override
+                public void handle(WindowEvent t) {
+                    SingleThreadBus.INSTANCE.unregister(controller);
+                    stage.close();
+                }
+            });
             stage.setOpacity(1-(configuration.getConfig(Conf.monitorTransparency, Conf.monitorTransparency.intDefault())/100.0));
             stage.show();
             controller.setup();

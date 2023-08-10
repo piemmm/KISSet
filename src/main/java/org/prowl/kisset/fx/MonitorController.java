@@ -11,17 +11,13 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jfree.fx.FXGraphics2D;
 import org.prowl.kisset.KISSet;
-import org.prowl.kisset.ax25.AX25Frame;
-import org.prowl.kisset.comms.host.parser.CommandParser;
 import org.prowl.kisset.config.Conf;
-import org.prowl.kisset.core.Node;
 import org.prowl.kisset.eventbus.SingleThreadBus;
 import org.prowl.kisset.eventbus.events.ConfigurationChangedEvent;
 import org.prowl.kisset.eventbus.events.HeardNodeEvent;
 import org.prowl.kisset.gui.terminal.Connection;
 import org.prowl.kisset.gui.terminal.Term;
 import org.prowl.kisset.gui.terminal.Terminal;
-import org.prowl.kisset.util.ANSI;
 import org.prowl.kisset.util.PacketTools;
 import org.prowl.kisset.util.Tools;
 
@@ -64,7 +60,7 @@ public class MonitorController {
         } catch (NumberFormatException e) {
 
         }
-        term.setFont(KISSet.INSTANCE.getConfig().getConfig(Conf.terminalFont,  Conf.terminalFont.stringDefault()), fontSize);
+        term.setFont(KISSet.INSTANCE.getConfig().getConfig(Conf.terminalFont, Conf.terminalFont.stringDefault()), fontSize);
         canvas = new TerminalCanvas(term);
         stackPane.getChildren().add(canvas);
         canvas.setHeight(1280);
@@ -84,6 +80,7 @@ public class MonitorController {
         configureTerminal();
         startTerminal();
     }
+
 
     public void startTerminal() {
         inpis = new PipedInputStream();
@@ -155,7 +152,10 @@ public class MonitorController {
     public void packetReceived(HeardNodeEvent event) {
         Platform.runLater(() -> {
             write(PacketTools.monitorPacketToString(event));
-            try { inpos.flush(); } catch(IOException e) { }
+            try {
+                inpos.flush();
+            } catch (IOException e) {
+            }
         });
     }
 
@@ -163,7 +163,7 @@ public class MonitorController {
     @Subscribe
     public void onConfigurationChanged(ConfigurationChangedEvent event) {
         Platform.runLater(() -> {
-            stackPane.getScene().getWindow().setOpacity(1-(KISSet.INSTANCE.getConfig().getConfig(Conf.monitorTransparency, Conf.monitorTransparency.intDefault()) / 100.0));
+            stackPane.getScene().getWindow().setOpacity(1 - (KISSet.INSTANCE.getConfig().getConfig(Conf.monitorTransparency, Conf.monitorTransparency.intDefault()) / 100.0));
         });
     }
 
