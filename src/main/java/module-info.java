@@ -24,6 +24,7 @@ module org.prowl.kisset {
     requires javafx.web;
 
     opens org.prowl.kisset to javafx.fxml;
+    exports org.prowl.kisset.eventbus.events;
     exports org.prowl.kisset;
     exports org.prowl.kisset.fx;
     exports org.prowl.kisset.statistics.types;
