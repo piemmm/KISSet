@@ -7,10 +7,12 @@ import com.google.common.io.Resources;
 import com.jthemedetecor.OsThemeDetector;
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.concurrent.Task;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import org.apache.commons.logging.Log;
@@ -27,6 +29,7 @@ import org.prowl.kisset.io.InterfaceHandler;
 import org.prowl.kisset.netrom.RoutingListener;
 import org.prowl.kisset.statistics.Statistics;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.desktop.AboutEvent;
 import java.awt.desktop.AboutHandler;
@@ -102,6 +105,24 @@ public class KISSet extends Application {
             }
         });
 
+        // Set the window icon
+        stage.getIcons().add(new Image(KISSet.class.getResourceAsStream("img/icon.png")));
+
+        // Set the taskbar icon if the OS supports it
+        try {
+            if (Taskbar.isTaskbarSupported()) {
+                Taskbar task = Taskbar.getTaskbar();
+                if (task.isSupported(Taskbar.Feature.ICON_IMAGE)) {
+                    Toolkit toolkit = Toolkit.getDefaultToolkit();
+                    java.awt.Image icon = toolkit.getImage(getClass().getResource("img/icon.png"));
+                    task.setIconImage(icon);
+                }
+            }
+        } catch(SecurityException e) {
+            LOG.debug(e.getMessage(),e);
+        }
+
+
         // Show the main window when the dock icon is clicked.
         if (Desktop.isDesktopSupported()) {
             Desktop.getDesktop().addAppEventListener(new AppReopenedListener() {
@@ -115,6 +136,30 @@ public class KISSet extends Application {
 
 
         }
+
+        createTrayIcon(stage);
+    }
+
+    public void createTrayIcon(Stage stage) {
+        try {
+            if (SystemTray.isSupported()) {
+                Toolkit toolkit = Toolkit.getDefaultToolkit();
+                java.awt.Image icon = new ImageIcon(getClass().getResource("img/icon.png")).getImage();
+                        //toolkit.getImage(getClass().getResource("img/icon.png"));
+                SystemTray tray = SystemTray.getSystemTray();
+                TrayIcon trayIcon = new TrayIcon(icon);
+                trayIcon.setImageAutoSize(true);
+                trayIcon.addActionListener(e -> {
+                    Platform.runLater(() -> {
+                        stage.show();
+                    });
+                });
+                tray.add(trayIcon);
+            }
+        } catch (Throwable e) {
+            LOG.debug(e.getMessage(),e);
+        }
+
     }
 
     public void initAll() {
