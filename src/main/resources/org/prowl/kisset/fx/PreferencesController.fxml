@@ -96,7 +96,7 @@
                                                                 <Insets top="10.0" />
                                                             </VBox.margin>
                                                         </Separator>
-                                                        <Label fx:id="explanatoryText" accessibleText="This is some explanatory text about what interfaces are" alignment="TOP_LEFT" prefHeight="242.0" prefWidth="289.0" textAlignment="JUSTIFY" />
+                                                        <Label fx:id="explanatoryText" accessibleText="This is some explanatory text about what interfaces are" alignment="TOP_LEFT" prefHeight="242.0" prefWidth="289.0" textAlignment="JUSTIFY" wrapText="true" />
                                                     </children>
                                                     <GridPane.margin>
                                                         <Insets bottom="10.0" left="1.0" right="10.0" top="10.0" />
