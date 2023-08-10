@@ -21,6 +21,7 @@ module org.prowl.kisset {
     requires versioncompare;
     requires com.google.common;
     requires aprslib;
+    requires javafx.web;
 
     opens org.prowl.kisset to javafx.fxml;
     exports org.prowl.kisset;

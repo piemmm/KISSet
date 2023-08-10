@@ -3,6 +3,7 @@ package org.prowl.kisset.fx;
 
 import com.google.common.eventbus.Subscribe;
 import de.jangassen.MenuToolkit;
+import de.jangassen.dialogs.about.AboutStageBuilder;
 import de.jangassen.model.AppearanceMode;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -19,6 +20,8 @@ import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.StackPane;
+import javafx.scene.web.WebView;
+import javafx.stage.Stage;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jfree.fx.FXGraphics2D;
@@ -35,6 +38,8 @@ import org.prowl.kisset.gui.terminal.Terminal;
 import org.prowl.kisset.util.Tools;
 
 import java.awt.*;
+import java.awt.desktop.AboutEvent;
+import java.awt.desktop.AboutHandler;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PipedInputStream;
@@ -152,8 +157,12 @@ public class KISSetController {
         // A little messing around with menubars for macos
         final String os = System.getProperty("os.name");
         if (os != null && os.toLowerCase().startsWith("mac")) {
-            menuBar.useSystemMenuBarProperty().set(true);
             MenuToolkit tk = MenuToolkit.toolkit();
+
+            menuBar.useSystemMenuBarProperty().set(true);
+            menuBar.getMenus().add(0,tk.createDefaultApplicationMenu("KISSet"));
+            tk.setGlobalMenuBar(menuBar);
+
             tk.setAppearanceMode(AppearanceMode.AUTO);
             Menu defaultApplicationMenu = tk.createDefaultApplicationMenu("KISSet");
             tk.setApplicationMenu(defaultApplicationMenu);
@@ -166,10 +175,22 @@ public class KISSetController {
             defaultApplicationMenu.getItems().get(defaultApplicationMenu.getItems().size() - 1).setOnAction(event -> {
                 KISSet.INSTANCE.quit();
             });
+
+            if (Desktop.isDesktopSupported()) {
+                Desktop.getDesktop().setAboutHandler(new AboutHandler() {
+                    @Override
+                    public void handleAbout(AboutEvent e) {
+                        Platform.runLater(() -> {
+                            KISSet.INSTANCE.showAbout();
+                        });
+
+                    }
+                });
+            }
         } else {
             // traditional menu bar.
         }
-        
+
         configureTerminal();
         startTerminal();
     }

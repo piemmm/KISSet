@@ -3,6 +3,7 @@ package org.prowl.kisset;
 import atlantafx.base.theme.PrimerDark;
 import atlantafx.base.theme.PrimerLight;
 import com.google.common.eventbus.Subscribe;
+import com.google.common.io.Resources;
 import com.jthemedetecor.OsThemeDetector;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -18,6 +19,7 @@ import org.prowl.kisset.config.Conf;
 import org.prowl.kisset.config.Config;
 import org.prowl.kisset.eventbus.SingleThreadBus;
 import org.prowl.kisset.eventbus.events.ConfigurationChangedEvent;
+import org.prowl.kisset.fx.AboutController;
 import org.prowl.kisset.fx.KISSetController;
 import org.prowl.kisset.fx.MonitorController;
 import org.prowl.kisset.fx.PreferencesController;
@@ -25,15 +27,16 @@ import org.prowl.kisset.io.InterfaceHandler;
 import org.prowl.kisset.netrom.RoutingListener;
 import org.prowl.kisset.statistics.Statistics;
 
-import javax.swing.*;
 import java.awt.*;
+import java.awt.desktop.AboutEvent;
+import java.awt.desktop.AboutHandler;
 import java.awt.desktop.AppReopenedEvent;
 import java.awt.desktop.AppReopenedListener;
-import java.awt.desktop.SystemEventListener;
-import java.io.*;
+import java.io.IOException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Locale;
-
-import static javax.swing.filechooser.FileSystemView.getFileSystemView;
+import java.util.Scanner;
 
 public class KISSet extends Application {
 
@@ -109,6 +112,8 @@ public class KISSet extends Application {
                     });
                 }
             });
+
+
         }
     }
 
@@ -178,6 +183,23 @@ public class KISSet extends Application {
         }
     }
 
+    public void showAbout() {
+        try {
+            // Create the GUI.
+            Stage stage = new Stage();
+            FXMLLoader fxmlLoader = new FXMLLoader(KISSet.class.getResource("fx/AboutController.fxml"));
+            Parent root = fxmlLoader.load();
+            AboutController controller = fxmlLoader.getController();
+            Scene scene = new Scene(root, 350, 380);
+            stage.setTitle("About KISSet");
+            stage.setScene(scene);
+            stage.show();
+            controller.setup();
+        } catch (Throwable e) {
+            LOG.error(e.getMessage(), e);
+        }
+    }
+
     @Override
     public void init() throws Exception {
         super.init();
@@ -224,5 +246,16 @@ public class KISSet extends Application {
     @Subscribe
     public void onConfigChanged(ConfigurationChangedEvent event) {
         initAll();
+    }
+
+    public String getVersion() {
+        String versionInfo = "Unknown/Development";
+
+        try {
+            versionInfo = new Scanner(KISSet.class.getResourceAsStream("/version.txt"), "UTF-8").useDelimiter("\\A").next();
+        } catch (Throwable e) {
+            LOG.error(e.getMessage(), e);
+        }
+        return versionInfo;
     }
 }
