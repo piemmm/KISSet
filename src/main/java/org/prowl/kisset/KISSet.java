@@ -144,16 +144,30 @@ public class KISSet extends Application {
         try {
             if (SystemTray.isSupported()) {
                 Toolkit toolkit = Toolkit.getDefaultToolkit();
-                java.awt.Image icon = new ImageIcon(getClass().getResource("img/icon.png")).getImage();
+                java.awt.Image icon = new ImageIcon(getClass().getResource("img/tray-white.png")).getImage();
                         //toolkit.getImage(getClass().getResource("img/icon.png"));
                 SystemTray tray = SystemTray.getSystemTray();
                 TrayIcon trayIcon = new TrayIcon(icon);
                 trayIcon.setImageAutoSize(true);
+
+                // Simple click listener
+                trayIcon.addMouseListener(new java.awt.event.MouseAdapter() {
+                    @Override
+                    public void mouseClicked(java.awt.event.MouseEvent evt) {
+                            Platform.runLater(() -> {
+                                stage.show();
+                            });
+                    }
+                });
+
+                // We can change and use this for menu popups another time.
                 trayIcon.addActionListener(e -> {
                     Platform.runLater(() -> {
                         stage.show();
                     });
                 });
+
+                // Add the icon to the system tray
                 tray.add(trayIcon);
             }
         } catch (Throwable e) {
