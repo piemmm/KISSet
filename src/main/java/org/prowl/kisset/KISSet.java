@@ -25,6 +25,11 @@ import org.prowl.kisset.io.InterfaceHandler;
 import org.prowl.kisset.netrom.RoutingListener;
 import org.prowl.kisset.statistics.Statistics;
 
+import javax.swing.*;
+import java.awt.*;
+import java.awt.desktop.AppReopenedEvent;
+import java.awt.desktop.AppReopenedListener;
+import java.awt.desktop.SystemEventListener;
 import java.io.*;
 import java.util.Locale;
 
@@ -94,6 +99,17 @@ public class KISSet extends Application {
             }
         });
 
+        // Show the main window when the dock icon is clicked.
+        if (Desktop.isDesktopSupported()) {
+            Desktop.getDesktop().addAppEventListener(new AppReopenedListener() {
+                @Override
+                public void appReopened(AppReopenedEvent e) {
+                    Platform.runLater(() -> {
+                        stage.show();
+                    });
+                }
+            });
+        }
     }
 
     public void initAll() {
