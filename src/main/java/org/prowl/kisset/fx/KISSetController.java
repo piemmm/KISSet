@@ -128,7 +128,7 @@ public class KISSetController {
         canvas = new TerminalCanvas(term);
         stackPane.getChildren().add(canvas);
 
-        canvas.setHeight(1280);
+        canvas.setHeight(2280);
         canvas.widthProperty().bind(stackPane.widthProperty());
         Platform.runLater(() -> {
             canvas.heightProperty().bind(stackPane.heightProperty());

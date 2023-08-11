@@ -72,14 +72,15 @@ public class MonitorController {
         }
         term.setFont(KISSet.INSTANCE.getConfig().getConfig(Conf.terminalFont, Conf.terminalFont.stringDefault()), fontSize);
         canvas = new TerminalCanvas(term);
+        canvas.setHeight(2280);
         stackPane.getChildren().add(canvas);
-        canvas.setHeight(1280);
         canvas.widthProperty().bind(stackPane.widthProperty());
         Platform.runLater(() -> {
             canvas.heightProperty().bind(stackPane.heightProperty());
         });
 
         Platform.runLater(() -> {
+
             // Initially the scroll pane to the bottom.
             theScrollPane.setVvalue(Double.MAX_VALUE);
 
@@ -95,7 +96,7 @@ public class MonitorController {
                         setText(null);
                     } else {
                         int interfaceNumber = KISSet.INSTANCE.getInterfaceHandler().getInterfaces().indexOf(node.getInterface());
-                        setText(interfaceNumber+": "+node.getCallsign());
+                        setText(interfaceNumber + ": " + node.getCallsign());
                     }
                 }
             });
@@ -105,8 +106,7 @@ public class MonitorController {
         heardList.setOnContextMenuRequested(event -> {
             Node node = heardList.getSelectionModel().getSelectedItem();
             if (node != null) {
-
-              //  KISSet.INSTANCE.getInterfaceHandler().getInterface(node.getInterface()).showContextMenu(heardList, event.getScreenX(), event.getScreenY());
+                //  KISSet.INSTANCE.getInterfaceHandler().getInterface(node.getInterface()).showContextMenu(heardList, event.getScreenX(), event.getScreenY());
             }
         });
 
@@ -133,49 +133,50 @@ public class MonitorController {
             e.printStackTrace();
         }
 
-        Tools.runOnThread(() -> {
-            term.start(new Connection() {
-                @Override
-                public InputStream getInputStream() {
-                    return inpis;
-                }
+        Platform.runLater(() -> {
 
-                @Override
-                public OutputStream getOutputStream() {
-                    return outpos;
-                }
+            Tools.runOnThread(() -> {
+                term.start(new Connection() {
+                    @Override
+                    public InputStream getInputStream() {
+                        return inpis;
+                    }
 
-                @Override
-                public void requestResize(Term term) {
-                }
+                    @Override
+                    public OutputStream getOutputStream() {
+                        return outpos;
+                    }
 
-                @Override
-                public void close() {
+                    @Override
+                    public void requestResize(Term term) {
+                    }
+
+                    @Override
+                    public void close() {
+                    }
+                });
+            });
+
+            // Start the reader thread for the client.
+            Tools.runOnThread(() -> {
+                try {
+                    InputStreamReader reader = new InputStreamReader(outpis);
+                    BufferedReader bin = new BufferedReader(reader);
+                    String inLine;
+                    while ((inLine = bin.readLine()) != null) {
+                        //parser.parse(inLine);
+                    }
+                } catch (Exception e) {
+                    LOG.error(e.getMessage(), e);
                 }
             });
-        });
 
-        // Start the reader thread for the client.
-        Tools.runOnThread(() -> {
+
             try {
-                InputStreamReader reader = new InputStreamReader(outpis);
-                BufferedReader bin = new BufferedReader(reader);
-                String inLine;
-                while ((inLine = bin.readLine()) != null) {
-                    //parser.parse(inLine);
-                }
-            } catch (Exception e) {
-                LOG.error(e.getMessage(), e);
-            }
-        });
-
-
-        //inpis and outpos.
-        Platform.runLater(() -> {
-            try {
-                for (int i = 0; i < 2; i++) {
+                for (int i = 0; i < 3; i++) {
                     // Ansi code to move down 100 lines
                     inpos.write("\u001b[100B".getBytes());
+                    inpos.flush();
                 }
                 inpos.write(("Traffic Monitor" + CR).getBytes());
                 inpos.flush();
@@ -188,6 +189,9 @@ public class MonitorController {
 
     @Subscribe
     public void packetReceived(HeardNodeEvent event) {
+
+
+
         Platform.runLater(() -> {
             write(PacketTools.monitorPacketToString(event));
             try {
@@ -195,21 +199,23 @@ public class MonitorController {
             } catch (IOException e) {
             }
 
-            Platform.runLater(() -> {
-                heardNodes.remove(event.getNode());
-                heardNodes.add(event.getNode());
-                heardNodes.sort((o1, o2) -> {
-                    if (o1.getCallsign() == null) {
-                        return 1;
-                    }
-                    if (o2.getCallsign() == null) {
-                        return -1;
-                    }
-                    return o1.getCallsign().compareTo(o2.getCallsign());
+
+            // Don't add invalid packets to the heard list
+            if (!event.isValidPacket()) {
+                Platform.runLater(() -> {
+                    heardNodes.remove(event.getNode());
+                    heardNodes.add(event.getNode());
+                    heardNodes.sort((o1, o2) -> {
+                        if (o1.getCallsign() == null) {
+                            return 1;
+                        }
+                        if (o2.getCallsign() == null) {
+                            return -1;
+                        }
+                        return o1.getCallsign().compareTo(o2.getCallsign());
+                    });
                 });
-            });
-
-
+            }
 
         });
     }
@@ -249,8 +255,8 @@ public class MonitorController {
 
         private void draw() {
             Platform.runLater(() -> {
-                double width = Math.max(800, getWidth());
-                double height = Math.max(280, getHeight());
+                double width = Math.max(790, getWidth());
+                double height = Math.max(1280, getHeight());
                 terminal.setSize((int) width, (int) height, false);
                 this.terminal.paintComponent(g2);
             });

@@ -132,6 +132,10 @@ public class PacketTools {
         builder.append("]");
         builder.append(ANSI.GREEN);
         builder.append(pidToString(node.getFrame().getPid()));
+        if (!event.isValidPacket()) {
+            builder.append(ANSI.BOLD_RED);
+            builder.append("<Invalid Packet>");
+        }
         builder.append(ANSI.NORMAL);
         if (node.getFrame().getByteFrame().length > 0) {
             builder.append(":");

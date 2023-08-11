@@ -74,6 +74,10 @@ public class Tools {
         return callsignToValidate.matches("\\A\\d?[a-zA-Z]{1,2}\\d{1,4}[a-zA-Z]{1,3}(-\\d+)?\\Z");
     }
 
+    public static boolean isAlphaNumeric(String callsignToTest) {
+        return callsignToTest.matches("[a-zA-Z0-9\\-]+");
+    }
+
 
     public static void determineCapabilities(Node node, AX25Frame frame) {
 

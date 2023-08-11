@@ -240,6 +240,12 @@ public class KISSet extends Application {
                     }
                 });
                 monitorStage.setOpacity(1 - (configuration.getConfig(Conf.monitorTransparency, Conf.monitorTransparency.intDefault()) / 100.0));
+
+                // This is an unfortunate hack for layout issues.
+                monitorStage.show();
+                Platform.runLater(() -> {
+                    monitorStage.hide();
+                });
                 controller.setup();
             }
         } catch(IOException e) {

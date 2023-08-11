@@ -2,6 +2,7 @@ package org.prowl.kisset.eventbus.events;
 
 
 import org.prowl.kisset.core.Node;
+import org.prowl.kisset.util.Tools;
 
 public class HeardNodeEvent extends BaseEvent {
 
@@ -13,6 +14,10 @@ public class HeardNodeEvent extends BaseEvent {
 
     public Node getNode() {
         return node;
+    }
+
+    public boolean isValidPacket() {
+        return node.getFrame().isValid() && Tools.isAlphaNumeric(node.getCallsign());
     }
 
 }

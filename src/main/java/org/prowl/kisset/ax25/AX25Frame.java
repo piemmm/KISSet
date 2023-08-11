@@ -1169,6 +1169,7 @@ public class AX25Frame implements Serializable, AX25FrameSource, Comparable<AX25
      * @return boolean true if packet is valid
      */
     public boolean isValid() {
+
         if (sender != null && dest != null) {
             if (digipeaters != null) {
                 if (digipeaters.length > MAX_DIGIS) {
