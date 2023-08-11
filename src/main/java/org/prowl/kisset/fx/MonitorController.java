@@ -189,9 +189,6 @@ public class MonitorController {
 
     @Subscribe
     public void packetReceived(HeardNodeEvent event) {
-
-
-
         Platform.runLater(() -> {
             write(PacketTools.monitorPacketToString(event));
             try {
@@ -201,7 +198,7 @@ public class MonitorController {
 
 
             // Don't add invalid packets to the heard list
-            if (!event.isValidPacket()) {
+            if (event.isValidPacket()) {
                 Platform.runLater(() -> {
                     heardNodes.remove(event.getNode());
                     heardNodes.add(event.getNode());
@@ -216,7 +213,6 @@ public class MonitorController {
                     });
                 });
             }
-
         });
     }
 
