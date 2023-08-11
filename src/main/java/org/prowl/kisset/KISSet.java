@@ -50,7 +50,7 @@ public class KISSet extends Application {
     private Config configuration;
     private InterfaceHandler interfaceHandler;
     private Statistics statistics;
-
+    private Stage monitorStage;
 
     public static void main(String[] args) {
         launch();
@@ -229,23 +229,28 @@ public class KISSet extends Application {
     public void showMonitor() {
         try {
             // Create the GUI.
-            Stage stage = new Stage();
-            FXMLLoader fxmlLoader = new FXMLLoader(KISSet.class.getResource("fx/MonitorController.fxml"));
-            Parent root = fxmlLoader.load();
-            MonitorController controller = fxmlLoader.getController();
-            Scene scene = new Scene(root, 800, 280);
-            stage.setTitle("Packet Monitor");
-            stage.setScene(scene);
-            stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
-                @Override
-                public void handle(WindowEvent t) {
-                    SingleThreadBus.INSTANCE.unregister(controller);
-                    stage.close();
-                }
-            });
-            stage.setOpacity(1-(configuration.getConfig(Conf.monitorTransparency, Conf.monitorTransparency.intDefault())/100.0));
-            stage.show();
-            controller.setup();
+            if (monitorStage == null) {
+                monitorStage = new Stage();
+                FXMLLoader fxmlLoader = new FXMLLoader(KISSet.class.getResource("fx/MonitorController.fxml"));
+                Parent root = fxmlLoader.load();
+                MonitorController controller = fxmlLoader.getController();
+                Scene scene = new Scene(root, 800, 280);
+                monitorStage.setTitle("Packet Monitor");
+                monitorStage.setScene(scene);
+                monitorStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+                    @Override
+                    public void handle(WindowEvent t) {
+                        SingleThreadBus.INSTANCE.unregister(controller);
+                        monitorStage.close();
+                    }
+                });
+                monitorStage.setOpacity(1 - (configuration.getConfig(Conf.monitorTransparency, Conf.monitorTransparency.intDefault()) / 100.0));
+                monitorStage.show();
+                controller.setup();
+            } else {
+                monitorStage.show();
+            }
+
         } catch (Throwable e) {
             LOG.error(e.getMessage(), e);
         }
