@@ -250,15 +250,12 @@ public class PacketTools {
                     builder.append(" Latitude: " + item.getPosition().getLatitude() + CR);
                     builder.append(" Longitude: " + item.getPosition().getLongitude() + CR);
                     builder.append(" Altitude: " + item.getPosition().getAltitude() + CR);
-                    builder.append(" Comment: " + item.getComment() + CR);
             } else if (info instanceof ObjectPacket) {
                 ObjectPacket object = (ObjectPacket) info;
                 builder.append(" Object Name: " + object.getObjectName() + CR);
                 builder.append(" Latitude: " + object.getPosition().getLatitude() + CR);
                 builder.append(" Longitude: " + object.getPosition().getLongitude() + CR);
                 builder.append(" Altitude: " + object.getPosition().getAltitude() + CR);
-                builder.append(" Comment: " + object.getComment() + CR);
-
             } else if (info instanceof MessagePacket) {
                 MessagePacket message = (MessagePacket) info;
                 builder.append(" Target Callsign: " + message.getTargetCallsign() + CR);
