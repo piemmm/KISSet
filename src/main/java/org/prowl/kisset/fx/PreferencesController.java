@@ -17,6 +17,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.prowl.kisset.KISSet;
 import org.prowl.kisset.Messages;
+import org.prowl.kisset.config.BeaconType;
 import org.prowl.kisset.config.Conf;
 import org.prowl.kisset.config.Config;
 import org.prowl.kisset.eventbus.SingleThreadBus;
@@ -25,7 +26,6 @@ import org.prowl.kisset.io.Interface;
 import org.prowl.kisset.util.Tools;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -59,6 +59,7 @@ public class PreferencesController {
     private Slider terminalTransparency;
 
 
+
     private final List<Interface> interfaces = new ArrayList<>();
     private Config config;
 
@@ -80,10 +81,10 @@ public class PreferencesController {
         config.setProperty(Conf.terminalFontSize, fontSize.getSelectionModel().getSelectedItem());
 
         // Transparency slider for packet monitor
-        config.setProperty(Conf.monitorTransparency, (int)monitorTransparency.getValue());
+        config.setProperty(Conf.monitorTransparency, (int) monitorTransparency.getValue());
 
         // Transparency slider for main window
-        config.setProperty(Conf.terminalTransparency, (int)terminalTransparency.getValue());
+        config.setProperty(Conf.terminalTransparency, (int) terminalTransparency.getValue());
 
         // Interfaces preference pane
         // Save our preferences config
@@ -138,7 +139,8 @@ public class PreferencesController {
 
     public void updateControls() {
         // General preference pane
-        stationCallsign.setText(config.getConfig(Conf.callsign,Conf.callsign.stringDefault()).toUpperCase(Locale.ENGLISH));
+        stationCallsign.setText(config.getConfig(Conf.callsign, Conf.callsign.stringDefault()).toUpperCase(Locale.ENGLISH));
+
 
         fontSelector.setCellFactory(listView -> {
             return new ComboBoxListCell<String>() {
@@ -261,6 +263,7 @@ public class PreferencesController {
 
     /**
      * Remove a uuid from the config only - this is used for cleanup of any classes that are removed from app.
+     *
      * @param uuid
      */
     public void removeInterface(String uuid) {

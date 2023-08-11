@@ -7,6 +7,7 @@ import org.apache.commons.logging.LogFactory;
 import org.prowl.kisset.KISSet;
 import org.prowl.kisset.annotations.InterfaceDriver;
 import org.prowl.kisset.ax25.*;
+import org.prowl.kisset.config.Conf;
 import org.prowl.kisset.core.Node;
 import org.prowl.kisset.eventbus.SingleThreadBus;
 import org.prowl.kisset.eventbus.events.HeardNodeEvent;
@@ -37,8 +38,6 @@ public class KISSviaSerial extends Interface {
     private final int maxFrames;
     private final int frequency;
     private final int retries;
-    private BasicTransmittingConnector anInterface;
-    private boolean running;
     private SerialPort serialPort = null; // The chosen port form our enumerated list.
 
     public KISSviaSerial(HierarchicalConfiguration config) {
@@ -64,6 +63,7 @@ public class KISSviaSerial extends Interface {
         frequency = config.getInt("frequency", 0);
         retries = config.getInt("retries", 6);
 
+
     }
 
 
@@ -76,7 +76,6 @@ public class KISSviaSerial extends Interface {
 
     @Override
     public void start() throws IOException {
-        running = true;
 
 
         // Check the slot is obtainable.
@@ -104,6 +103,7 @@ public class KISSviaSerial extends Interface {
         Tools.runOnThread(() -> {
             setup();
         });
+
     }
 
     public void setup() {

@@ -3,12 +3,16 @@ package org.prowl.kisset.ax25;
 import com.fazecast.jSerialComm.SerialPortIOException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.prowl.kisset.util.Tools;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.SocketException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
 
 public class BasicTransmittingConnector extends Connector implements TransmittingConnector, Transmitting {
     public static final int PROTOCOL_AX25 = 4;
@@ -262,8 +266,11 @@ public class BasicTransmittingConnector extends Connector implements Transmittin
     }
 
     public void stop() {
-       try { in.close(); } catch(Throwable e) { }
-       in = null;
+        try {
+            in.close();
+        } catch (Throwable e) {
+        }
+        in = null;
     }
 
     public final void getbuf() {
@@ -356,7 +363,7 @@ public class BasicTransmittingConnector extends Connector implements Transmittin
                 if (detail.indexOf(" closed") >= 0 || detail.indexOf(" reset") >= 0) {
                     //   tryToRestartConnection(detail);
                 }
-            } catch(SerialPortIOException e) {
+            } catch (SerialPortIOException e) {
                 LOG.info("Serial port closed (probably reopening due to configuration change)");
                 curState = KissEscapeOutputStream.RcvState.IDLE;
                 in = null;
@@ -375,7 +382,7 @@ public class BasicTransmittingConnector extends Connector implements Transmittin
     public void sendDecodedKissFrameToParser() {
         // Get the type byte from the frame.
         int dataType = rcvBuf[0] & 0xFF;
-        switch(dataType) {
+        switch (dataType) {
             case 0: // Normal KISS data frame.
                 AX25Frame frame = AX25Frame.decodeFrame(rcvBuf, 1, wEnd - 1, stack);
                 // Frame will be null if it was invalid, so we will ignore it.
@@ -495,36 +502,60 @@ public class BasicTransmittingConnector extends Connector implements Transmittin
 
 
         try {
-                    AX25Frame sabmFrame = new AX25Frame();
-                    sabmFrame.sender = new AX25Callsign(from);
-                    sabmFrame.dest = new AX25Callsign(to);
-                    sabmFrame.setCmd(true);
-                    ConnState state = stack.getConnState(sabmFrame.sender, sabmFrame.dest, true);
-                    LOG.debug("State:"+ state.transition);
+            AX25Frame sabmFrame = new AX25Frame();
+            sabmFrame.sender = new AX25Callsign(from);
+            sabmFrame.dest = new AX25Callsign(to);
+            sabmFrame.setCmd(true);
+            ConnState state = stack.getConnState(sabmFrame.sender, sabmFrame.dest, true);
+            LOG.debug("State:" + state.transition);
 
-                    LOG.debug("Transmitter.openConnection(" + sabmFrame.dest + ',' + sabmFrame.sender + ',' + Arrays.toString(state.via) + "): sending SABM U-frame");
-                    state.connType = ConnState.ConnType.MOD8;
-                    state.transition = ConnState.ConnTransition.LINK_UP;
-                    //sabmFrame.digipeaters = state.via;
-                    sabmFrame.ctl = (byte) (AX25Frame.FRAMETYPE_U | AX25Frame.UTYPE_SABM);
-                    sabmFrame.body = new byte[0];
-                    state.listener = listener;
+            LOG.debug("Transmitter.openConnection(" + sabmFrame.dest + ',' + sabmFrame.sender + ',' + Arrays.toString(state.via) + "): sending SABM U-frame");
+            state.connType = ConnState.ConnType.MOD8;
+            state.transition = ConnState.ConnTransition.LINK_UP;
+            //sabmFrame.digipeaters = state.via;
+            sabmFrame.ctl = (byte) (AX25Frame.FRAMETYPE_U | AX25Frame.UTYPE_SABM);
+            sabmFrame.body = new byte[0];
+            state.listener = listener;
 
-                    state.clearResendableFrame();
-                    sendFrame(sabmFrame);
-                    state.setConnector(BasicTransmittingConnector.this);
-                    state.setResendableFrame(sabmFrame, getRetransmitCount());
-                    state.updateSessionTime();
-                    stack.fireConnStateUpdated(state);
-                } catch (Exception e) {
-                    LOG.error(e.getMessage(), e);
-                }
+            state.clearResendableFrame();
+            sendFrame(sabmFrame);
+            state.setConnector(BasicTransmittingConnector.this);
+            state.setResendableFrame(sabmFrame, getRetransmitCount());
+            state.updateSessionTime();
+            stack.fireConnStateUpdated(state);
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
+        }
 
         return true;
     }
 
     /**
+     * Send a UI frame to the specified destination
+     *
+     * @param destinationCallsign
+     * @param data
+     */
+    public void sendUI(String destinationCallsign, byte[] data) {
+        try {
+            LOG.debug("Sending UI frame to " + destinationCallsign + " contents:"+ Tools.byteArrayToReadableASCIIString(data));
+            AX25Frame uiFrame = new AX25Frame();
+            uiFrame.sender = defaultCallsign;
+            uiFrame.dest = new AX25Callsign(destinationCallsign);
+            uiFrame.setCmd(true);
+            uiFrame.ctl = (byte) (AX25Frame.FRAMETYPE_U | AX25Frame.UTYPE_UI);
+            uiFrame.body = data;
+            sendFrame(uiFrame);
+
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
+        }
+
+    }
+
+    /**
      * Cancel a current connection setup attempt
+     *
      * @param from
      * @param to
      */
@@ -543,7 +574,7 @@ public class BasicTransmittingConnector extends Connector implements Transmittin
     public void disconnect(String from, String to) {
         ConnState state = stack.getConnState(new AX25Callsign(from), new AX25Callsign(to), false);
         if (state != null) {
-            stack.transmitDISC(this, state.getSrc(),state.getDst(), new AX25Callsign[]{}, true);
+            stack.transmitDISC(this, state.getSrc(), state.getDst(), new AX25Callsign[]{}, true);
         }
     }
 

@@ -45,7 +45,9 @@ public class Config {
 
         // Load the configuration from disk
         try {
-            configuration = new XMLConfiguration(configFile);
+            configuration = new XMLConfiguration();
+            configuration.setDelimiterParsingDisabled(true);
+            configuration.load(configFile);
         } catch (Throwable e) {
 
                 e.printStackTrace();

@@ -61,22 +61,7 @@
                                                         <Insets left="5.0" right="10.0" />
                                                     </GridPane.margin>
                                                 </TextField>
-                                    <TextField fx:id="beaconText" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1">
-                                       <GridPane.margin>
-                                          <Insets left="5.0" right="10.0" />
-                                       </GridPane.margin>
-                                    </TextField>
-                                    <HBox alignment="CENTER_RIGHT" prefHeight="100.0" prefWidth="200.0" GridPane.halignment="RIGHT" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1">
-                                       <children>
-                                          <Label text="Beacon:" />
-                                          <ChoiceBox fx:id="beaconChoice" prefWidth="150.0">
-                                             <HBox.margin>
-                                                <Insets left="5.0" right="5.0" />
-                                             </HBox.margin>
-                                          </ChoiceBox>
-                                          <Label text="with text:" />
-                                       </children>
-                                    </HBox>
+
                                             </children>
                                         </GridPane>
                                     </children>

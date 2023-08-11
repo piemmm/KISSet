@@ -1,15 +1,16 @@
 package org.prowl.kisset.io;
 
 import org.apache.commons.configuration.HierarchicalConfiguration;
+import org.prowl.kisset.ax25.BasicTransmittingConnector;
 import org.prowl.kisset.ax25.ConnectionEstablishmentListener;
 import org.prowl.kisset.config.Conf;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public abstract class Interface {
+
+    protected BasicTransmittingConnector anInterface;
 
     // If the interface fails to start, the reason will be logged here.
     String failReason;
@@ -17,6 +18,8 @@ public abstract class Interface {
     private List<Stream> streams = new ArrayList<>();
     protected HierarchicalConfiguration config;
     private String uuid;
+    private Timer beaconTimer;
+    protected boolean running = true;
 
     public Interface(HierarchicalConfiguration config) {
         this.config = config;
@@ -26,6 +29,9 @@ public abstract class Interface {
         for (int i = 0; i < 7; i++) {
             streams.add(new Stream(this));
         }
+
+        // Setup the beaconing
+        setBeacon(config.getString(Conf.beaconText.name(),Conf.beaconText.stringDefault()), config.getInt(Conf.beaconEvery.name(),Conf.beaconEvery.intDefault()));
     }
 
     public abstract void start() throws IOException;
@@ -80,5 +86,38 @@ public abstract class Interface {
     @Override
     public int hashCode() {
         return Objects.hash(uuid);
+    }
+
+
+    /**
+     * Periodically send a beacon UI frame
+     *
+     * @param text
+     * @param intervalMinutes
+     */
+    public void setBeacon(String text, int intervalMinutes) {
+        if (beaconTimer != null) {
+            beaconTimer.cancel();
+        }
+
+        // If interval is zero or negative then don't send beacons
+        if (intervalMinutes <= 0) {
+            return;
+        }
+
+        beaconTimer = new Timer();
+        TimerTask beaconTimerTask = new TimerTask() {
+            @Override
+            public void run() {
+
+                if (anInterface == null || !running) {
+                    beaconTimer.cancel();
+                    return;
+                }
+
+                anInterface.sendUI("BEACON", text.getBytes());
+            }
+        };
+        beaconTimer.schedule(beaconTimerTask, 5000, intervalMinutes * 60 * 1000);
     }
 }

@@ -2,17 +2,24 @@ package org.prowl.kisset.fx;
 
 
 import javafx.fxml.FXML;
+import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.TextField;
 import org.apache.commons.configuration.HierarchicalConfiguration;
+import org.prowl.kisset.config.BeaconType;
+import org.prowl.kisset.config.Conf;
 
 
-public class TCPConnectionPreference implements ConnectionPreferenceInterface {
+public class TCPConnectionPreference extends ConnectionPreferenceInterface {
 
     @FXML
     public TextField ipAddressTextField;
 
     @FXML
     public TextField portTextField;
+    @FXML
+    private ChoiceBox<BeaconType> beaconChoice;
+    @FXML
+    private TextField beaconText;
 
     private PreferencesController preferencesController;
     private HierarchicalConfiguration configInterfaceNode;
@@ -50,6 +57,7 @@ public class TCPConnectionPreference implements ConnectionPreferenceInterface {
 
     @Override
     public void init(HierarchicalConfiguration configInterfaceNode, PreferencesController preferencesController, ConnectionPreferenceHost host) {
+        super.init(configInterfaceNode, preferencesController, host);
         this.preferencesController = preferencesController;
         this.configInterfaceNode = configInterfaceNode;
         this.connectionPreferenceHost = host;
@@ -61,11 +69,13 @@ public class TCPConnectionPreference implements ConnectionPreferenceInterface {
         ipAddressTextField.setText(configInterfaceNode.getString("ipAddress"));
         portTextField.setText(configInterfaceNode.getString("port"));
         connectionPreferenceHost.setValidation(validate());
+        super.applyFromConfig(configInterfaceNode);
     }
 
-    public void applyToConfig(HierarchicalConfiguration configuration) {
+    protected void applyToConfig(HierarchicalConfiguration configuration) {
         configuration.setProperty("ipAddress", ipAddressTextField.getText());
         configuration.setProperty("port", portTextField.getText());
+        super.applyToConfig(configuration);
     }
 
 
