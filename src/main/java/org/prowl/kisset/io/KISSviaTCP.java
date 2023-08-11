@@ -35,6 +35,7 @@ public class KISSviaTCP extends Interface {
     private final int baudRate;
     private final int frequency;
     private final int retries;
+    private Socket socketConnection;
 
     private BasicTransmittingConnector anInterface;
 
@@ -87,9 +88,9 @@ public class KISSviaTCP extends Interface {
             Tools.delay(1000);
             try {
                 LOG.info("Connecting to kiss service at: " + address + ":" + port);
-                Socket s = new Socket(InetAddress.getByName(address), port);
-                in = new BufferedInputStream(s.getInputStream());
-                out = new BufferedOutputStream(s.getOutputStream());
+                socketConnection = new Socket(InetAddress.getByName(address), port);
+                in = new BufferedInputStream(socketConnection.getInputStream());
+                out = new BufferedOutputStream(socketConnection.getOutputStream());
                 LOG.info("Connected to kiss service at: " + address + ":" + port);
                 break;
             } catch (ConnectException e) {
@@ -209,8 +210,10 @@ public class KISSviaTCP extends Interface {
 
     @Override
     public void stop() {
-//        ServerBus.INSTANCE.unregister(this);
         running = false;
+        if (socketConnection != null) {
+            try { socketConnection.close(); } catch (Exception e) { }
+        }
     }
 
     @Override

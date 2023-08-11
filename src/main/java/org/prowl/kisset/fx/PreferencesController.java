@@ -165,7 +165,7 @@ public class PreferencesController {
         monitorTransparency.setValue(config.getConfig(Conf.monitorTransparency, Conf.monitorTransparency.intDefault()));
 
         // Main terminal window transparency
-        monitorTransparency.setValue(config.getConfig(Conf.terminalTransparency, Conf.terminalTransparency.intDefault()));
+        terminalTransparency.setValue(config.getConfig(Conf.terminalTransparency, Conf.terminalTransparency.intDefault()));
 
         // Set current font
         fontSelector.getSelectionModel().select(config.getConfig(Conf.terminalFont, Conf.terminalFont.stringDefault()));
