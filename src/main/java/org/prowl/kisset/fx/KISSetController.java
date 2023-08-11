@@ -146,6 +146,14 @@ public class KISSetController {
 
     }
 
+    // Update the opacity when the configuration is updated
+    @Subscribe
+    public void onConfigurationChanged(ConfigurationChangedEvent event) {
+        Platform.runLater(() -> {
+            stackPane.getScene().getWindow().setOpacity(1 - (KISSet.INSTANCE.getConfig().getConfig(Conf.terminalTransparency, Conf.terminalTransparency.intDefault()) / 100.0));
+        });
+    }
+
     public void setup() {
         SingleThreadBus.INSTANCE.register(this);
 

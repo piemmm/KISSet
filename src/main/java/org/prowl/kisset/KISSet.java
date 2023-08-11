@@ -90,6 +90,8 @@ public class KISSet extends Application {
         Scene scene = new Scene(root, 750, 480);
         stage.setTitle("KISSet");
         stage.setScene(scene);
+        stage.setOpacity(1 - (configuration.getConfig(Conf.terminalTransparency, Conf.terminalTransparency.intDefault()) / 100.0));
+
         stage.show();
         controller.setup();
 

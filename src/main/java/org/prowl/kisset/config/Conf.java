@@ -5,12 +5,40 @@ package org.prowl.kisset.config;
  */
 public enum Conf {
 
+    // Enum list of configuration variables with their defaults
     callsign(""),
     monitor(false),
-    uuid(""),
     terminalFont("Monospaced"),
     terminalFontSize(12),
-    monitorTransparency(0);
+    monitorTransparency(0),
+    terminalTransparency(0),
+
+    // These settings are set per-interface
+    uuid(""),
+    beaconEvery(0),
+    beaconText(""),
+
+    // When someone connects to you
+    connectGreetingText(""),
+
+    // Mailbox system
+    pmsActive(false),
+    pmsSSID(""),
+    pmsGreetingText(""),
+
+    // Remote access - allows the user to connect, and access to the Mailbox system
+    sshPort(0),
+    sshUsername(""),
+    sshPassword(""),
+
+    // FBB compatible client system
+    fbbListeningActive(true),
+    fbbPreferredBBSCallsign("");
+
+
+
+
+
 
     public Object defaultSetting;
 

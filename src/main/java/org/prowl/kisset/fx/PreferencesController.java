@@ -55,6 +55,9 @@ public class PreferencesController {
     private ComboBox fontSize;
     @FXML
     private Slider monitorTransparency;
+    @FXML
+    private Slider terminalTransparency;
+
 
     private final List<Interface> interfaces = new ArrayList<>();
     private Config config;
@@ -76,8 +79,11 @@ public class PreferencesController {
         config.setProperty(Conf.terminalFont, fontSelector.getSelectionModel().getSelectedItem());
         config.setProperty(Conf.terminalFontSize, fontSize.getSelectionModel().getSelectedItem());
 
-        // Transparency slider
+        // Transparency slider for packet monitor
         config.setProperty(Conf.monitorTransparency, (int)monitorTransparency.getValue());
+
+        // Transparency slider for main window
+        config.setProperty(Conf.terminalTransparency, (int)terminalTransparency.getValue());
 
         // Interfaces preference pane
         // Save our preferences config
@@ -153,8 +159,11 @@ public class PreferencesController {
             fontSize.getItems().add(fontSizei);
         }
 
-        // Monitor window
+        // Monitor window transparency
         monitorTransparency.setValue(config.getConfig(Conf.monitorTransparency, Conf.monitorTransparency.intDefault()));
+
+        // Main terminal window transparency
+        monitorTransparency.setValue(config.getConfig(Conf.terminalTransparency, Conf.terminalTransparency.intDefault()));
 
         // Set current font
         fontSelector.getSelectionModel().select(config.getConfig(Conf.terminalFont, Conf.terminalFont.stringDefault()));
