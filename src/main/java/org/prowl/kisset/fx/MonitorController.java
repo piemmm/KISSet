@@ -3,8 +3,12 @@ package org.prowl.kisset.fx;
 
 import com.google.common.eventbus.Subscribe;
 import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.StackPane;
 import org.apache.commons.logging.Log;
@@ -12,6 +16,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jfree.fx.FXGraphics2D;
 import org.prowl.kisset.KISSet;
 import org.prowl.kisset.config.Conf;
+import org.prowl.kisset.core.Node;
 import org.prowl.kisset.eventbus.SingleThreadBus;
 import org.prowl.kisset.eventbus.events.ConfigurationChangedEvent;
 import org.prowl.kisset.eventbus.events.HeardNodeEvent;
@@ -23,6 +28,7 @@ import org.prowl.kisset.util.Tools;
 
 import java.awt.*;
 import java.io.*;
+import java.util.ArrayList;
 
 public class MonitorController {
 
@@ -34,6 +40,10 @@ public class MonitorController {
     ScrollPane theScrollPane;
     @FXML
     StackPane stackPane;
+    @FXML
+    ListView<Node> heardList;
+
+    private ObservableList<Node> heardNodes = FXCollections.observableArrayList(new ArrayList<>());
     TerminalCanvas canvas;
     private Terminal term;
     private PipedInputStream inpis;
@@ -72,7 +82,35 @@ public class MonitorController {
         Platform.runLater(() -> {
             // Initially the scroll pane to the bottom.
             theScrollPane.setVvalue(Double.MAX_VALUE);
+
+            // Setup the heard list with it's observable array
+            heardList.setItems(heardNodes);
+
+            // Also setup the cell renderer for the list
+            heardList.setCellFactory(param -> new ListCell<Node>() {
+                @Override
+                protected void updateItem(Node node, boolean empty) {
+                    super.updateItem(node, empty);
+                    if (empty || node == null || node.getCallsign() == null) {
+                        setText(null);
+                    } else {
+                        int interfaceNumber = KISSet.INSTANCE.getInterfaceHandler().getInterfaces().indexOf(node.getInterface());
+                        setText(interfaceNumber+": "+node.getCallsign());
+                    }
+                }
+            });
         });
+
+        // Popup context sensitive menu for heard list
+        heardList.setOnContextMenuRequested(event -> {
+            Node node = heardList.getSelectionModel().getSelectedItem();
+            if (node != null) {
+
+              //  KISSet.INSTANCE.getInterfaceHandler().getInterface(node.getInterface()).showContextMenu(heardList, event.getScreenX(), event.getScreenY());
+            }
+        });
+
+
     }
 
     public void setup() {
@@ -156,6 +194,23 @@ public class MonitorController {
                 inpos.flush();
             } catch (IOException e) {
             }
+
+            Platform.runLater(() -> {
+                heardNodes.remove(event.getNode());
+                heardNodes.add(event.getNode());
+                heardNodes.sort((o1, o2) -> {
+                    if (o1.getCallsign() == null) {
+                        return 1;
+                    }
+                    if (o2.getCallsign() == null) {
+                        return -1;
+                    }
+                    return o1.getCallsign().compareTo(o2.getCallsign());
+                });
+            });
+
+
+
         });
     }
 
@@ -194,8 +249,8 @@ public class MonitorController {
 
         private void draw() {
             Platform.runLater(() -> {
-                double width = Math.max(100, getWidth());
-                double height = Math.max(100, getHeight());
+                double width = Math.max(800, getWidth());
+                double height = Math.max(280, getHeight());
                 terminal.setSize((int) width, (int) height, false);
                 this.terminal.paintComponent(g2);
             });

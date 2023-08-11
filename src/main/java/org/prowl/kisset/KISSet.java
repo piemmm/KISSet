@@ -3,17 +3,14 @@ package org.prowl.kisset;
 import atlantafx.base.theme.PrimerDark;
 import atlantafx.base.theme.PrimerLight;
 import com.google.common.eventbus.Subscribe;
-import com.google.common.io.Resources;
 import com.jthemedetecor.OsThemeDetector;
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.concurrent.Task;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
-import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import org.apache.commons.logging.Log;
@@ -32,12 +29,9 @@ import org.prowl.kisset.statistics.Statistics;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.desktop.AboutEvent;
-import java.awt.desktop.AboutHandler;
 import java.awt.desktop.AppReopenedEvent;
 import java.awt.desktop.AppReopenedListener;
 import java.io.IOException;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.Scanner;
@@ -119,8 +113,8 @@ public class KISSet extends Application {
                     task.setIconImage(icon);
                 }
             }
-        } catch(SecurityException e) {
-            LOG.debug(e.getMessage(),e);
+        } catch (SecurityException e) {
+            LOG.debug(e.getMessage(), e);
         }
 
 
@@ -146,7 +140,7 @@ public class KISSet extends Application {
             if (SystemTray.isSupported()) {
                 Toolkit toolkit = Toolkit.getDefaultToolkit();
                 java.awt.Image icon = new ImageIcon(getClass().getResource("img/tray-white.png")).getImage();
-                        //toolkit.getImage(getClass().getResource("img/icon.png"));
+                //toolkit.getImage(getClass().getResource("img/icon.png"));
                 SystemTray tray = SystemTray.getSystemTray();
                 TrayIcon trayIcon = new TrayIcon(icon);
                 trayIcon.setImageAutoSize(true);
@@ -155,9 +149,9 @@ public class KISSet extends Application {
                 trayIcon.addMouseListener(new java.awt.event.MouseAdapter() {
                     @Override
                     public void mouseClicked(java.awt.event.MouseEvent evt) {
-                            Platform.runLater(() -> {
-                                stage.show();
-                            });
+                        Platform.runLater(() -> {
+                            stage.show();
+                        });
                     }
                 });
 
@@ -172,7 +166,7 @@ public class KISSet extends Application {
                 tray.add(trayIcon);
             }
         } catch (Throwable e) {
-            LOG.debug(e.getMessage(),e);
+            LOG.debug(e.getMessage(), e);
         }
 
     }
@@ -203,6 +197,8 @@ public class KISSet extends Application {
             // Start listening for route broadcasts
             RoutingListener routingListener = RoutingListener.INSTANCE;
 
+            initMonitor();
+
         } catch (Throwable e) {
             LOG.error(e.getMessage(), e);
             System.exit(1);
@@ -226,9 +222,8 @@ public class KISSet extends Application {
         }
     }
 
-    public void showMonitor() {
+    public void initMonitor() {
         try {
-            // Create the GUI.
             if (monitorStage == null) {
                 monitorStage = new Stage();
                 FXMLLoader fxmlLoader = new FXMLLoader(KISSet.class.getResource("fx/MonitorController.fxml"));
@@ -245,15 +240,17 @@ public class KISSet extends Application {
                     }
                 });
                 monitorStage.setOpacity(1 - (configuration.getConfig(Conf.monitorTransparency, Conf.monitorTransparency.intDefault()) / 100.0));
-                monitorStage.show();
                 controller.setup();
-            } else {
-                monitorStage.show();
             }
-
-        } catch (Throwable e) {
+        } catch(IOException e) {
             LOG.error(e.getMessage(), e);
         }
+    }
+
+    public void showMonitor() {
+
+        monitorStage.show();
+
     }
 
     public void showAbout() {
