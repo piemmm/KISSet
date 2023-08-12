@@ -229,6 +229,9 @@ public class BasicTransmittingConnector extends Connector implements Transmittin
 
     // Actually write the frame to the outputStream
     public final boolean sendFrame(AX25FrameSource entry, long now, AX25Frame frame, TransmittingConnector p) {
+        // TX frames must also be passed to the stack for processing
+        stack.fireConsumeAX25Frame(frame, this);
+
         //   fireTransmitting(true);
         int byteCount;
         try {
