@@ -216,7 +216,12 @@ public class PreferencesController {
         Arrays.stream(NETROM_SSID).forEach(netromNodeSSIDChoiceBox.getItems()::add);
         //enableNetRomCheckbox.setSelected(config.getConfig(Conf.netromEnabled, Conf.netromEnabled.boolDefault()));
         netromNodeSSIDChoiceBox.getSelectionModel().select(config.getConfig(Conf.netromSSID, Conf.netromSSID.stringDefault()));
-        netromNodeAliasTextField.setText(config.getConfig(Conf.netromAlias, Conf.netromAlias.stringDefault()));
+        // Best effort to get a sensible default alias
+        String alias = config.getConfig(Conf.netromAlias, Conf.createDefaultNetromAlias());
+        if (alias == null || alias.length() == 0) {
+            alias = Conf.createDefaultNetromAlias();
+        }
+        netromNodeAliasTextField.setText(alias);
         netromGreetingTextField.setText(config.getConfig(Conf.netromGreetingText, Conf.netromGreetingText.stringDefault()));
 
         // Set current font
@@ -225,6 +230,8 @@ public class PreferencesController {
 
         explanatoryText.setText(Messages.get("explanatoryText"));
     }
+
+
 
     public void updateList() {
         // Interfaces preference pane

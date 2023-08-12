@@ -1,5 +1,7 @@
 package org.prowl.kisset.config;
 
+import org.prowl.kisset.KISSet;
+
 /**
  * List of configuration names used in the xml file.
  */
@@ -19,18 +21,18 @@ public enum Conf {
     beaconText(""),
 
     // When someone connects to you
-    connectGreetingText(""),
+    connectGreetingText("Hi! This is a KISSet application - If there is no reply it might be because I'm not watching the screen!"),
 
     // Mailbox service
     pmsEnabled(true),
     pmsSSID("-2"),
-    pmsGreetingText(""),
+    pmsGreetingText("Hi! Welcome to the KISSet Mailbox - type 'help' for a list of commands!"),
 
     // Net/ROM service
     netromEnabled(true),
     netromSSID("-1"),
-    netromAlias(""), // A blank alias, with enabled, will default to the last 3 letters of call+'NOD'
-    netromGreetingText(""),
+    netromAlias(Conf.createDefaultNetromAlias()), // A blank alias, with enabled, will default to the last 3 letters of call+'NOD'
+    netromGreetingText("Hi! This is a KISSet Net/ROM node - type 'help' for a list of commands!"),
 
     // Remote access - allows the user to connect, and access to the Mailbox system securely over a LAN or internet.
     sshPort(0),
@@ -59,5 +61,18 @@ public enum Conf {
         return Boolean.parseBoolean(String.valueOf(defaultSetting));
     }
 
+    /**
+     * Create a default Net/ROM alias based on the callsign.
+     * @return
+     */
+    public static final String createDefaultNetromAlias() {
+        if (KISSet.INSTANCE.getMyCall().length() > 0) {
+            return KISSet.INSTANCE.getMyCallNoSSID().substring(KISSet.INSTANCE.getMyCallNoSSID().length() - 3) + "NOD";
+        } else {
+            return "";
+        }
+
+
+    }
 
 }
