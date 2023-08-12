@@ -12,10 +12,9 @@ import org.prowl.aprslib.parser.Parser;
 import org.prowl.kisset.ax25.AX25Frame;
 import org.prowl.kisset.core.Capability;
 import org.prowl.kisset.core.Node;
-import org.prowl.kisset.netrom.NetROMRoutingPacket;
-import org.prowl.kisset.netrom.inp3.L3RTTPacket;
 
-import java.nio.ByteBuffer;
+import java.io.DataInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -142,17 +141,42 @@ public class Tools {
 
     public static String byteArrayToReadableASCIIString(byte[] data) {
         StringBuilder sb = new StringBuilder();
-        for (byte b: data) {
-            if (b<0x20 || b>0xFA) {
-                sb.append(ANSI.YELLOW+"<");
+        for (byte b : data) {
+            if (b < 0x20 || b > 0xFA) {
+                sb.append(ANSI.YELLOW + "<");
                 sb.append(String.format("%02X", b));
-                sb.append(">"+ANSI.NORMAL);
+                sb.append(">" + ANSI.NORMAL);
             } else {
-                sb.append((char)b);
+                sb.append((char) b);
             }
         }
         return sb.toString();
     }
 
+    /**
+     * Convenience method to read X amount of bytes from a stream
+     *
+     * @param din
+     * @param length
+     * @return
+     */
+    public static final String readString(DataInputStream din, int length) throws IOException {
+        byte[] data = new byte[length];
+        din.read(data, 0, length);
+        return new String(data);
+    }
+
+    /**
+     * Convenience method to read X amount of bytes from a stream
+     *
+     * @param din
+     * @param length
+     * @return
+     */
+    public static final byte[] readBytes(DataInputStream din, int length) throws IOException {
+        byte[] data = new byte[length];
+        din.read(data, 0, length);
+        return data;
+    }
 
 }

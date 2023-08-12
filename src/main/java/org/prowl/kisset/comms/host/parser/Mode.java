@@ -25,7 +25,14 @@ public class Mode {
     // Listing messages mode (for pagination handling)
     public static final Mode MESSAGE_LIST_PAGINATION = new Mode("MESSAGE_LIST_PAGINATION");
 
+    // Connected to a station mode
     public static final Mode CONNECTED_TO_STATION = new Mode("CONNECTED_TO_STATION");
+
+    // Sending a private message mode
+    public static final Mode SENDING_PRIVATE_MESSAGE = new Mode("SENDING_PRIVATE_MESSAGE");
+
+    // Sending a public/bulletin message mode
+    public static final Mode SENDING_PUBLIC_MESSAGE = new Mode("SENDING_PUBLIC_MESSAGE");
 
     private final String mode;
 

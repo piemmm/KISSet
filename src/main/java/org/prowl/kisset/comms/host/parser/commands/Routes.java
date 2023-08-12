@@ -49,7 +49,7 @@ public class Routes extends Command {
 
     @Override
     public String[] getCommandNames() {
-        return new String[]{"routes", "route", "r"};
+        return new String[]{"routes", "route", "ro", "rou"};
     }
 
 

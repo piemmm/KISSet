@@ -86,14 +86,17 @@ public class CommandParser {
         try {
             // Local echo
             writeToTerminal(c + CR);
+            String[] arguments = c.split(" "); // Arguments[0] is the command used.
 
             if (mode == Mode.CMD || mode == Mode.MESSAGE_LIST_PAGINATION || mode == Mode.MESSAGE_READ_PAGINATION) {
-                String[] arguments = c.split(" "); // Arguments[0] is the command used.
 
                 // If the command matches, then we will send the command. It is up to the command to check the mode we are
                 // in and act accordingly.
                 boolean commandExecuted = false;
                 try {
+
+                    // Go through each command and they should only execute if they match the command name
+                    // and the mode requirements for that command (usually Mode.CMD which is decided by the actual command).
                     for (Command command : commands) {
                         String[] supportedCommands = command.getCommandNames();
                         for (String supportedCommand : supportedCommands) {
@@ -105,7 +108,11 @@ public class CommandParser {
                                 }
                             }
                         }
+                        if (commandExecuted) {
+                            break;
+                        }
                     }
+
                     if (!commandExecuted && arguments[0].length() > 0) {
                         unknownCommand();
                     }
@@ -129,6 +136,17 @@ public class CommandParser {
                     }
                 }
 
+            } else {
+                // Try in case of a paticular mode setting requires 'no command' when outside of command mode
+                if (!mode.equals(Mode.CMD)) {
+                    for (Command command : commands) {
+                        if (command.doCommand(arguments)) {
+                            LOG.debug("Command executed: " + command.getClass().getSimpleName());
+                            break;
+                        }
+                    }
+
+                }
             }
         } catch (Throwable e) {
             LOG.error(e.getMessage(), e);
@@ -241,7 +259,6 @@ public class CommandParser {
     public void setCurrentInterface(Interface currentInterface) {
         this.currentInterface = currentInterface;
     }
-
 
 
     public Interface getCurrentInterface() {

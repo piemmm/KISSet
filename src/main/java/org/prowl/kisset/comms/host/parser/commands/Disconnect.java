@@ -14,6 +14,10 @@ public class Disconnect extends Command {
     @Override
     public boolean doCommand(String[] data) throws IOException {
 
+        if (!getMode().equals(Mode.CMD)) {
+            return false;
+        }
+
         if (data.length > 1 && data[1].equals("?")) {
             writeToTerminal("*** Usage: disconnect" + CR);
             return true;

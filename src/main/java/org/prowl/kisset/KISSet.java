@@ -25,6 +25,7 @@ import org.prowl.kisset.fx.MonitorController;
 import org.prowl.kisset.fx.PreferencesController;
 import org.prowl.kisset.io.InterfaceHandler;
 import org.prowl.kisset.netrom.RoutingListener;
+import org.prowl.kisset.objects.Storage;
 import org.prowl.kisset.statistics.Statistics;
 
 import javax.swing.*;
@@ -45,6 +46,7 @@ public class KISSet extends Application {
     private InterfaceHandler interfaceHandler;
     private Statistics statistics;
     private Stage monitorStage;
+    private Storage storage;
 
     public static void main(String[] args) {
         launch();
@@ -187,6 +189,8 @@ public class KISSet extends Application {
             // Load configuration and initialise everything needed.
             configuration = new Config();
 
+            storage = new Storage();
+
             // Set our callsign
             myCall = configuration.getConfig(Conf.callsign, Conf.callsign.stringDefault()).toUpperCase(Locale.ENGLISH);
 
@@ -311,6 +315,10 @@ public class KISSet extends Application {
 
     public InterfaceHandler getInterfaceHandler() {
         return interfaceHandler;
+    }
+
+    public Storage getStorage() {
+        return storage;
     }
 
     /**

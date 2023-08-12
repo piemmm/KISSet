@@ -315,4 +315,24 @@ public class PacketTools {
         }
         return builder.toString();
     }
+
+    /**
+     * Make sure we only get the text component of a message and ignore any TNC-unsafe characters.
+     *
+     * @param binaryContent
+     * @return the text only component of the binary content
+     */
+    public static String textOnly(byte[] binaryContent) {
+        if (binaryContent == null) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int b : binaryContent) {
+            if ((b > 31 && b != 195) || b == 9 || b == 10 || b == 13) {
+                sb.append((char) b);
+            }
+        }
+        return sb.toString();
+    }
+
 }
