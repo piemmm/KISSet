@@ -74,7 +74,7 @@ public class StreamConnectionEstablishmentListener implements ConnectionEstablis
                                 if (stream.getExtensionState() == ExtensionState.NEGOTIATING) {
                                     LOG.debug("Response string: " + responseString + "(response)");
                                     // Look for and respond to the [OARC <capabilities>] response containing stuff the server enabled.
-                                    if (responseString.toString().matches("\\[OARC [a-zA-Z0-9]+\\]")) {
+                                    if (responseString.toString().matches("\\[EXTN [a-zA-Z0-9]+\\]")) {
                                         LOG.debug("Response string: " + responseString + "(matches)");
 
                                         // We can assume everything is enabled after this response is received.
@@ -168,7 +168,7 @@ public class StreamConnectionEstablishmentListener implements ConnectionEstablis
     public void checkRemoteStationCapabilities(String firstLine) throws IOException {
         String capabilities = "";
         StringBuffer response = new StringBuffer();
-        if (firstLine.matches("\\[OARC [a-zA-Z0-9]+\\]")) {
+        if (firstLine.matches("\\[EXTN [a-zA-Z0-9]+\\]")) {
             capabilities = firstLine.substring(6, firstLine.length() - 1);
             stream.setExtensionState(ExtensionState.NEGOTIATING);
             LOG.info("Remote station capabilities: " + capabilities);
@@ -184,7 +184,7 @@ public class StreamConnectionEstablishmentListener implements ConnectionEstablis
         // Now we have our responses we can send it to the remote station and consider all of them immediately enabled
         if (response.length() > 0) {
 
-            response.insert(0, "[OARC ");
+            response.insert(0, "[EXTN ");
             response.append("]\r");
             LOG.debug("Sending capabilities response: " + response);
             stream.write(response.toString().getBytes());

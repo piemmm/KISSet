@@ -15,6 +15,8 @@ import org.prowl.kisset.core.Node;
 
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -177,6 +179,24 @@ public class Tools {
         byte[] data = new byte[length];
         din.read(data, 0, length);
         return data;
+    }
+
+    /**
+     * Convenience method to return the sha-256 hash of a string
+     *
+     * @param s
+     * @return
+     */
+    public static String hashString(String s) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            md.update(s.getBytes());
+            byte[] digest = md.digest();
+            return byteArrayToHexString(digest);
+        } catch (NoSuchAlgorithmException e) {
+            LOG.error(e.getMessage(), e);
+            return null;
+        }
     }
 
 }

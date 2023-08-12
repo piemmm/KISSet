@@ -309,6 +309,13 @@ public class KISSet extends Application {
         this.myCall = myCall.toUpperCase(Locale.ENGLISH);
     }
 
+    public String getMyCallNoSSID() {
+        if (!myCall.contains("-")) {
+            return myCall;
+        }
+        return myCall.substring(0, myCall.indexOf('-'));
+    }
+
     public Config getConfig() {
         return configuration;
     }
@@ -344,4 +351,18 @@ public class KISSet extends Application {
         }
         return versionInfo;
     }
+
+    /**
+     * Returns the capabilities of the station
+     * A = ANSI colours
+     * B = BBS
+     * C = Compression
+     * P = PMS
+     * Z = Escape sequences for next block
+     * @return
+     */
+    public String getStationCapabilities() {
+        return "APC";
+    }
+
 }
