@@ -8,6 +8,7 @@ import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
@@ -258,6 +259,11 @@ public class KISSetController {
                 double width = Math.max(100, getWidth());
                 double height = Math.max(100, getHeight());
                 terminal.setSize((int) width, (int) height, false);
+
+                // memory leak workaround
+                GraphicsContext gc = this.getGraphicsContext2D();
+                gc.clearRect(0, 0, width, height);
+
                 this.terminal.paintComponent(g2);
             });
         }

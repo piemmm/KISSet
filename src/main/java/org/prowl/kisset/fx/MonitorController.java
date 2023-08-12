@@ -7,6 +7,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
@@ -254,6 +255,11 @@ public class MonitorController {
                 double width = Math.max(790, getWidth());
                 double height = Math.max(1280, getHeight());
                 terminal.setSize((int) width, (int) height, false);
+
+                // memory leak workaround
+                GraphicsContext gc = this.getGraphicsContext2D();
+                gc.clearRect(0, 0, width, height);
+
                 this.terminal.paintComponent(g2);
             });
         }
