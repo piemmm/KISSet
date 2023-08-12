@@ -255,6 +255,9 @@ public class AX25Stack implements FrameListener, Runnable {
         connectionRequestListener = l;
     }
 
+    ConnectionRequestListener getConnectionRequestListener() {
+       return connectionRequestListener;
+    }
     /**
      * Register another protocol parsing handler for a particular AX.25 UI/I message PID.
      *

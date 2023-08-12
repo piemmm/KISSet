@@ -153,20 +153,8 @@ public class BasicTransmittingConnector extends Connector implements Transmittin
      * @return boolean true if this callsign is for the local station
      */
     public boolean isLocalDest(String destCallsign) {
-//        if (destCallsign != null && destCallsign.length() > 0) {
-//            ArrayList<? extends Connector> portList = PortManager.getPortList();
-//            for (int i = portList.size() - 1; i >= 0; i--) {
-//                Connector conn;
-//                if ((conn = portList.get(i)) != null && conn.isOpen() && conn.hasCapability(Connector.CAP_RCV_PACKET_DATA)) {
-//                    String connCallsign;
-//                    if ((connCallsign = conn.getCallsign()) != null && destCallsign.equalsIgnoreCase(connCallsign)) {
-//                        return true;
-//                    }
-//                }
-//            }
-//        }
-
-        return getCallsign() != null && destCallsign.equalsIgnoreCase(getCallsign());
+       // Default callsign test.
+        return (getCallsign() != null && destCallsign.equalsIgnoreCase(getCallsign())) || stack.getConnectionRequestListener().isLocal(destCallsign);
     }
 
     /**

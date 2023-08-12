@@ -19,7 +19,7 @@ public class Help extends Command {
         }
 
         write(CR);
-        write(Messages.get("help") + CR);
+        write(Messages.get("pms_help") + CR);
         return true;
     }
 

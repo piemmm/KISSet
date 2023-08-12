@@ -25,6 +25,10 @@ public abstract class Service {
         return name;
     }
 
+    /**
+     * The callsign we are using for this service (used in the AX25 package so it knows what to respond to)
+     * @return A calsign - might have an SSID, might not - who knows what the user decides!
+     */
     public abstract String getCallsign();
 
     public abstract void acceptedConnection(User user, InputStream in, OutputStream out);

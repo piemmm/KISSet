@@ -30,6 +30,7 @@ public abstract class Interface {
     private String uuid;
     private Timer beaconTimer;
     protected boolean running = true;
+    protected List<Service> services = new ArrayList<>();
 
     public Interface(HierarchicalConfiguration config) {
         this.config = config;
@@ -74,6 +75,9 @@ public abstract class Interface {
         return failReason;
     }
 
+    public void setServices(List<Service> services) {
+        this.services = services;
+    }
 
     public String getUUID() {
         uuid = config.getString(Conf.uuid.name());
@@ -132,6 +136,8 @@ public abstract class Interface {
     }
 
     public boolean checkInboundConnection(ConnState state, AX25Callsign originator, Connector port) {
+
+        LOG.debug("Checking inbound connection: " + state.getSrc() + " to " + state.getDst() + "");
         // Check PMS
         for (Service service : KISSet.INSTANCE.getServices()) {
             if (service.getCallsign() != null && state.getDst().toString().equalsIgnoreCase(service.getCallsign())) {

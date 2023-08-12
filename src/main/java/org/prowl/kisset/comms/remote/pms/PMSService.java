@@ -24,6 +24,7 @@ public class PMSService extends Service {
 
     public PMSService(String name, String callsign) {
         super(name);
+        LOG.debug("Starting PMS Service, listening on " + callsign);
         this.callsign = callsign;
     }
 

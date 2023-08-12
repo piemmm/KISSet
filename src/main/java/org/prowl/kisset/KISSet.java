@@ -190,13 +190,19 @@ public class KISSet extends Application {
             // Load configuration and initialise everything needed.
             configuration = new Config();
 
+            // Create our storage handler
             storage = new Storage();
 
             // Set our callsign
             myCall = configuration.getConfig(Conf.callsign, Conf.callsign.stringDefault()).toUpperCase(Locale.ENGLISH);
 
+            // Create services - these listen for incoming connections and handle them.
+            createServices();
+
             // Init interfaces
             interfaceHandler = new InterfaceHandler(configuration.getConfig("interfaces"));
+
+            interfaceHandler.setServices(serviceList);
 
             // Start interfaces
             interfaceHandler.start();
@@ -206,20 +212,24 @@ public class KISSet extends Application {
 
             initMonitor();
 
-            // Start services and bind them to the interface
-            boolean pmsEnabled = configuration.getConfig(Conf.pmsEnabled, Conf.pmsEnabled.boolDefault());
-            if (pmsEnabled) {
-                serviceList.add(new PMSService("PMS", getMyCallNoSSID()+configuration.getConfig(Conf.pmsSSID, Conf.pmsSSID.stringDefault())));
-            }
-
-            // Net/ROM
-            boolean netROMEnabled = configuration.getConfig(Conf.netromEnabled, Conf.netromEnabled.boolDefault());
-            if (netROMEnabled) {
-                //serviceList.add(new NetROMService("NETROM", getMyCallNoSSID()+configuration.getConfig(Conf.netromSSID, Conf.netromSSID.stringDefault())));
-            }
         } catch (Throwable e) {
             LOG.error(e.getMessage(), e);
             System.exit(1);
+        }
+    }
+
+    public void createServices() {
+        // Create services
+        serviceList.clear();
+        boolean pmsEnabled = configuration.getConfig(Conf.pmsEnabled, Conf.pmsEnabled.boolDefault());
+        if (pmsEnabled) {
+            serviceList.add(new PMSService("PMS", getMyCallNoSSID()+configuration.getConfig(Conf.pmsSSID, Conf.pmsSSID.stringDefault())));
+        }
+
+        // Net/ROM
+        boolean netROMEnabled = configuration.getConfig(Conf.netromEnabled, Conf.netromEnabled.boolDefault());
+        if (netROMEnabled) {
+            //serviceList.add(new NetROMService("NETROM", getMyCallNoSSID()+configuration.getConfig(Conf.netromSSID, Conf.netromSSID.stringDefault())));
         }
     }
 

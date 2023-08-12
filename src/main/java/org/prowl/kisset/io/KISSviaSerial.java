@@ -7,6 +7,7 @@ import org.apache.commons.logging.LogFactory;
 import org.prowl.kisset.KISSet;
 import org.prowl.kisset.annotations.InterfaceDriver;
 import org.prowl.kisset.ax25.*;
+import org.prowl.kisset.comms.Service;
 import org.prowl.kisset.config.Conf;
 import org.prowl.kisset.core.Node;
 import org.prowl.kisset.eventbus.SingleThreadBus;
@@ -152,6 +153,16 @@ public class KISSviaSerial extends Interface {
             @Override
             public boolean acceptInbound(ConnState state, AX25Callsign originator, Connector port) {
                 return checkInboundConnection(state, originator, port);
+            }
+
+            @Override
+            public boolean isLocal(String callsign) {
+                for (Service service: services) {
+                    if (service.getCallsign().equalsIgnoreCase(callsign)) {
+                        return true;
+                    }
+                }
+                return false;
             }
         });
 

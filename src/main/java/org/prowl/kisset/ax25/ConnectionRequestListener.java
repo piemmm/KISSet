@@ -25,7 +25,6 @@ package org.prowl.kisset.ax25;
  *
  * @author Andrew Pavlin, KA2DDO
  */
-@FunctionalInterface
 public interface ConnectionRequestListener {
     /**
      * Decide whether to accept the specified inbound AX.25 connected-mode session request. Note
@@ -42,4 +41,12 @@ public interface ConnectionRequestListener {
      */
     boolean acceptInbound(ConnState state, AX25Callsign originator, Connector port);
 
+    /**
+     * The connector needs to know the callsigns that are running services (we are listening for connections to)
+     * and this method can check for this.
+     *
+     * @param callsign The callsign to check
+     * @return true if the callsign is a local callsign
+     */
+    boolean isLocal(String callsign);
 }

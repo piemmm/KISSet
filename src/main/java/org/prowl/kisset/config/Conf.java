@@ -32,7 +32,7 @@ public enum Conf {
     netromAlias(""), // A blank alias, with enabled, will default to the last 3 letters of call+'NOD'
     netromGreetingText(""),
 
-    // Remote access - allows the user to connect, and access to the Mailbox system
+    // Remote access - allows the user to connect, and access to the Mailbox system securely over a LAN or internet.
     sshPort(0),
     sshUsername(""),
     sshPassword(""),
@@ -40,11 +40,6 @@ public enum Conf {
     // FBB compatible client system
     fbbListeningActive(true),
     fbbPreferredBBSCallsign("");
-
-
-
-
-
 
     public Object defaultSetting;
 

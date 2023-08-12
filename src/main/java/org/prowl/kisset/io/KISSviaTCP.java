@@ -6,6 +6,7 @@ import org.apache.commons.logging.LogFactory;
 import org.prowl.kisset.KISSet;
 import org.prowl.kisset.annotations.InterfaceDriver;
 import org.prowl.kisset.ax25.*;
+import org.prowl.kisset.comms.Service;
 import org.prowl.kisset.core.Node;
 import org.prowl.kisset.eventbus.SingleThreadBus;
 import org.prowl.kisset.eventbus.events.HeardNodeEvent;
@@ -38,8 +39,6 @@ public class KISSviaTCP extends Interface {
     private Socket socketConnection;
 
     private BasicTransmittingConnector anInterface;
-
-
 
 
     public KISSviaTCP(HierarchicalConfiguration config) {
@@ -127,6 +126,18 @@ public class KISSviaTCP extends Interface {
             public boolean acceptInbound(ConnState state, AX25Callsign originator, Connector port) {
                 return checkInboundConnection(state, originator, port);
             }
+
+
+            @Override
+            public boolean isLocal(String callsign) {
+                for (Service service : services) {
+                    if (service.getCallsign().equalsIgnoreCase(callsign)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
         });
 
         // Tag for debug logs so we know what instance/frequency this connector is
@@ -211,7 +222,10 @@ public class KISSviaTCP extends Interface {
     public void stop() {
         running = false;
         if (socketConnection != null) {
-            try { socketConnection.close(); } catch (Exception e) { }
+            try {
+                socketConnection.close();
+            } catch (Exception e) {
+            }
         }
     }
 
@@ -224,7 +238,7 @@ public class KISSviaTCP extends Interface {
     public boolean connect(String to, String from, ConnectionEstablishmentListener connectionEstablishmentListener) throws IOException {
 
         if (anInterface == null) {
-            throw new IOException("TCP/IP interface to '"+address+":"+port+"' did not complete startup - please check configuration");
+            throw new IOException("TCP/IP interface to '" + address + ":" + port + "' did not complete startup - please check configuration");
         }
 
         anInterface.makeConnection(from, to, connectionEstablishmentListener);

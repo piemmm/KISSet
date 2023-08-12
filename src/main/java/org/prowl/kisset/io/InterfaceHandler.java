@@ -4,6 +4,7 @@ import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.SubnodeConfiguration;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.prowl.kisset.comms.Service;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -17,6 +18,7 @@ public class InterfaceHandler {
 
     private final List<Interface> interfaces = new ArrayList<>();
 
+    private List<Service> services = new ArrayList<>();
 
     public InterfaceHandler(SubnodeConfiguration configuration) throws IOException {
         this.configuration = configuration;
@@ -48,13 +50,24 @@ public class InterfaceHandler {
 
     }
 
+    /**
+     * Set a list of services to listen for connections to.
+     *
+     * The interface needs a list of callsigns+ssids to listen for if it is going to accept connections.
+     *
+     * @param services The services we have that are listening for connections to.
+     */
+    public void setServices(List<Service> services) {
+       this.services = services;
+    }
+
     public void start() {
         LOG.info("Starting interfaces...");
         for (Interface iface : interfaces) {
             try {
                 LOG.info("Starting: " + iface.toString());
                 iface.start();
-
+                iface.setServices(services);
             } catch (Throwable e) {
                 LOG.error("Unable to start interface: " + iface.toString(), e);
             }
