@@ -10,8 +10,8 @@ public abstract class Service {
 
     private String name;
 
-    public Service(HierarchicalConfiguration config) {
-        name = config.getString("name");
+    public Service(String name) {
+        this.name = name;
         if (name == null) {
             throw new AssertionError("Service name cannot be null");
         }

@@ -151,8 +151,7 @@ public class KISSviaSerial extends Interface {
              */
             @Override
             public boolean acceptInbound(ConnState state, AX25Callsign originator, Connector port) {
-                LOG.info("Rejecting connection request from " + originator + " to " + state.getDst());
-                return false;
+                return checkInboundConnection(state, originator, port);
             }
         });
 

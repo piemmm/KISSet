@@ -124,9 +124,8 @@ public class KISSviaTCP extends Interface {
              * @return
              */
             @Override
-            public boolean acceptInbound(ConnState state, AX25Callsign originator, org.prowl.kisset.ax25.Connector port) {
-                LOG.info("Rejecting connection request from " + originator + " to " + state.getDst() + " as no service is registered for this callsign");
-                return false;
+            public boolean acceptInbound(ConnState state, AX25Callsign originator, Connector port) {
+                return checkInboundConnection(state, originator, port);
             }
         });
 

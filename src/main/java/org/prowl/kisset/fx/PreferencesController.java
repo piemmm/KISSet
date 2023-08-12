@@ -17,7 +17,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.prowl.kisset.KISSet;
 import org.prowl.kisset.Messages;
-import org.prowl.kisset.config.BeaconType;
 import org.prowl.kisset.config.Conf;
 import org.prowl.kisset.config.Config;
 import org.prowl.kisset.eventbus.SingleThreadBus;
@@ -27,6 +26,7 @@ import org.prowl.kisset.util.Tools;
 
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
@@ -58,12 +58,37 @@ public class PreferencesController {
     @FXML
     private Slider terminalTransparency;
 
+    // PMS
+    @FXML
+    private CheckBox enablePMSCheckbox;
+    @FXML
+    private ChoiceBox pmsSSIDChoiceBox;
+    @FXML
+    private TextField pmsGreetingTextField;
+
+    // Net/ROM
+    @FXML
+    private CheckBox enableNetRomCheckbox;
+    @FXML
+    private ChoiceBox netromNodeSSIDChoiceBox;
+    @FXML
+    private TextField netromNodeAliasTextField;
+    @FXML
+    private TextField netromGreetingTextField;
+
+
+    // APRS
 
 
     private final List<Interface> interfaces = new ArrayList<>();
     private Config config;
 
     private int[] FONT_SIZES = {8, 9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 26, 28, 36, 48, 72};
+
+    private int[] NETROM_SSID = { -1, -2, -3, -4, -5, -6, -7 };
+
+    private int[] MAILBOX_SSID = { -1, -2, -3, -4, -5, -6, -7 };
+
 
     @FXML
     public void onCancelButtonClicked() {
@@ -85,6 +110,17 @@ public class PreferencesController {
 
         // Transparency slider for main window
         config.setProperty(Conf.terminalTransparency, (int) terminalTransparency.getValue());
+
+        // PMS
+        config.setProperty(Conf.pmsEnabled, enablePMSCheckbox.isSelected());
+        config.setProperty(Conf.pmsSSID, pmsSSIDChoiceBox.getSelectionModel().getSelectedItem());
+        config.setProperty(Conf.pmsGreetingText, pmsGreetingTextField.getText());
+
+        // Net/ROM
+        config.setProperty(Conf.netromEnabled, enableNetRomCheckbox.isSelected());
+        config.setProperty(Conf.netromSSID, netromNodeSSIDChoiceBox.getSelectionModel().getSelectedItem());
+        config.setProperty(Conf.netromAlias, netromNodeAliasTextField.getText());
+        config.setProperty(Conf.netromGreetingText, netromGreetingTextField.getText());
 
         // Interfaces preference pane
         // Save our preferences config
@@ -161,11 +197,27 @@ public class PreferencesController {
             fontSize.getItems().add(fontSizei);
         }
 
+
+
         // Monitor window transparency
         monitorTransparency.setValue(config.getConfig(Conf.monitorTransparency, Conf.monitorTransparency.intDefault()));
 
         // Main terminal window transparency
         terminalTransparency.setValue(config.getConfig(Conf.terminalTransparency, Conf.terminalTransparency.intDefault()));
+
+        // PMS
+        //pmsSSIDChoiceBox.getItems().add(
+        Arrays.stream(MAILBOX_SSID).forEach(pmsSSIDChoiceBox.getItems()::add);
+        enablePMSCheckbox.setSelected(config.getConfig(Conf.pmsEnabled, Conf.pmsEnabled.boolDefault()));
+        pmsSSIDChoiceBox.getSelectionModel().select(config.getConfig(Conf.pmsSSID, Conf.pmsSSID.stringDefault()));
+        pmsGreetingTextField.setText(config.getConfig(Conf.pmsGreetingText, Conf.pmsGreetingText.stringDefault()));
+
+        // Net/ROM
+        Arrays.stream(NETROM_SSID).forEach(netromNodeSSIDChoiceBox.getItems()::add);
+        //enableNetRomCheckbox.setSelected(config.getConfig(Conf.netromEnabled, Conf.netromEnabled.boolDefault()));
+        netromNodeSSIDChoiceBox.getSelectionModel().select(config.getConfig(Conf.netromSSID, Conf.netromSSID.stringDefault()));
+        netromNodeAliasTextField.setText(config.getConfig(Conf.netromAlias, Conf.netromAlias.stringDefault()));
+        netromGreetingTextField.setText(config.getConfig(Conf.netromGreetingText, Conf.netromGreetingText.stringDefault()));
 
         // Set current font
         fontSelector.getSelectionModel().select(config.getConfig(Conf.terminalFont, Conf.terminalFont.stringDefault()));

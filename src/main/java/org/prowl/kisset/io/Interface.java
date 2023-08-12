@@ -1,14 +1,24 @@
 package org.prowl.kisset.io;
 
 import org.apache.commons.configuration.HierarchicalConfiguration;
-import org.prowl.kisset.ax25.BasicTransmittingConnector;
-import org.prowl.kisset.ax25.ConnectionEstablishmentListener;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.prowl.kisset.KISSet;
+import org.prowl.kisset.ax25.*;
+import org.prowl.kisset.comms.Service;
 import org.prowl.kisset.config.Conf;
+import org.prowl.kisset.objects.user.User;
 
+import java.io.BufferedOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.*;
 
 public abstract class Interface {
+
+    private static final Log LOG = LogFactory.getLog("Interface");
+
 
     protected BasicTransmittingConnector anInterface;
 
@@ -31,7 +41,7 @@ public abstract class Interface {
         }
 
         // Setup the beaconing
-        setBeacon(config.getString(Conf.beaconText.name(),Conf.beaconText.stringDefault()), config.getInt(Conf.beaconEvery.name(),Conf.beaconEvery.intDefault()));
+        setBeacon(config.getString(Conf.beaconText.name(), Conf.beaconText.stringDefault()), config.getInt(Conf.beaconEvery.name(), Conf.beaconEvery.intDefault()));
     }
 
     public abstract void start() throws IOException;
@@ -120,4 +130,73 @@ public abstract class Interface {
         };
         beaconTimer.schedule(beaconTimerTask, 5000, intervalMinutes * 60 * 1000);
     }
+
+    public boolean checkInboundConnection(ConnState state, AX25Callsign originator, Connector port) {
+        // Check PMS
+        for (Service service : KISSet.INSTANCE.getServices()) {
+            if (service.getCallsign() != null && state.getDst().toString().equalsIgnoreCase(service.getCallsign())) {
+                setupConnectionListener(service, state, originator, port);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * A connection has been accepted therefore we will set it up and also a listener to handle state changes
+     *
+     * @param state
+     * @param originator
+     * @param port
+     */
+    private void setupConnectionListener(Service service, ConnState state, AX25Callsign originator, Connector port) {
+        // If we're going to accept then add a listener so we can keep track of this connection state
+        state.listener = new ConnectionEstablishmentListener() {
+            @Override
+            public void connectionEstablished(Object sessionIdentifier, ConnState conn) {
+
+                Thread tx = new Thread(() -> {
+                    // Do inputty and outputty stream stuff here
+                    try {
+                        User user = new User();//KISSet.INSTANCE.getStorage().loadUser(conn.getSrc().getBaseCallsign());
+                        user.setBaseCallsign(conn.getSrc().getBaseCallsign());
+                        InputStream in = state.getInputStream();
+                        OutputStream out = state.getOutputStream();
+
+                        // This wrapper provides a simple way to terminate the connection when the outputstream
+                        // is also closed.
+                        OutputStream wrapped = new BufferedOutputStream(out) {
+                            @Override
+                            public void close() throws IOException {
+                                conn.close();
+                            }
+
+                        };
+
+                        service.acceptedConnection(user, in, wrapped);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                });
+                tx.start();
+
+            }
+
+            @Override
+            public void connectionNotEstablished(Object sessionIdentifier, Object reason) {
+                LOG.info("Connection not established from " + originator + " to " + state.getDst() + " for service " + service.getName());
+            }
+
+            @Override
+            public void connectionClosed(Object sessionIdentifier, boolean fromOtherEnd) {
+                LOG.info("Connection closed from " + originator + " to " + state.getDst() + " for service " + service.getName());
+            }
+
+            @Override
+            public void connectionLost(Object sessionIdentifier, Object reason) {
+                LOG.info("Connection lost from " + originator + " to " + state.getDst() + " for service " + service.getName());
+            }
+        };
+    }
+
 }

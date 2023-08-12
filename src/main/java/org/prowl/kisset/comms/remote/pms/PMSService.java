@@ -21,12 +21,10 @@ public class PMSService extends Service {
     private HierarchicalConfiguration config;
 
     private String callsign;
-    private String pmsAddress;
 
-    public PMSService(HierarchicalConfiguration config) {
-        super(config);
-        callsign = config.getString("callsign");
-        pmsAddress = config.getString("pmsAddress");
+    public PMSService(String name, String callsign) {
+        super(name);
+        this.callsign = callsign;
     }
 
     public void acceptedConnection(User user, InputStream in, OutputStream out) {

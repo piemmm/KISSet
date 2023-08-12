@@ -21,10 +21,16 @@ public enum Conf {
     // When someone connects to you
     connectGreetingText(""),
 
-    // Mailbox system
-    pmsActive(false),
-    pmsSSID(""),
+    // Mailbox service
+    pmsEnabled(true),
+    pmsSSID("-2"),
     pmsGreetingText(""),
+
+    // Net/ROM service
+    netromEnabled(true),
+    netromSSID("-1"),
+    netromAlias(""), // A blank alias, with enabled, will default to the last 3 letters of call+'NOD'
+    netromGreetingText(""),
 
     // Remote access - allows the user to connect, and access to the Mailbox system
     sshPort(0),

@@ -15,6 +15,8 @@ import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.prowl.kisset.comms.Service;
+import org.prowl.kisset.comms.remote.pms.PMSService;
 import org.prowl.kisset.config.Conf;
 import org.prowl.kisset.config.Config;
 import org.prowl.kisset.eventbus.SingleThreadBus;
@@ -34,8 +36,8 @@ import java.awt.desktop.AppReopenedEvent;
 import java.awt.desktop.AppReopenedListener;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Locale;
-import java.util.Scanner;
+import java.util.*;
+import java.util.List;
 
 public class KISSet extends Application {
 
@@ -47,6 +49,8 @@ public class KISSet extends Application {
     private Statistics statistics;
     private Stage monitorStage;
     private Storage storage;
+    protected List<Service> serviceList = Collections.synchronizedList(new ArrayList<>());
+
 
     public static void main(String[] args) {
         launch();
@@ -132,10 +136,7 @@ public class KISSet extends Application {
                     });
                 }
             });
-
-
         }
-
         createTrayIcon(stage);
     }
 
@@ -205,6 +206,17 @@ public class KISSet extends Application {
 
             initMonitor();
 
+            // Start services and bind them to the interface
+            boolean pmsEnabled = configuration.getConfig(Conf.pmsEnabled, Conf.pmsEnabled.boolDefault());
+            if (pmsEnabled) {
+                serviceList.add(new PMSService("PMS", getMyCallNoSSID()+configuration.getConfig(Conf.pmsSSID, Conf.pmsSSID.stringDefault())));
+            }
+
+            // Net/ROM
+            boolean netROMEnabled = configuration.getConfig(Conf.netromEnabled, Conf.netromEnabled.boolDefault());
+            if (netROMEnabled) {
+                //serviceList.add(new NetROMService("NETROM", getMyCallNoSSID()+configuration.getConfig(Conf.netromSSID, Conf.netromSSID.stringDefault())));
+            }
         } catch (Throwable e) {
             LOG.error(e.getMessage(), e);
             System.exit(1);
@@ -364,5 +376,9 @@ public class KISSet extends Application {
     public String getStationCapabilities() {
         return "APC";
     }
+
+    public List<Service> getServices() {
+        return serviceList;
+    };
 
 }
