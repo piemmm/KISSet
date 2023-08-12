@@ -20,6 +20,7 @@ package org.prowl.kisset.ax25;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.prowl.kisset.util.Tools;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -153,34 +154,53 @@ class AX25OutputStream extends OutputStream {
                 f.body = new byte[bufIdx];
                 System.arraycopy(buf, 0, f.body, 0, bufIdx);
 
+                // ijh this code is just weird (and didn't work)
                 // submit new frame to destination (blocking if window buffer is full)
-                int nextVS;
-                do {
-                    nextVS = connState.vs;
-                    if (connState.transmitWindow[nextVS] != null) {
-                        nextVS = (nextVS + 1) % (f.mod128 ? 128 : 8);
-                        while (connState.transmitWindow[nextVS] != null && nextVS != connState.vs) {
-                            nextVS = (nextVS + 1) % (f.mod128 ? 128 : 8);
+                ;
+//                do {
+//                    nextVS = connState.vs;
+//
+////                    if (connState.transmitWindow[nextVS] != null) {
+////                        v
+////                        while (connState.transmitWindow[nextVS] != null && nextVS != connState.vs) {
+////                            nextVS = (nextVS + 1) % (f.mod128 ? 128 : 8);
+////                        }
+////                    }
+//
+//                    // AX.25 Spec says we can transmit N(R)-1 frames before waiting for an ACK
+//                    //  int nextNextVS = (nextVS + 1 + (7 - connState.stack.maxFrames)) % (f.mod128 ? 128 : 8);
+//                    if (connState.transmitWindow[nextVS] == null) {
+//                        break;
+//                    }
+//                    // window buffer is completely full, wait until there is room
+//                    synchronized (connState) {
+//                        try {
+//                            wait(1000L);
+//                        } catch (InterruptedException e) {
+//                            // ignore
+//                        }
+//                    }
+//                    if (!connState.isOpen()) {
+//                        throw new EOFException("AX.25 connection closed");
+//                    }
+//                } while (true);
+
+                // A more sensible way to count the number of frames in the transmit window
+                // keeping to the N(R)-1 rule
+                int nextVS = connState.vs;
+                int counter = 60000;
+                while (counter + 2 >= (f.mod128 ? 128 : 8)) {
+                    counter = 0;
+                    for (AX25Frame frame : connState.transmitWindow) {
+                        if (frame != null) {
+                            counter++;
                         }
                     }
-
-                    // AX.25 Spec says we can transmit N(R)-1 frames before waiting for an ACK
-                    //  int nextNextVS = (nextVS + 1 + (7 - connState.stack.maxFrames)) % (f.mod128 ? 128 : 8);
-                    if (connState.transmitWindow[nextVS] == null) {
+                    if (counter+2 < (f.mod128 ? 128 : 8)) {
                         break;
                     }
-                    // window buffer is completely full, wait until there is room
-                    synchronized (connState) {
-                        try {
-                            wait(1000L);
-                        } catch (InterruptedException e) {
-                            // ignore
-                        }
-                    }
-                    if (!connState.isOpen()) {
-                        throw new EOFException("AX.25 connection closed");
-                    }
-                } while (true);
+                    Tools.delay(1000);
+                }
 
                 connState.transmitWindow[nextVS] = f;
 
