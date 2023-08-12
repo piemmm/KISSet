@@ -40,10 +40,12 @@ public class ReadMessage extends Command {
             } catch (NumberFormatException e) {
                 write("Invalid message number" + CR);
             }
+            return true;
         } else if (mode.equals(Mode.MESSAGE_READ_PAGINATION)) {
             sendMessage();
+            return true;
         }
-        return true;
+        return false;
     }
 
 

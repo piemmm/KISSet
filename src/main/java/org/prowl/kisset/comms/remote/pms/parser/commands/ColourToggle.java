@@ -2,6 +2,7 @@ package org.prowl.kisset.comms.remote.pms.parser.commands;
 
 import org.prowl.kisset.Messages;
 import org.prowl.kisset.annotations.PMSCommand;
+import org.prowl.kisset.comms.remote.pms.parser.Mode;
 
 import java.io.IOException;
 
@@ -17,6 +18,11 @@ public class ColourToggle extends Command {
      */
     @Override
     public boolean doCommand(String[] data) throws IOException {
+
+        if (!getMode().equals(Mode.CMD)) {
+            return false;
+        }
+
 
         client.setColourEnabled(!client.getColourEnabled());
         if (client.getColourEnabled()) {

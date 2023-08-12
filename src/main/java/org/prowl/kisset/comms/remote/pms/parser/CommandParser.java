@@ -72,28 +72,52 @@ public class CommandParser {
     }
 
     public void parse(String c) throws IOException {
-        if (mode == Mode.CMD || mode == Mode.MESSAGE_LIST_PAGINATION || mode == Mode.MESSAGE_READ_PAGINATION) {
+        try {
             String[] arguments = c.split(" "); // Arguments[0] is the command used.
+            if (mode == Mode.CMD || mode == Mode.MESSAGE_LIST_PAGINATION || mode == Mode.MESSAGE_READ_PAGINATION) {
 
-            // If the command matches, then we will send the command. It is up to the command to check the mode we are
-            // in and act accordingly.
-            boolean commandExecuted = false;
-            for (Command command : commands) {
-                String[] supportedCommands = command.getCommandNames();
-                for (String supportedCommand : supportedCommands) {
-                    if (supportedCommand.equalsIgnoreCase(arguments[0])) {
-                        commandExecuted = command.doCommand(arguments) | commandExecuted;
-                        // Stop when we executed a command.
-                        if (commandExecuted) {
+                // If the command matches, then we will send the command. It is up to the command to check the mode we are
+                // in and act accordingly.
+                boolean commandExecuted = false;
+                for (Command command : commands) {
+                    LOG.debug("Testing command:" + command.getClass().getSimpleName() + " " + arguments[0]);
+                    String[] supportedCommands = command.getCommandNames();
+                    for (String supportedCommand : supportedCommands) {
+                        if (supportedCommand.equalsIgnoreCase(arguments[0])) {
+                            commandExecuted = command.doCommand(arguments) | commandExecuted;
+                            LOG.debug("Test command:" + command.getClass().getSimpleName() + " " + commandExecuted);
+                            // Stop when we executed a command.
+                            if (commandExecuted) {
+                                break;
+                            }
+                        }
+                    }
+                    if (commandExecuted) {
+                        break;
+                    }
+                }
+
+                if (!commandExecuted && arguments[0].length() > 0) {
+                    unknownCommand();
+                }
+                sendPrompt();
+            } else {
+                // Try in case of a paticular mode setting requires 'no command' when outside of command mode
+                if (!mode.equals(org.prowl.kisset.comms.host.parser.Mode.CMD)) {
+                    for (Command command : commands) {
+                        if (command.doCommand(arguments)) {
+                            LOG.debug("Command executed: " + command.getClass().getSimpleName());
                             break;
                         }
                     }
+
                 }
             }
-            if (!commandExecuted && arguments[0].length() > 0) {
-                unknownCommand();
-            }
-            sendPrompt();
+
+        } catch (Throwable e) {
+            LOG.error(e.getMessage(), e);
+            write("*** Error: " + e.getMessage() + CR);
+
         }
     }
 

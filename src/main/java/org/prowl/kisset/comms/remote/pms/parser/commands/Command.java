@@ -48,6 +48,10 @@ public abstract class Command {
         client.send(s);
     }
 
+    public void flush() throws IOException {
+        client.flush();
+    }
+
     public Mode getMode() {
         return commandParser.getMode();
     }

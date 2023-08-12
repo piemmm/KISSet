@@ -13,6 +13,8 @@ public class Abort extends Command {
 
     @Override
     public boolean doCommand(String[] data) throws IOException {
+
+
         if (getMode().equals(Mode.MESSAGE_LIST_PAGINATION) || getMode().equals(Mode.MESSAGE_READ_PAGINATION)) {
             write(ANSI.BOLD + Messages.get("abortMessageList") + ANSI.NORMAL + CR);
             popModeFromStack();
