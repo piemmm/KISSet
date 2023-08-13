@@ -4,7 +4,7 @@ A terminal program for connecting to a TNC or modem that only support the KISS p
 
 ### Installers/Packages
 
-Releases are available for:<br /><a href="https://github.com/piemmm/KISSet/releases/tag/windows-latest">Windows</a> (.exe file)
+Releases are available for:<br /><a href="https://github.com/piemmm/KISSet/releases/tag/windows-latest">Windows</a> (.msi file)
 <br/><a href="https://github.com/piemmm/KISSet/releases/tag/ubuntu-latest">Linux</a> (.deb file)
 <br/><a href="https://github.com/piemmm/KISSet/releases/tag/macos-latest">Macos</a> (.dmg file)
 
