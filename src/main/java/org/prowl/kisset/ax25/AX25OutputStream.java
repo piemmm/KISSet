@@ -196,7 +196,7 @@ class AX25OutputStream extends OutputStream {
                             counter++;
                         }
                     }
-                    if (counter+2 < (f.mod128 ? 128 : 8)) {
+                    if (counter+2 < (f.mod128 ? 128 : 8) && counter < connState.stack.maxFrames) {
                         break;
                     }
                     Tools.delay(1000);
