@@ -12,7 +12,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <junit.version>5.9.2</junit.version>
+        <junit.version>5.10.0</junit.version>
 
         <!-- Set this to the class with the main method for your application -->
         <main-class>org.prowl.kisset.KISSet</main-class>
