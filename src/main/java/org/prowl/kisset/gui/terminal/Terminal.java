@@ -24,6 +24,11 @@ package org.prowl.kisset.gui.terminal;
 
 
 import javafx.application.Platform;
+import javafx.scene.canvas.GraphicsContext;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.jfree.fx.FXGraphics2D;
+import org.prowl.kisset.util.Tools;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
@@ -33,6 +38,8 @@ import java.io.OutputStream;
 
 
 public class Terminal implements Term {
+
+    private static final Log LOG = LogFactory.getLog("Term");
 
 
     private final Object[] colors = {Color.black, Color.red, Color.green,
@@ -67,6 +74,8 @@ public class Terminal implements Term {
     private int line_space = 0;
     private int compression = 0;
     private boolean antialiasing = true;
+
+    private Thread redrawThread;
 
     public Terminal() {
 
@@ -204,14 +213,41 @@ public class Terminal implements Term {
         connection = null;
     }
 
-    public void paintComponent(Graphics2D g) {
+    public synchronized void paintComponent(Graphics2D g) {
         this.paintGraphics = g;
         //  Platform.runLater(() -> {
 
-        //  super.paintComponent(g);
-        if (img != null && g != null) {
-            g.drawImage(img, 0, 0, term_area);
+        if (redrawThread == null) {
+            redrawThread = new Thread() {
+
+                public void reset() {
+
+                }
+
+                public void run() {
+                    Tools.delay(100);
+                      Platform.runLater(() -> {
+
+                          redrawThread = null;
+                          if (g instanceof FXGraphics2D) {
+                              // memory leak workaround
+                              LOG.debug("clearing graphics");
+                              g.clearRect(0, 0, img.getWidth(), img.getHeight());
+                          }
+                          //  super.paintComponent(g);
+                          if (img != null && g != null) {
+                              g.drawImage(img, 0, 0, term_area);
+                          }
+                      });
+                }
+
+
+            };
+            redrawThread.start();
         }
+
+
+
         //  });
     }
 
