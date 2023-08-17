@@ -22,6 +22,10 @@ import java.util.List;
 @TNCCommand
 public class Routes extends Command {
 
+    private static final long HOUR = 1000 * 60 * 60;
+    private static final long TWO_HOUR = 1000 * 60 * 60 * 2;
+
+
     @Override
     public boolean doCommand(String[] data) throws IOException {
 
@@ -33,10 +37,21 @@ public class Routes extends Command {
         // Get the routes and interate
         List<NetROMNode> nodes = RoutingTable.INSTANCE.getNodes();
         if (nodes.size()> 0) {
-            writeToTerminal("List of Net/ROM routes seen from local nodes:" + CR);
+            writeToTerminal(ANSI.BOLD+ANSI.UNDERLINE+"List of Net/ROM routes seen from local nodes:"+ANSI.NORMAL + CR);
 
+            long now = System.currentTimeMillis();
             for (NetROMNode node : nodes) {
-                writeToTerminal(node.toString() + CR);
+
+                String color;
+                if (now - node.getLastHeard() < HOUR) {
+                    color = ANSI.GREEN;
+                } else if (now - node.getLastHeard() < TWO_HOUR) {
+                    color = ANSI.YELLOW;
+                } else {
+                    color = ANSI.RED;
+                }
+                writeToTerminal(color);
+                writeToTerminal(node.toString() + ANSI.NORMAL+CR);
             }
         } else {
             writeToTerminal("***  No routes seen yet" + CR);

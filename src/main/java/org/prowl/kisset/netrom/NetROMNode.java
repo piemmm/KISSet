@@ -48,6 +48,10 @@ public class NetROMNode {
         return bestQualityValue;
     }
 
+    public long getLastHeard() {
+        return lastHeard;
+    }
+
     public String toString() {
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yy HH:mm:ss");
         StringBuilder builder = new StringBuilder();
