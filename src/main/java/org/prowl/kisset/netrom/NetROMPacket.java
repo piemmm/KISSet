@@ -1,23 +1,20 @@
 package org.prowl.kisset.netrom;
 
-import org.prowl.kisset.ax25.AX25Callsign;
-import org.prowl.kisset.ax25.AX25Frame;
 import org.prowl.kisset.core.Node;
 import org.prowl.kisset.util.ANSI;
 import org.prowl.kisset.util.PacketTools;
 import org.prowl.kisset.util.Tools;
 
 import java.nio.ByteBuffer;
-import java.util.StringTokenizer;
 
 /**
  * Example packets seen:
- *
+ * <p>
  * AX25Frame[GB7MNK-1<GB7OUK,ctl=16,pid=cf,#=20]  body=8E 84 6E 9E AA 96 60 96 8A 8A A0 98 92 E0 01 00 00 00 00 05
- *
+ * <p>
  * session start: AX25Frame[GB7MNK-1<GB7OUK,ctl=3a,pid=cf,#=22]  body=8E 84 6E 9E AA 96 01 8E 84 6E 9A 9C 96 02 19 01 C4 00 90 02 04 19
  * AX25Frame[GB7MNK-1<GB7OUK,ctl=3c,pid=cf,#=165]  body=8E 84 6E 9E AA 96 60 8E 84 6E 9A 9C 96 02 19 01 C4 00 00 05 57 65 6C 63 6F 6D 65 20 74 6F 20 74 68 65 20 4F 6E 6C 69 6E 65 20 41 6D 61 74 65 75 72 20 52 61 64 69 6F 20 43 6F 6D 6D 75 6E 69 74 79 20 50 72 6F 74 6F 74 79 70 65 20 4E 6F 64 65 20 0D 4C 6F 63 61 6C 20 43 6F 6D 6D 61 6E 64 73 3E 20 43 48 41 54 20 43 4F 4E 4E 45 43 54 20 42 59 45 20 49 4E 46 4F 20 4E 45 57 53 20 4E 4F 44 45 53 20 52 4F 55 54 45 53 20 50 4F 52 54 53 20 54 45 4C 53 54 41 52 20 55 53 45 52 53 20 4D 48 45 41 52 44 0D
- *AX25Frame[GB7MNK-1<GB7OUK,ctl=7e,pid=cf,#=20]  body=8E 84 6E 9E AA 96 60 8E 84 6E 9A 9C 96 02 19 01 C4 00 00 03
+ * AX25Frame[GB7MNK-1<GB7OUK,ctl=7e,pid=cf,#=20]  body=8E 84 6E 9E AA 96 60 8E 84 6E 9A 9C 96 02 19 01 C4 00 00 03
  */
 public class NetROMPacket {
 
@@ -68,7 +65,7 @@ public class NetROMPacket {
         opCode = opCodeAndFlags & 0x0F;
 
         body = new byte[buffer.remaining()];
-        System.arraycopy(buffer.array(), buffer.position(), body,0, buffer.remaining());
+        System.arraycopy(buffer.array(), buffer.position(), body, 0, buffer.remaining());
 
 
     }
@@ -140,8 +137,29 @@ public class NetROMPacket {
         sb.append("\r\n nakFlag=").append(nakFlag);
         sb.append("\r\n moreFollowsFlag=").append(moreFollowsFlag);
         sb.append("\r\n reserved=").append(reserved);
-        sb.append("\r\n opCode=").append(opCode);
-        sb.append("\r\n body:"+ ANSI.NORMAL).append(Tools.byteArrayToReadableASCIIString(body));
+        String name;
+        switch (opCode) {
+            case 1:
+                name = "Connect Request";
+                break;
+            case 2:
+                name = "Connect Acknowledge";
+                break;
+            case 3:
+                name = "Disconnect Request";
+                break;
+            case 4:
+                name = "Disconnect Acknowledge";
+                break;
+            case 5:
+                name = "Information Transfer";
+                break;
+            default:
+                name = "unknown";
+        }
+
+        sb.append("\r\n opCode=").append(opCode).append(" (").append(name).append(")");
+        sb.append("\r\n body:" + ANSI.NORMAL).append(Tools.byteArrayToReadableASCIIString(body));
         return sb.toString();
     }
 
