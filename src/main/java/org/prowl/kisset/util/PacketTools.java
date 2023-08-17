@@ -35,6 +35,20 @@ public class PacketTools {
             }
         }
 
+        // Check for SSID
+        if (length == 7) {
+            if (callsign[callsign.length - 1] > 0x20) {
+                try {
+                    // Stick the SSID on the end of the callsign after trimming it.
+                    int ssid = Integer.parseInt(new String(new byte[]{callsign[callsign.length - 1]}), 16);
+                    return new String(callsign, 0, callsign.length - 1).trim() + "-" + ssid;
+                } catch(Throwable e) {
+                    //LOG.error(e.getMessage(), e);
+                    // Ignore, because netrom keepalive packets don't have an SSID and are 7 characters.
+                }
+            }
+        }
+
         return new String(callsign).trim();
     }
 
