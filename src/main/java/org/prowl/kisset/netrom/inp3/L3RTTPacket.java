@@ -1,7 +1,10 @@
 package org.prowl.kisset.netrom.inp3;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.prowl.kisset.core.Node;
 import org.prowl.kisset.util.PacketTools;
+import org.prowl.kisset.util.Tools;
 
 import java.nio.ByteBuffer;
 import java.util.StringTokenizer;
@@ -10,6 +13,9 @@ import java.util.StringTokenizer;
  * This represents an INP3 L3RTT packet
  */
 public class L3RTTPacket {
+
+    private static final Log LOG = LogFactory.getLog("L3RTTPacket");
+
 
     private String l3src;
     private String l3dst;
@@ -89,8 +95,23 @@ public class L3RTTPacket {
         int z4 = buffer.get() & 0xFF; // Skip the 0x00 byte
         int b1 = buffer.get() & 0xFF; // Skip the 0x05 byte
 
-        if (z1 == 0 && z2 == 0 && z3 == 0 && z4 == 0 && b1 == 5) {
-            return true;
+        // If it just stops then it's not an L3RTT packet.
+        if (!buffer.hasRemaining()) {
+            return false;
+        }
+
+        try {
+            String textPortion = new String(buffer.array(), buffer.position(), buffer.remaining());
+            StringTokenizer st = new StringTokenizer(textPortion, " ");
+
+            // Now decode the payload
+            String fid = st.nextToken();
+
+            if (z1 == 0 && z2 == 0 && z3 == 0 && z4 == 0 && b1 == 5 && fid.equals("L3RTT:")) {
+                return true;
+            }
+        } catch(Throwable e) {
+            LOG.debug("Invalid L3RTT packet:" + Tools.byteArrayToReadableASCIIString(node.getFrame().getBody()), e);
         }
         return false;
     }
