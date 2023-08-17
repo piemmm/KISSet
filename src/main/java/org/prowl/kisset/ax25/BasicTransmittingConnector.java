@@ -5,6 +5,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.prowl.kisset.util.Tools;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -153,7 +154,7 @@ public class BasicTransmittingConnector extends Connector implements Transmittin
      * @return boolean true if this callsign is for the local station
      */
     public boolean isLocalDest(String destCallsign) {
-       // Default callsign test.
+        // Default callsign test.
         return (getCallsign() != null && destCallsign.equalsIgnoreCase(getCallsign())) || stack.getConnectionRequestListener().isLocal(destCallsign);
     }
 
@@ -257,6 +258,7 @@ public class BasicTransmittingConnector extends Connector implements Transmittin
     }
 
     public void stop() {
+        LOG.debug("Stopping:" + this);
         try {
             in.close();
         } catch (Throwable e) {
@@ -269,84 +271,73 @@ public class BasicTransmittingConnector extends Connector implements Transmittin
         while (in != null) {
             int newData;
             try {
-                int availBytes;
-                if ((availBytes = in.available()) > 0) {
-                    for (int count = 0; count < availBytes; count++) {
-                        if (in == null) {
-                            break;
+                if (in == null) {
+                    break;
+                }
+                newData = in.read();//shortBuf[0] & 0xFF;
+                if (newData == -1) {
+                    break;
+                }
+                switch (curState) {
+                    case IDLE:
+                        if (KissEscapeOutputStream.FEND == newData) {
+                            curState = KissEscapeOutputStream.RcvState.IN_FRAME;
+                            wEnd = 0;
                         }
-                        // The read(b[], off, len) method is used instead of read() because
-                        // SocketInputStream's internal implementation of read() malloc's a 1-element
-                        // byte array and then calls read(b[], off, len) on that array for each
-                        // byte. This way, we save CPU time and stop malloc'ing so many tiny
-                        // buffer arrays.
-                        if (in.read(shortBuf, 0, 1) > 0) {
-                            newData = shortBuf[0] & 0xFF;
-                            switch (curState) {
-                                case IDLE:
-                                    if (KissEscapeOutputStream.FEND == newData) {
-                                        curState = KissEscapeOutputStream.RcvState.IN_FRAME;
-                                        wEnd = 0;
-                                    }
-                                    break;
-                                case IN_FRAME:
-                                    switch (newData) {
-                                        case KissEscapeOutputStream.FEND:
-                                            // send the just-finished frame up to the next layer
-                                            if (wEnd > 1) {
-                                                // not just a stream of frame borders....
-                                                sendDecodedKissFrameToParser();
-                                            }
-                                            // reset the receive buffer for the next frame
-                                            wEnd = 0;
-                                            frameStartTime = -1L;
-                                            //   fireReceiving(false);
-                                            break;
-                                        case KissEscapeOutputStream.FESC:
-                                            if (-1L == frameStartTime) {
-                                                frameStartTime = System.currentTimeMillis();
-                                                // fireReceiving(true);
-                                            }
-                                            curState = KissEscapeOutputStream.RcvState.IN_ESC;
-                                            break;
-                                        default:
-                                            long now = System.currentTimeMillis();
-                                            if (-1L == frameStartTime) {
-                                                frameStartTime = now;
-                                                // fireReceiving(true);
-                                            }
-                                            if (wEnd < rcvBuf.length) {
-                                                rcvBuf[wEnd++] = (byte) newData;
-                                            } else {
-                                                // some kind of protocol error, so reset and start over
-                                                LOG.debug(debugTag + "receive buffer overflow, must be mode garbling, reset protocol");
-                                                wEnd = 0;
-                                                //  fireReceiving(false);
-                                                curState = KissEscapeOutputStream.RcvState.IDLE;
-                                            }
-                                            break;
-                                    }
-                                    break;
-                                case IN_ESC:
-                                    //stats.numRcvBytes++;
-                                    switch (newData) {
-                                        case KissEscapeOutputStream.TFEND:
-                                            rcvBuf[wEnd++] = (byte) KissEscapeOutputStream.FEND;
-                                            break;
-                                        case KissEscapeOutputStream.TFESC:
-                                            rcvBuf[wEnd++] = (byte) KissEscapeOutputStream.FESC;
-                                            break;
-                                        default:
-                                            rcvBuf[wEnd++] = (byte) newData;
-                                            break;
-                                    }
-                                    curState = KissEscapeOutputStream.RcvState.IN_FRAME;
-                                    break;
-                            }
+                        break;
+                    case IN_FRAME:
+                        switch (newData) {
+                            case KissEscapeOutputStream.FEND:
+                                // send the just-finished frame up to the next layer
+                                if (wEnd > 1) {
+                                    // not just a stream of frame borders....
+                                    sendDecodedKissFrameToParser();
+                                }
+                                // reset the receive buffer for the next frame
+                                wEnd = 0;
+                                frameStartTime = -1L;
+                                //   fireReceiving(false);
+                                break;
+                            case KissEscapeOutputStream.FESC:
+                                if (-1L == frameStartTime) {
+                                    frameStartTime = System.currentTimeMillis();
+                                    // fireReceiving(true);
+                                }
+                                curState = KissEscapeOutputStream.RcvState.IN_ESC;
+                                break;
+                            default:
+                                long now = System.currentTimeMillis();
+                                if (-1L == frameStartTime) {
+                                    frameStartTime = now;
+                                    // fireReceiving(true);
+                                }
+                                if (wEnd < rcvBuf.length) {
+                                    rcvBuf[wEnd++] = (byte) newData;
+                                } else {
+                                    // some kind of protocol error, so reset and start over
+                                    LOG.debug(debugTag + "receive buffer overflow, must be mode garbling, reset protocol");
+                                    wEnd = 0;
+                                    //  fireReceiving(false);
+                                    curState = KissEscapeOutputStream.RcvState.IDLE;
+                                }
+                                break;
                         }
-                    }
-                } else {
-                    Thread.sleep(20L); // stall a little while to keep the CPU from thrashing waiting for bytes
+                        break;
+                    case IN_ESC:
+                        //stats.numRcvBytes++;
+                        switch (newData) {
+                            case KissEscapeOutputStream.TFEND:
+                                rcvBuf[wEnd++] = (byte) KissEscapeOutputStream.FEND;
+                                break;
+                            case KissEscapeOutputStream.TFESC:
+                                rcvBuf[wEnd++] = (byte) KissEscapeOutputStream.FESC;
+                                break;
+                            default:
+                                rcvBuf[wEnd++] = (byte) newData;
+                                break;
+                        }
+                        curState = KissEscapeOutputStream.RcvState.IN_FRAME;
+                        break;
                 }
             } catch (SocketException e) {
                 //  fireFailed();
@@ -354,7 +345,13 @@ public class BasicTransmittingConnector extends Connector implements Transmittin
                 if (detail.indexOf(" closed") >= 0 || detail.indexOf(" reset") >= 0) {
                     //   tryToRestartConnection(detail);
                 }
+                curState = KissEscapeOutputStream.RcvState.IDLE;
+                in = null;
             } catch (SerialPortIOException e) {
+                LOG.info("Serial port closed (probably reopening due to configuration change)");
+                curState = KissEscapeOutputStream.RcvState.IDLE;
+                in = null;
+            } catch(EOFException e) {
                 LOG.info("Serial port closed (probably reopening due to configuration change)");
                 curState = KissEscapeOutputStream.RcvState.IDLE;
                 in = null;
@@ -364,6 +361,8 @@ public class BasicTransmittingConnector extends Connector implements Transmittin
                 LOG.error("unhandled exception in KissOverTcpConnector:" + e.getMessage(), e);
                 // discard this frame
                 curState = KissEscapeOutputStream.RcvState.IDLE;
+                in = null;
+
             }
         }
 
@@ -529,7 +528,7 @@ public class BasicTransmittingConnector extends Connector implements Transmittin
      */
     public void sendUI(String destinationCallsign, byte[] data) {
         try {
-            LOG.debug("Sending UI frame to " + destinationCallsign + " contents:"+ Tools.byteArrayToReadableASCIIString(data));
+            LOG.debug("Sending UI frame to " + destinationCallsign + " contents:" + Tools.byteArrayToReadableASCIIString(data));
             AX25Frame uiFrame = new AX25Frame();
             uiFrame.sender = defaultCallsign;
             uiFrame.dest = new AX25Callsign(destinationCallsign);
