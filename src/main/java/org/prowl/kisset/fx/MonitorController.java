@@ -158,19 +158,19 @@ public class MonitorController {
                 });
             });
 
-            // Start the reader thread for the client.
-            Tools.runOnThread(() -> {
-                try {
-                    InputStreamReader reader = new InputStreamReader(outpis);
-                    BufferedReader bin = new BufferedReader(reader);
-                    String inLine;
-                    while ((inLine = bin.readLine()) != null) {
-                        //parser.parse(inLine);
-                    }
-                } catch (Exception e) {
-                    LOG.error(e.getMessage(), e);
-                }
-            });
+//            // Start the reader thread for the client.
+//            Tools.runOnThread(() -> {
+//                try {
+//                    InputStreamReader reader = new InputStreamReader(outpis);
+//                    BufferedReader bin = new BufferedReader(reader);
+//                    String inLine;
+//                    while ((inLine = bin.readLine()) != null) {
+//                        //parser.parse(inLine);
+//                    }
+//                } catch (Exception e) {
+//                    LOG.error(e.getMessage(), e);
+//                }
+//            });
 
 
             try {
@@ -259,7 +259,7 @@ public class MonitorController {
                 // memory leak workaround
                 GraphicsContext gc = this.getGraphicsContext2D();
                 gc.clearRect(0, 0, width, height);
-
+                System.gc();
                 this.terminal.paintComponent(g2);
             });
         }

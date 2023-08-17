@@ -264,6 +264,7 @@ public class KISSetController {
                 // memory leak workaround
                 GraphicsContext gc = this.getGraphicsContext2D();
                 gc.clearRect(0, 0, width, height);
+                System.gc();
 
                 this.terminal.paintComponent(g2);
             });

@@ -231,13 +231,13 @@ public class Terminal implements Term {
                           redrawThread = null;
                           if (g instanceof FXGraphics2D) {
                               // memory leak workaround
-                              LOG.debug("clearing graphics");
                               g.clearRect(0, 0, img.getWidth(), img.getHeight());
                           }
                           //  super.paintComponent(g);
                           if (img != null && g != null) {
                               g.drawImage(img, 0, 0, term_area);
                           }
+                          System.gc();
                       });
                 }
 
