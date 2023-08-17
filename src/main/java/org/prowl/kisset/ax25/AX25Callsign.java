@@ -255,7 +255,7 @@ public final class AX25Callsign implements Comparable<AX25Callsign>, Cloneable, 
      */
     public AX25Callsign(byte[] buf, int offset, int length) throws IndexOutOfBoundsException, IllegalArgumentException {
         if (length < 7 || buf.length - offset < length) {
-            throw new IndexOutOfBoundsException("not enough data left for callsign");
+            throw new IndexOutOfBoundsException("not enough data left for callsign: len=" + length+"  buflen="+buf.length+"  off="+offset);
         }
         char[] b = new char[6];
         int len = 0;

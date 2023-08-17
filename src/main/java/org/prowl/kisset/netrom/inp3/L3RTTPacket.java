@@ -49,6 +49,7 @@ public class L3RTTPacket {
         int z4 = buffer.get() & 0xFF; // Skip the 0x00 byte
         int b1 = buffer.get() & 0xFF; // Skip the 0x05 byte
 
+
         String textPortion = new String(buffer.array(), buffer.position(), buffer.remaining());
         StringTokenizer st = new StringTokenizer(textPortion," ");
 
@@ -66,6 +67,32 @@ public class L3RTTPacket {
 
         l3ttl--;
 
+    }
+
+    /**
+     * Is this a valid L3RTT packet?
+     * @param node
+     * @return
+     */
+    public static boolean isL3RTT(Node node) {
+
+        ByteBuffer buffer = ByteBuffer.wrap(node.getFrame().getBody());
+        // Src and dest callsigns
+        PacketTools.getData(buffer, 7, true);
+        PacketTools.getData(buffer, 7, true);
+        int ttl = buffer.get() & 0xFF;
+
+        // Dummy L4 header
+        int z1 = buffer.get() & 0xFF; // Skip the 0x00 byte
+        int z2 = buffer.get() & 0xFF; // Skip the 0x00 byte
+        int z3 = buffer.get() & 0xFF; // Skip the 0x00 byte
+        int z4 = buffer.get() & 0xFF; // Skip the 0x00 byte
+        int b1 = buffer.get() & 0xFF; // Skip the 0x05 byte
+
+        if (z1 == 0 && z2 == 0 && z3 == 0 && z4 == 0 && b1 == 5) {
+            return true;
+        }
+        return false;
     }
 
     public String getL3src() {

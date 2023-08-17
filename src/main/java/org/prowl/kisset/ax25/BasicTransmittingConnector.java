@@ -370,20 +370,25 @@ public class BasicTransmittingConnector extends Connector implements Transmittin
 
 
     public void sendDecodedKissFrameToParser() {
-        // Get the type byte from the frame.
-        int dataType = rcvBuf[0] & 0xFF;
-        switch (dataType) {
-            case 0: // Normal KISS data frame.
-                AX25Frame frame = AX25Frame.decodeFrame(rcvBuf, 1, wEnd - 1, stack);
-                // Frame will be null if it was invalid, so we will ignore it.
-                if (frame != null) {
-                    stack.consumeFrameNow(this, frame);
-                }
-                break;
-            case 6: // KISS SetHardware reply
-            default:
-                LOG.warn("Received non-AX.25 frame type: " + dataType + " (ignoring)");
+        try {
+            // Get the type byte from the frame.
+            int dataType = rcvBuf[0] & 0xFF;
+            switch (dataType) {
+                case 0: // Normal KISS data frame.
+                    AX25Frame frame = AX25Frame.decodeFrame(rcvBuf, 1, wEnd - 1, stack);
+                    // Frame will be null if it was invalid, so we will ignore it.
+                    if (frame != null) {
+                        stack.consumeFrameNow(this, frame);
+                    }
+                    break;
+                case 6: // KISS SetHardware reply
+                default:
+                    LOG.warn("Received non-AX.25 frame type: " + dataType + " (ignoring)");
 
+            }
+        } catch(Throwable e) {
+            LOG.error("Exception whilst processing KISS frame: " + Tools.byteArrayToReadableASCIIString(rcvBuf), e);
+            LOG.error("Stacktrace:  " + e.getMessage(), e);
         }
     }
 

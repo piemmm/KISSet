@@ -10,6 +10,7 @@ import org.prowl.kisset.KISSet;
 import org.prowl.kisset.ax25.AX25Frame;
 import org.prowl.kisset.core.Node;
 import org.prowl.kisset.eventbus.events.HeardNodeEvent;
+import org.prowl.kisset.netrom.NetROMPacket;
 import org.prowl.kisset.netrom.NetROMRoutingPacket;
 import org.prowl.kisset.netrom.inp3.L3RTTPacket;
 
@@ -72,10 +73,13 @@ public class PacketTools {
             if ((node.getFrame().getBody()[0] & 0xFF) == 0xFF) {
                 NetROMRoutingPacket netROMRoutingPacket = new NetROMRoutingPacket(node);
                 return netROMRoutingPacket.toString();
-            } else {
+            } else if (L3RTTPacket.isL3RTT(node)) {
                 // Check to see if this is INP3/L3RTT
                 L3RTTPacket l3rttPacket = new L3RTTPacket(node);
                 return l3rttPacket.toString();
+            } else {
+                NetROMPacket netROMPacket = new NetROMPacket(node);
+                return netROMPacket.toString();
             }
         } catch (Throwable e) {
             LOG.error(e.getMessage(), e);
