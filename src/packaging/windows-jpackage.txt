@@ -1,7 +1,7 @@
 --type msi
 --name ${app.name}
 --win-menu
---win-menu-group ${windows.vendor}
+--win-menu-group HamRadio
 --vendor ${windows.vendor}
 --icon "${project.basedir}/app-icon.ico"
 --dest "${project.build.directory}"
