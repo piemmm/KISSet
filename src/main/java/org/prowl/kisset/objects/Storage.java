@@ -2,10 +2,11 @@ package org.prowl.kisset.objects;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.prowl.kisset.netrom.RoutingTable;
 import org.prowl.kisset.objects.messages.Message;
+import org.prowl.kisset.objects.netrom.NetROMNode;
 
 import java.io.*;
 import java.util.*;
@@ -22,6 +23,7 @@ public class Storage {
     private static final Log LOG = LogFactory.getLog("Storage");
     private static final String STORAGE_LOCATION = "storage";
     private static final String NEWS = "news";
+    private static final String NETROM = "netrom";
     private static final String USER = "user";
     // Cache of messages
     private static final Cache<String, Message> BIDMIDToMsg = CacheBuilder.newBuilder().maximumSize(10000).expireAfterAccess(7, TimeUnit.DAYS).build();
@@ -222,7 +224,6 @@ public class Storage {
     }
 
 
-
     /**
      * Retrieve a news message
      * <p>
@@ -343,5 +344,79 @@ public class Storage {
         return highest;
     }
 
+    public static void write(DataOutputStream dout, long i) throws IOException {
+        dout.writeLong(i);
+    }
+
+    public static void write(DataOutputStream dout, int i) throws IOException {
+        dout.writeInt(i);
+    }
+
+    public static void write(DataOutputStream dout, String s) throws IOException {
+        // String.length measures UTF units, which is no good to use, so we will use the
+        // byte array size
+        byte[] b = s.getBytes();
+        dout.writeInt(b.length);
+        dout.write(b);
+    }
+
+
+    public File getRouteFile() {
+        File routeFile = new File(locationDir.getAbsolutePath() + File.separator + NETROM + File.separator + "routes.dat");
+        routeFile.getParentFile().mkdirs();
+        return routeFile;
+    }
+
+    /**
+     * Save the NetROM routing table to disk in a single file
+     */
+    public void saveNetROMRoutingTable() {
+        List<NetROMNode> nodes = new ArrayList<>(RoutingTable.INSTANCE.getNodes());
+
+        File routeFile = getRouteFile();
+        routeFile.delete();
+
+        try (FileOutputStream fos = new FileOutputStream(routeFile);
+             DataOutputStream dout = new DataOutputStream(fos)) {
+
+            dout.writeInt(nodes.size());
+            for (NetROMNode node : nodes) {
+                dout.write(node.toPacket());
+            }
+            dout.flush();
+
+        } catch (Throwable e) {
+            LOG.error("Error saving NetROM routing table", e);
+        }
+    }
+
+    /**
+     * Load the NetROM routing table from disk, removing any that have 'expired'.
+     */
+    public void loadNetROMRoutingTable() {
+
+        File routeFile = getRouteFile();
+        if (!routeFile.exists()) {
+            LOG.info("No existing NetROM routing table found to load");
+            return;
+        }
+
+        try (FileInputStream fin = new FileInputStream(routeFile);
+             DataInputStream din = new DataInputStream(fin)) {
+
+            int count = din.readInt();
+            for (int i = 0; i < count; i++) {
+                NetROMNode node = new NetROMNode();
+                node.fromPacket(din);
+                if (!node.isExipred()) {
+                    RoutingTable.INSTANCE.addNode(node);
+                }
+            }
+
+        } catch (Throwable e) {
+            LOG.error("Error loading NetROM routing table", e);
+        }
+
+    }
 
 }

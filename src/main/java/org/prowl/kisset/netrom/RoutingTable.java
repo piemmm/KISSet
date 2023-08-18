@@ -1,5 +1,7 @@
 package org.prowl.kisset.netrom;
 
+import org.prowl.kisset.objects.netrom.NetROMNode;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -60,7 +62,7 @@ public enum RoutingTable {
     public NetROMNode getRoutingToCallsign(String callsignToConnectTo) {
         NetROMNode bestNode = null;
         for (NetROMNode node : nodes) {
-            if (node.getSourceCallsign().equals(callsignToConnectTo)) {
+            if (node.getDestinationNodeCallsign().equals(callsignToConnectTo) || node.getDestinationNodeMnemonic().equals(callsignToConnectTo)) {
                 if (bestNode == null) {
                     bestNode = node;
                 } else {

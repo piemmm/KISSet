@@ -32,4 +32,5 @@ module org.prowl.kisset {
     exports org.prowl.kisset.comms.host;
     exports org.prowl.kisset.comms.remote.pms;
     opens org.prowl.kisset.fx to javafx.fxml;
+    exports org.prowl.kisset.objects.netrom;
 }

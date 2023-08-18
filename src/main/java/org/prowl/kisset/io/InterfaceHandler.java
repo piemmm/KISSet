@@ -103,6 +103,20 @@ public class InterfaceHandler {
     }
 
     /**
+     * Get the interface that services the requested radio port by uuid
+     * @param uuid the uuid of the interface
+     * @return the interface, or null if the interface does not exist
+     */
+    public Interface getInterfaceByUUID(String uuid) {
+        for (Interface iface : interfaces) {
+            if (iface.getUUID().equals(uuid)) {
+                return iface;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Returns a list of interfaces
      *
      * @return

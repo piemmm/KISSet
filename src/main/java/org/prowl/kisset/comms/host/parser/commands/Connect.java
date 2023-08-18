@@ -10,6 +10,8 @@ import org.prowl.kisset.comms.host.parser.misc.StreamConnectionEstablishmentList
 import org.prowl.kisset.io.Interface;
 import org.prowl.kisset.io.Stream;
 import org.prowl.kisset.io.StreamState;
+import org.prowl.kisset.objects.netrom.NetROMNode;
+import org.prowl.kisset.netrom.RoutingTable;
 
 import java.io.IOException;
 
@@ -58,6 +60,12 @@ public class Connect extends Command {
             return true;
         }
 
+        // See if there is a Net/ROM route to the specified callsign
+//        NetROMNode node = RoutingTable.INSTANCE.getRoutingToCallsign(data[1].toUpperCase());
+//        if (node != null) {
+//            writeToTerminal("*** There is a Net/ROM route to " + data[1].toUpperCase() + " via " + node.getSourceCallsign() + CR);
+//        }
+
         Stream currentStream = anInterface.getCurrentStream();
         // connect: C GB7MNK
         if (data.length == 2) {
@@ -74,7 +82,8 @@ public class Connect extends Command {
             anInterface.getCurrentStream().setStreamState(StreamState.CONNECTING);
             currentStream.setRemoteCall(station);
             anInterface.connect(data[2].toUpperCase(), KISSet.INSTANCE.getMyCall(), new StreamConnectionEstablishmentListener(commandParser, stream));
-
+        } else {
+            writeToTerminal("*** Usage: connect [<port number>] <station>" + CR);
         }
 
         writeToTerminal(CR);

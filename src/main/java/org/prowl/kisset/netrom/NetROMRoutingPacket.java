@@ -3,6 +3,7 @@ package org.prowl.kisset.netrom;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.prowl.kisset.core.Node;
+import org.prowl.kisset.objects.netrom.NetROMNode;
 import org.prowl.kisset.util.PacketTools;
 
 import java.nio.ByteBuffer;
