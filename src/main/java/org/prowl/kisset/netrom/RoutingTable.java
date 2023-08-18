@@ -50,4 +50,27 @@ public enum RoutingTable {
         nodes.clear();
     }
 
+
+    /**
+     * Get the best quality route to a callsign. If there are multiple routes with the same quality, the highest quality route is returned.
+     *
+     * @param callsignToConnectTo
+     * @return The first hop to the callsign, or null if no route is found
+     */
+    public NetROMNode getRoutingToCallsign(String callsignToConnectTo) {
+        NetROMNode bestNode = null;
+        for (NetROMNode node : nodes) {
+            if (node.getSourceCallsign().equals(callsignToConnectTo)) {
+                if (bestNode == null) {
+                    bestNode = node;
+                } else {
+                    if (node.getBestQualityValue() > bestNode.getBestQualityValue()) {
+                        bestNode = node;
+                    }
+                }
+            }
+        }
+        return bestNode;
+    }
+
 }
