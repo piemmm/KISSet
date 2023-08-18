@@ -25,7 +25,7 @@ public enum RoutingTable {
             }
         }
 
-        nodes.add(node);
+        nodes.add(0,node);
     }
 
     /**
