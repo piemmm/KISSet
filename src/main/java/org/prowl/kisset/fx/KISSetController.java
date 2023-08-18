@@ -7,8 +7,6 @@ import de.jangassen.model.AppearanceMode;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.canvas.Canvas;
-import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
@@ -20,9 +18,9 @@ import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.StackPane;
+import javafx.scene.text.Font;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jfree.fx.FXGraphics2D;
 import org.prowl.kisset.KISSet;
 import org.prowl.kisset.comms.host.TNCHost;
 import org.prowl.kisset.comms.host.parser.CommandParser;
@@ -30,16 +28,12 @@ import org.prowl.kisset.comms.host.parser.Mode;
 import org.prowl.kisset.config.Conf;
 import org.prowl.kisset.eventbus.SingleThreadBus;
 import org.prowl.kisset.eventbus.events.ConfigurationChangedEvent;
-import org.prowl.kisset.gui.terminal.Connection;
-import org.prowl.kisset.gui.terminal.Term;
-import org.prowl.kisset.gui.terminal.Terminal;
+import org.prowl.kisset.gui.g0term.Terminal;
 import org.prowl.kisset.util.Tools;
 
 import java.awt.*;
 import java.awt.desktop.AboutEvent;
 import java.awt.desktop.AboutHandler;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 
@@ -56,11 +50,9 @@ public class KISSetController {
     @FXML
     MenuItem preferencesMenuItem;
     @FXML
-    ScrollPane theScrollPane;
-    @FXML
     StackPane stackPane;
-    TerminalCanvas canvas;
-    private Terminal term;
+    Terminal terminal;
+    // TerminalCanvas canvas;
     private PipedInputStream inpis;
     private PipedOutputStream outpos;
     private TNCHost tncHost;
@@ -113,38 +105,27 @@ public class KISSetController {
 
     public void configureTerminal() {
         stackPane.getChildren().clear();
-        term = new Terminal();
-        term.setForeGround(Color.WHITE);
+        terminal = new Terminal();
+
+
+        // term.setForeGround(Color.WHITE);
         float fontSize = 14;
         try {
             fontSize = KISSet.INSTANCE.getConfig().getConfig(Conf.terminalFontSize, Conf.terminalFontSize.intDefault());
         } catch (NumberFormatException e) {
 
         }
-        LOG.debug("Configuring terminal:" + fontSize + "   " + KISSet.INSTANCE.getConfig().getConfig(Conf.terminalFont, Conf.terminalFont.stringDefault()));
+        Font font = Font.font(KISSet.INSTANCE.getConfig().getConfig(Conf.terminalFont, Conf.terminalFont.stringDefault()), fontSize);
+        terminal.setFont(font);
 
-        term.setFont(KISSet.INSTANCE.getConfig().getConfig(Conf.terminalFont, Conf.terminalFont.stringDefault()), fontSize);
+        //terminal.setFont(font);
+        stackPane.getChildren().add(terminal);
 
-
-        canvas = new TerminalCanvas(term);
-        stackPane.getChildren().add(canvas);
-
-
-        canvas.setHeight(2280);
-        canvas.widthProperty().bind(stackPane.widthProperty());
-        Platform.runLater(() -> {
-            canvas.heightProperty().bind(stackPane.heightProperty());
-        });
-
-        canvas.setOnMouseClicked(event -> {
+        terminal.setOnMouseClicked(event -> {
             textEntry.requestFocus();
         });
 
 
-        Platform.runLater(() -> {
-            // Initially the scroll pane to the bottom.
-            theScrollPane.setVvalue(Double.MAX_VALUE);
-        });
 
     }
 
@@ -215,75 +196,20 @@ public class KISSetController {
 
 
         tncHost = new TNCHost(outpis, inpos);
+
+
         Tools.runOnThread(() -> {
-            term.start(new Connection() {
-                @Override
-                public InputStream getInputStream() {
-                    return inpis;
-                }
+            try {
+                while (true) {
+                    terminal.append(inpis.read());
 
-                @Override
-                public OutputStream getOutputStream() {
-                    return outpos;
-                }
-
-                @Override
-                public void requestResize(Term term) {
 
                 }
+            } catch (Exception e) {
+                LOG.debug(e.getMessage(), e);
+            }
 
-                @Override
-                public void close() {
-
-                }
-            });
         });
-    }
-
-    class TerminalCanvas extends Canvas {
-
-        private final FXGraphics2D g2;
-        Terminal terminal;
-
-        public TerminalCanvas(Terminal terminal) {
-            this.terminal = terminal;
-            this.g2 = new FXGraphics2D(getGraphicsContext2D());
-            // Redraw canvas when size changes.
-            widthProperty().addListener(e -> draw());
-            heightProperty().addListener(e -> draw());
-
-        }
-
-
-        private void draw() {
-            Platform.runLater(() -> {
-                double width = Math.max(100, getWidth());
-                double height = Math.max(100, getHeight());
-                terminal.setSize((int) width, (int) height, false);
-
-                // memory leak workaround
-                GraphicsContext gc = this.getGraphicsContext2D();
-                gc.clearRect(0, 0, width, height);
-                System.gc();
-
-                this.terminal.paintComponent(g2);
-            });
-        }
-
-        @Override
-        public boolean isResizable() {
-            return true;
-        }
-
-        @Override
-        public double prefWidth(double height) {
-            return getWidth();
-        }
-
-        @Override
-        public double prefHeight(double width) {
-            return getHeight();
-        }
     }
 
 

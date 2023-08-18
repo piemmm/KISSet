@@ -11,11 +11,8 @@
     <children>
         <BorderPane VBox.vgrow="ALWAYS">
             <center>
-                <ScrollPane fx:id="theScrollPane" fitToHeight="true" fitToWidth="true" hbarPolicy="NEVER" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
 
                     <StackPane fx:id="stackPane" prefHeight="1200" prefWidth="700" BorderPane.alignment="CENTER" />
-
-                </ScrollPane>
             </center>
          <right>
             <ListView fx:id="heardList" fixedCellSize="24.0" prefHeight="200.0" prefWidth="120.0" BorderPane.alignment="CENTER" />

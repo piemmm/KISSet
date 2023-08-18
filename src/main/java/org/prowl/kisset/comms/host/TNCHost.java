@@ -69,11 +69,9 @@ public class TNCHost {
 
                 try {
                     // Write welcome/init message to the client.
-                    for (int i = 0; i < 2; i++) {
-                        // Ansi code to move down 100 lines
-                        send("\u001b[100B");
-                    }
-                    send(Messages.get("tncInit") + CR);
+
+
+                    send(ANSI.YELLOW+Messages.get("tncInit") + CR);
 
                     checkConfiguration();
 

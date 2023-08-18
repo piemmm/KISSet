@@ -4,7 +4,6 @@ module org.prowl.kisset {
     requires org.controlsfx.controls;
     requires net.synedra.validatorfx;
     requires org.kordamp.ikonli.javafx;
-    requires org.jfree.fxgraphics2d;
     requires javafx.swing;
     requires java.logging;
     requires commons.logging;
@@ -22,6 +21,7 @@ module org.prowl.kisset {
     requires com.google.common;
     requires aprslib;
     requires javafx.web;
+
 
     opens org.prowl.kisset to javafx.fxml;
     exports org.prowl.kisset.eventbus.events;
