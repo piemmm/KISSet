@@ -6,6 +6,9 @@ import javafx.geometry.Orientation;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.ScrollBar;
+import javafx.scene.effect.Blend;
+import javafx.scene.effect.BlendMode;
+import javafx.scene.effect.Effect;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
@@ -18,6 +21,7 @@ import org.prowl.kisset.util.Tools;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Java FX component that emulates a terminal that understands some ANSI colour codes.
@@ -51,6 +55,9 @@ public class Terminal extends HBox {
 
     Canvas canvas = new Canvas();
     ScrollBar vScrollBar = new ScrollBar();
+
+    private BufferPosition startSelect;
+    private BufferPosition endSelect;
 
     Font font;
     boolean firstTime = true;
@@ -89,8 +96,29 @@ public class Terminal extends HBox {
             vScrollBar.setValue(value);
         });
 
-        canvas.setOnMouseClicked(event -> {
-            getBufferLineAt(event.getY());
+        canvas.setOnMousePressed(event -> {
+            startSelect = getPositionInBuffer(event.getX(), event.getY());
+        });
+
+        canvas.setOnMouseDragged(event -> {
+            if (event.isPrimaryButtonDown()) {
+                endSelect = getPositionInBuffer(event.getX(), event.getY());
+                queueRedraw();
+            }
+        });
+
+        canvas.setOnMouseReleased(event -> {
+            endSelect = getPositionInBuffer(event.getX(), event.getY());
+            LOG.debug("Selection1: " + startSelect + " to " + endSelect);
+
+            if (endSelect == null || endSelect.equals(startSelect)) {
+                // Clear the selection
+                startSelect = null;
+                endSelect = null;
+            }
+
+            // If not then we have a selection and we should make sure it's highlighted in the next redraw loop.
+            queueRedraw();
         });
 
 
@@ -230,7 +258,7 @@ public class Terminal extends HBox {
 
     private int calculateNumberOfLines(int lineNumber) {
         // Now we can calculate the height of the line.
-        double charactersWide = Math.ceil(getWidth() / charWidth);
+        double charactersWide = Math.ceil((getWidth() - charWidth) / charWidth);
         int numberOfLines = (int) Math.ceil((double) lineWidths.get(lineNumber) / charactersWide);
         if (numberOfLines == 0) {
             numberOfLines = 1;
@@ -264,6 +292,7 @@ public class Terminal extends HBox {
         double width = getWidth();
         boolean underline = false;
         boolean bold = false;
+        boolean inverse = false;
         int extraLine = 0;
         // We start at the bottom line, and draw upwards and downwards when wrapping lines
 
@@ -304,28 +333,50 @@ public class Terminal extends HBox {
                 } else {
 
                     // Now draw the byte array with line wrapping
-                    if (x > width) {
+                    if (x + charWidth >= width) {
                         y += charHeight;
                         extraLine += charHeight;
                         x = 0;
-                    } else {
-                        // If background is set, then we need to draw a rectangle first.
-                        if (background != null) {
-                            Paint currentFill = g.getFill();
-                            g.setFill(background);
-                            g.fillRect(x, y - charHeight, charWidth + 1, charHeight + (charHeight - baseline));
-                            g.setFill(currentFill);
-                        }
+                    }
 
-                        g.fillText(String.valueOf((char) line[j]), x, y);
-                        if (bold) {
-                            g.fillText(String.valueOf((char) line[j]), x + 1, y + 1);
+                    if (startSelect != null && endSelect != null) {
+                        if (startSelect.arrayIndex == i && startSelect.characterIndex == j) {
+                            Effect inverseEffect = new Blend(BlendMode.HARD_LIGHT);
+                            g.applyEffect(inverseEffect);
+                            inverse = true;
                         }
-                        if (underline) {
-                            g.strokeLine(x, y + charHeight - baseline, x + charWidth, y + charHeight - baseline);
+                        if (endSelect.arrayIndex == i && endSelect.characterIndex == j) {
+                            inverse = false;
                         }
                     }
+
+                    if (inverse) {
+                        Paint currentFill = g.getFill();
+                        g.setFill(Color.color(0.5, 0.5, 0.5, 0.5));
+                        g.fillRect(x, y - charHeight, charWidth + 1, charHeight + (charHeight - baseline));
+                        g.setFill(currentFill);
+                    } else {
+                        g.setEffect(null);
+                    }
+
+
+                    // If background is set, then we need to draw a rectangle first.
+                    if (background != null) {
+                        Paint currentFill = g.getFill();
+                        g.setFill(background);
+                        g.fillRect(x, y - charHeight, charWidth + 1, charHeight + (charHeight - baseline));
+                        g.setFill(currentFill);
+                    }
+
+                    g.fillText(String.valueOf((char) line[j]), x, y);
+                    if (bold) {
+                        g.fillText(String.valueOf((char) line[j]), x + 1, y + 1);
+                    }
+                    if (underline) {
+                        g.strokeLine(x, y + charHeight - baseline, x + charWidth, y + charHeight - baseline);
+                    }
                     x += charWidth;
+
 
                 }
             }
@@ -522,17 +573,18 @@ public class Terminal extends HBox {
      * <p>
      * We will need to retrieve this from the relevant array element in the buffer
      *
-     * @param y
-     * @return
+     * @param x The x position on the screen
+     * @param y The y position on the screen
+     * @return The positions for the buffer and the character index inside that buffer line
      */
-    public byte[] getBufferLineAt(double y) {
+    public BufferPosition getPositionInBuffer(double x, double y) {
 
-        LOG.debug("Clicked Y: " + y);
+        //LOG.debug("Clicked Y: " + y);
         double height = getHeight();
 
         // The line number inside our window
         int lineNo = (int) ((height - y) / charHeight);
-        LOG.debug("Clicked Line: " + lineNo);
+        //LOG.debug("Clicked Line: " + lineNo);
 
         // We need to take into account the scroll bar position
         // Count backwards taking into account the line heights from our precomputed array
@@ -545,14 +597,54 @@ public class Terminal extends HBox {
                 break;
             }
         }
+        int diff = actualIndex - lineNo;
+        //LOG.debug("Diff: " + diff);
 
-        LOG.debug("bufferLine: " + i);
-
+        if (i < 0) {
+            return null;
+        }
         byte[] line = buffer.get(i);
-        LOG.debug("Clicked Line: " + Tools.byteArrayToReadableASCIIString(line));
+        //LOG.debug("Clicked Line: " + Tools.byteArrayToReadableASCIIString(line));
 
-        return line;
+        // Now get the starting character position of the clicked line.
+        int position = (int) ((x / charWidth) + (diff * (int) (getWidth() / charWidth)));
+        //LOG.debug("Clicked Position: " + position);
+        if (position < 0 || position >= line.length) {
+            return null;
+        }
+
+        // Now get the character at the position
+//        byte[] charBytes = new byte[1];
+//        charBytes[0] = line[position];
+        //LOG.debug("Clicked Char: " + Tools.byteArrayToReadableASCIIString(charBytes));
+
+
+        return new BufferPosition(i, position);
     }
 
 
+    public class BufferPosition {
+
+        public int arrayIndex;
+        public int characterIndex;
+
+
+        public BufferPosition(int arrayIndex, int characterIndex) {
+            this.arrayIndex = arrayIndex;
+            this.characterIndex = characterIndex;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            BufferPosition that = (BufferPosition) o;
+            return arrayIndex == that.arrayIndex && characterIndex == that.characterIndex;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(arrayIndex, characterIndex);
+        }
+    }
 }
