@@ -31,10 +31,11 @@ import org.prowl.kisset.objects.Storage;
 import org.prowl.kisset.statistics.Statistics;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileSystemView;
 import java.awt.*;
 import java.awt.desktop.AppReopenedEvent;
 import java.awt.desktop.AppReopenedListener;
-import java.io.IOException;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.List;
@@ -310,7 +311,7 @@ public class KISSet extends Application {
         INSTANCE = KISSet.this;
         // Push debugging to a file if we are debugging a built app with no console
 //        try {
-//            File outputFile = File.createTempFile("debug", ".log", getFileSystemView().getDefaultDirectory());
+//            File outputFile = File.createTempFile("debug", ".log", FileSystemView.getFileSystemView().getDefaultDirectory());
 //            PrintStream output = new PrintStream(new BufferedOutputStream(new FileOutputStream(outputFile)), true);
 //            System.setOut(output);
 //            System.setErr(output);

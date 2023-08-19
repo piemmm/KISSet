@@ -75,7 +75,7 @@ public class NetROMNode {
         builder.append(sourceCallsign);
         builder.append(" advertises");
         builder.append(" " + destinationNodeCallsign + "/" + destinationNodeMnemonic);
-        builder.append(" via ");
+        builder.append(" neighbour ");
         builder.append(neighbourNodeCallsign);
         builder.append(" quality ");
         builder.append(bestQualityValue);

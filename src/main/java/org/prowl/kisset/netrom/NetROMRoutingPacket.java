@@ -21,7 +21,8 @@ public class NetROMRoutingPacket {
     private List<NetROMNode> nodesInThisPacket = new ArrayList<>();
 
     /**
-     * Parse a netrom routing pocket.
+     * Parse a netrom routing pocket. These appear to be loosely based on the ax.25 address spec,
+     * though no idea if the HDLC bit is used.
      * @param node
      */
     public NetROMRoutingPacket(Node node) {
