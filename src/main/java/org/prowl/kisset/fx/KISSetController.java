@@ -102,7 +102,6 @@ public class KISSetController {
             //startTerminal();
             terminal.setFont(getFont());
             stackPane.getScene().getWindow().setOpacity(1 - (KISSet.INSTANCE.getConfig().getConfig(Conf.terminalTransparency, Conf.terminalTransparency.intDefault()) / 100.0));
-
         });
     }
 

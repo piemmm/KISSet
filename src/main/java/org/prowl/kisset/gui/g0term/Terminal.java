@@ -26,8 +26,14 @@ public class Terminal extends HBox {
 
     private static final Log LOG = LogFactory.getLog("G0Terminal");
 
+    private static final int maxLines = 1000;
     List<byte[]> buffer = new ArrayList<>();
-    List<Integer> lineHeights = new ArrayList<>();
+
+    /**
+     * Stores the height of this line
+     */
+    List<Integer> lineWidths = new ArrayList<>();
+
     /**
      * Store color information (in use at the time) so we can iterate backwards in the redraw loop and still use
      * the correct colours at the start of the next line 'down'.
@@ -102,7 +108,7 @@ public class Terminal extends HBox {
         queueRedraw();
     }
 
-    public void precomputeCurrentLine() {
+    private void precomputeCurrentLine() {
         byte[] bytes = currentLine.toString().getBytes();
         QuickAttribute previousLine;
         if (attributesInUse.size() > 1) {
@@ -115,11 +121,19 @@ public class Terminal extends HBox {
         //  LOG.debug("Line:" + Tools.byteArrayToReadableASCIIString(bytes)+"   att:"+qa.color);
     }
 
-    public void makeNewLine() {
-        byte[] bytes = currentLine.toString().getBytes();
+    private void makeNewLine() {
+        String str = currentLine.toString();
+        byte[] bytes = str.getBytes();
         buffer.add(bytes);
-        lineHeights.add(calculateNumberOfLines(bytes));
+        lineWidths.add(ANSI.stripAnsiCodes(str).length());
         attributesInUse.add(new QuickAttribute());
+
+        // If the scrollback buffer is full, then start chopping off the top.
+        if (buffer.size() > maxLines) {
+            buffer.remove(0);
+            lineWidths.remove(0);
+            attributesInUse.remove(0);
+        }
 
         Platform.runLater(() -> {
 
@@ -139,16 +153,17 @@ public class Terminal extends HBox {
 
     }
 
-    public void updateCurrentLine() {
-        byte[] bytes = currentLine.toString().getBytes();
+    private void updateCurrentLine() {
+        String str = currentLine.toString();
+        byte[] bytes = str.getBytes();
         buffer.set(buffer.size() - 1, bytes);
-        lineHeights.set(lineHeights.size() - 1, calculateNumberOfLines(bytes));
+        lineWidths.set(lineWidths.size() - 1, ANSI.stripAnsiCodes(str).length());
     }
 
     /**
      * Get the ANSI codes in-force at the end of the line passed in
      */
-    public QuickAttribute decodeLineAnsi(byte[] line, QuickAttribute qa) {
+    private QuickAttribute decodeLineAnsi(byte[] line, QuickAttribute qa) {
         for (int j = 0; j < line.length; j++) {
             // If the character is an ansi code, then we need to handle it.
             if (line[j] == 0x1B) {
@@ -201,16 +216,13 @@ public class Terminal extends HBox {
         }
     }
 
-    public int calculateNumberOfLines(byte[] data) {
-        // Strip any ANSI codes so that we have the actual text.
-        String text = new String(data);
-        text = ANSI.stripAnsiCodes(text);
+    private int calculateNumberOfLines(int lineNumber) {
         // Now we can calculate the height of the line.
         double charactersWide = Math.ceil(getWidth() / charWidth);
-        return (int) Math.ceil((double) text.length() / charactersWide);
+        return (int) Math.ceil((double) lineWidths.get(lineNumber) / charactersWide);
     }
 
-    public void recalculateFontMetrics() {
+    private void recalculateFontMetrics() {
         Text text = new Text("@");
         text.setFont(font);
         charWidth = text.getBoundsInLocal().getWidth();
@@ -248,7 +260,7 @@ public class Terminal extends HBox {
 
             byte[] line = buffer.get(i);
             // pre-walk the line so we know how high it is and therefore where to start drawing.
-            int lineHeight = calculateNumberOfLines(line);
+            int lineHeight = calculateNumberOfLines(i);
             QuickAttribute a = attributesInUse.get(Math.max(0, i - 2));
             g.setFill(a.color);
             underline = a.underLine;
