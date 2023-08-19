@@ -139,7 +139,7 @@ public class KISSviaSerial extends Interface {
         // not just this one.
         AX25Callsign defaultCallsign = new AX25Callsign(defaultOutgoingCallsign);
 
-        anInterface = new BasicTransmittingConnector(pacLen, maxFrames, baudRate, retries, defaultCallsign, in, out, new ConnectionRequestListener() {
+        anInterface = new BasicTransmittingConnector(getUUID(), pacLen, maxFrames, baudRate, retries, defaultCallsign, in, out, new ConnectionRequestListener() {
             /**
              * Determine if we want to respond to this connection request (to *ANY* callsign) - usually we only accept
              * if we are interested in the callsign being sent a connection request.

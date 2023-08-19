@@ -3,6 +3,8 @@ package org.prowl.kisset.ax25;
 import com.fazecast.jSerialComm.SerialPortIOException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.prowl.kisset.eventbus.SingleThreadBus;
+import org.prowl.kisset.eventbus.events.InvalidFrameEvent;
 import org.prowl.kisset.util.Tools;
 
 import java.io.EOFException;
@@ -50,11 +52,13 @@ public class BasicTransmittingConnector extends Connector implements Transmittin
     private transient long frameStartTime = -1L;
     private final int retransmitCount;
     private transient TimedQueueEntry delayQueueHead = null;
+    private String uuid;
 
-    public BasicTransmittingConnector(int pacLen, int maxFrames, int baudRateInBits, int retransmitCount, AX25Callsign defaultCallsign, InputStream in, OutputStream out, ConnectionRequestListener connectionRequestListener) {
+    public BasicTransmittingConnector(String uuid, int pacLen, int maxFrames, int baudRateInBits, int retransmitCount, AX25Callsign defaultCallsign, InputStream in, OutputStream out, ConnectionRequestListener connectionRequestListener) {
         this.defaultCallsign = defaultCallsign;
         this.retransmitCount = retransmitCount;
         this.in = in;
+        this.uuid = uuid;
         kos = new KissEscapeOutputStream(out);
         stack = new AX25Stack(pacLen, maxFrames, baudRateInBits);
         startRxThread();
@@ -63,6 +67,9 @@ public class BasicTransmittingConnector extends Connector implements Transmittin
         stack.setConnectionRequestListener(connectionRequestListener);
     }
 
+    public String getUUID() {
+        return uuid;
+    }
     public void addFrameListener(AX25FrameListener l) {
         stack.addAX25FrameListener(l);
     }
@@ -387,6 +394,9 @@ public class BasicTransmittingConnector extends Connector implements Transmittin
 
             }
         } catch(Throwable e) {
+            byte[] buffer = new byte[wEnd-1 ];
+            System.arraycopy(rcvBuf, 1, buffer, 0, wEnd -1);
+            SingleThreadBus.INSTANCE.post(new InvalidFrameEvent(buffer, this));
             LOG.error("Exception whilst processing KISS frame: " + Tools.byteArrayToReadableASCIIString(rcvBuf), e);
             LOG.error("Stacktrace:  " + e.getMessage(), e);
         }

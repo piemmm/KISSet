@@ -19,7 +19,10 @@ import org.prowl.kisset.core.Node;
 import org.prowl.kisset.eventbus.SingleThreadBus;
 import org.prowl.kisset.eventbus.events.ConfigurationChangedEvent;
 import org.prowl.kisset.eventbus.events.HeardNodeEvent;
+import org.prowl.kisset.eventbus.events.InvalidFrameEvent;
 import org.prowl.kisset.gui.g0term.Terminal;
+import org.prowl.kisset.io.Interface;
+import org.prowl.kisset.util.ANSI;
 import org.prowl.kisset.util.PacketTools;
 import org.prowl.kisset.util.Tools;
 
@@ -183,6 +186,23 @@ public class MonitorController {
                         return o1.getCallsign().compareTo(o2.getCallsign());
                     });
                 });
+            }
+        });
+    }
+
+    @Subscribe
+    public void invalidFrameEvent(InvalidFrameEvent event) {
+        Interface anInterface = KISSet.INSTANCE.getInterfaceHandler().getInterfaceByUUID(event.connector.getUUID());
+        if (anInterface == null) {
+            return;
+        }
+        int interfaceNumber = KISSet.INSTANCE.getInterfaceHandler().getInterfaces().indexOf(anInterface);
+
+        Platform.runLater(() -> {
+            write(ANSI.BOLD+interfaceNumber+ANSI.NORMAL+": "+ANSI.RED+"Invalid frame received:"+ANSI.NORMAL+CR+Tools.byteArrayToReadableASCIIString(event.invalidData)+CR);
+            try {
+                inpos.flush();
+            } catch (IOException e) {
             }
         });
     }
