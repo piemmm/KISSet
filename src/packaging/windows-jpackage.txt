@@ -7,7 +7,7 @@
 --dest "${project.build.directory}"
 --main-jar ${project.build.finalName}.jar
 --main-class ${main-class}
---java-options "Xmaxf0.1 Xminf0.01"
+--java-options "-Xmaxf0.1 -Xminf0.01"
 --input "${project.build.directory}/dependency"
 --app-version ${app.version}
 --runtime-image "${project.build.directory}/jvm-image"
