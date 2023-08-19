@@ -10,7 +10,6 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
-import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
@@ -82,6 +81,7 @@ public class KISSetController {
             outpos.write(CommandParser.CR.getBytes());
             outpos.flush();
             textEntry.clear();
+            terminal.clearSelection();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -90,7 +90,13 @@ public class KISSetController {
 
     @FXML
     protected void onKeyPressed(KeyEvent event) {
-        if (CTRL_C.match(event)) {
+        // Handle copy/paste
+
+        if (event.isShortcutDown() && event.getCode() == KeyCode.C && terminal.hasSelectedArea()) {
+            terminal.copySelectedTextToClipboard();
+        }
+
+        if (!terminal.hasSelectedArea() && CTRL_C.match(event)) {
             tncHost.setMode(Mode.CMD, true);
         }
     }
@@ -129,9 +135,7 @@ public class KISSetController {
         });
 
 
-
     }
-
 
 
     public void setup() {

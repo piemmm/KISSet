@@ -9,6 +9,8 @@ import javafx.scene.control.ScrollBar;
 import javafx.scene.effect.Blend;
 import javafx.scene.effect.BlendMode;
 import javafx.scene.effect.Effect;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
@@ -34,6 +36,9 @@ public class Terminal extends HBox {
 
     private static final int maxLines = 1000;
     List<byte[]> buffer = new ArrayList<>();
+
+    final Clipboard clipboard = Clipboard.getSystemClipboard();
+    final ClipboardContent content = new ClipboardContent();
 
     /**
      * Stores the height of this line
@@ -94,6 +99,7 @@ public class Terminal extends HBox {
             }
 
             vScrollBar.setValue(value);
+            clearSelection();
         });
 
         canvas.setOnMousePressed(event -> {
@@ -109,18 +115,13 @@ public class Terminal extends HBox {
 
         canvas.setOnMouseReleased(event -> {
             endSelect = getPositionInBuffer(event.getX(), event.getY());
-            LOG.debug("Selection1: " + startSelect + " to " + endSelect);
-
             if (endSelect == null || endSelect.equals(startSelect)) {
-                // Clear the selection
-                startSelect = null;
-                endSelect = null;
+                clearSelection();
             }
 
             // If not then we have a selection and we should make sure it's highlighted in the next redraw loop.
             queueRedraw();
         });
-
 
         setMinWidth(0);
         setMinHeight(0);
@@ -136,6 +137,59 @@ public class Terminal extends HBox {
             queueRedraw();
         });
 
+    }
+
+    public boolean hasSelectedArea() {
+        return startSelect != null && endSelect != null;
+    }
+
+    public void copySelectedTextToClipboard() {
+        if (startSelect != null && endSelect != null) {
+            if (startSelect != null && endSelect != null) {
+//                            BufferPosition select1 = startSelect;
+//                            BufferPosition select2 = endSelect;
+//                            if (select2.compareTo(select1) > 0) {
+//                                BufferPosition tmp = select1;
+//                                select1 = select2;
+//                                select2 = tmp;
+//                            }
+                int startLine = Math.min(startSelect.arrayIndex, endSelect.arrayIndex);
+                int endLine = Math.max(startSelect.arrayIndex, endSelect.arrayIndex);
+                int startCol = Math.min(startSelect.characterIndex, endSelect.characterIndex);
+                int endCol = Math.max(startSelect.characterIndex, endSelect.characterIndex);
+
+                if (startLine != endLine) {
+                    startCol = 0;
+                    endCol = lineWidths.get(endLine);
+                }
+
+                StringBuilder sb = new StringBuilder();
+                for (int i = startLine; i <= endLine; i++) {
+                    byte[] bytes = buffer.get(i);
+                    String str = new String(bytes);
+                    String stripped = ANSI.stripAnsiCodes(str);
+                    if (i == startLine) {
+                        stripped = stripped.substring(startCol);
+                    }
+                    if (i == endLine) {
+                        stripped = stripped.substring(0, endCol);
+                    }
+                    sb.append(stripped);
+                    if (i != endLine) {
+                        sb.append("\n");
+                    }
+                }
+                LOG.debug("Copied: " + sb.toString());
+                content.putString(sb.toString());
+                clipboard.setContent(content);
+            }
+        }
+    }
+
+    public void clearSelection() {
+        startSelect = null;
+        endSelect = null;
+        queueRedraw();
     }
 
     public void setFont(Font font) {
@@ -319,10 +373,12 @@ public class Terminal extends HBox {
             extraLine = 0;
 
 
+            int skippedAnsi = 0;
             for (int j = 0; j < line.length; j++) {
                 // If the character is an ansi code, then we need to handle it.
                 if (line[j] == 0x1B) {
                     DecodedAnsi da = decodeAnsi(line, j, decodeDA);
+                    skippedAnsi += da.size + 1;
                     j += da.size;
                     if (da.qa != null) {
                         g.setFill(da.qa.color);
@@ -340,13 +396,32 @@ public class Terminal extends HBox {
                     }
 
                     if (startSelect != null && endSelect != null) {
-                        if (startSelect.arrayIndex == i && startSelect.characterIndex == j) {
-                            Effect inverseEffect = new Blend(BlendMode.HARD_LIGHT);
-                            g.applyEffect(inverseEffect);
-                            inverse = true;
+                        BufferPosition select1 = startSelect;
+                        BufferPosition select2 = endSelect;
+                        if (select2.compareTo(select1) > 0) {
+                            BufferPosition tmp = select1;
+                            select1 = select2;
+                            select2 = tmp;
                         }
-                        if (endSelect.arrayIndex == i && endSelect.characterIndex == j) {
-                            inverse = false;
+
+                        if (select1.arrayIndex == select2.arrayIndex) {
+                            if (select1.arrayIndex == i && select1.characterIndex + skippedAnsi == j) {
+                                Effect inverseEffect = new Blend(BlendMode.HARD_LIGHT);
+                                g.applyEffect(inverseEffect);
+                                inverse = true;
+                            }
+                            if (select2.arrayIndex == i && select2.characterIndex + skippedAnsi == j) {
+                                inverse = false;
+                            }
+                        } else {
+                            if (select1.arrayIndex == i && j == 0) {
+                                Effect inverseEffect = new Blend(BlendMode.HARD_LIGHT);
+                                g.applyEffect(inverseEffect);
+                                inverse = true;
+                            }
+                            if (select2.arrayIndex == i && j == line.length - 1) {
+                                inverse = false;
+                            }
                         }
                     }
 
@@ -603,27 +678,29 @@ public class Terminal extends HBox {
         if (i < 0) {
             return null;
         }
-        byte[] line = buffer.get(i);
+        byte[] line = ANSI.stripAnsiCodes(new String(buffer.get(i))).getBytes();
         //LOG.debug("Clicked Line: " + Tools.byteArrayToReadableASCIIString(line));
 
         // Now get the starting character position of the clicked line.
         int position = (int) ((x / charWidth) + (diff * (int) (getWidth() / charWidth)));
         //LOG.debug("Clicked Position: " + position);
-        if (position < 0 || position >= line.length) {
-            return null;
+        if (position < 0) {
+            position = 0;
+        }
+        if (position >= line.length) {
+            position = line.length - 1;
         }
 
         // Now get the character at the position
 //        byte[] charBytes = new byte[1];
 //        charBytes[0] = line[position];
-        //LOG.debug("Clicked Char: " + Tools.byteArrayToReadableASCIIString(charBytes));
 
 
         return new BufferPosition(i, position);
     }
 
 
-    public class BufferPosition {
+    public class BufferPosition implements Comparable {
 
         public int arrayIndex;
         public int characterIndex;
@@ -645,6 +722,17 @@ public class Terminal extends HBox {
         @Override
         public int hashCode() {
             return Objects.hash(arrayIndex, characterIndex);
+        }
+
+        @Override
+        public int compareTo(Object o) {
+            if (o == null || getClass() != o.getClass()) return 0;
+            BufferPosition that = (BufferPosition) o;
+            if (arrayIndex == that.arrayIndex) {
+                return Integer.compare(that.characterIndex, characterIndex);
+            } else {
+                return Integer.compare(arrayIndex, that.arrayIndex);
+            }
         }
     }
 }
