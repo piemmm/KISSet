@@ -7,6 +7,7 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.ScrollBar;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import org.apache.commons.logging.Log;
@@ -48,7 +49,7 @@ public class Terminal extends HBox {
     boolean firstTime = true;
     double charWidth;
     double charHeight;
-
+    double baseline;
 
     public Terminal() {
         super();
@@ -63,12 +64,12 @@ public class Terminal extends HBox {
         vScrollBar.setVisible(true);
         vScrollBar.valueProperty().addListener((observable, oldValue, newValue) -> draw());
         vScrollBar.setMin(0);
-       // vScrollBar.setMax(1000); // This can be lines of text position.
+        // vScrollBar.setMax(1000); // This can be lines of text position.
         vScrollBar.setUnitIncrement(1);
         vScrollBar.setBlockIncrement(1);
 
         canvas.onScrollProperty().set(event -> {
-            double value = vScrollBar.getValue() - event.getDeltaY()/10;
+            double value = vScrollBar.getValue() - event.getDeltaY() / 10;
             if (value < 0) {
                 value = 0;
             }
@@ -78,7 +79,6 @@ public class Terminal extends HBox {
 
             vScrollBar.setValue(value);
         });
-
 
 
         setMinWidth(0);
@@ -207,6 +207,7 @@ public class Terminal extends HBox {
         text.setFont(font);
         charWidth = text.getBoundsInLocal().getWidth();
         charHeight = text.getBoundsInLocal().getHeight();
+        baseline = text.getBaselineOffset();
     }
 
     /**
@@ -219,15 +220,18 @@ public class Terminal extends HBox {
         g.setFill(javafx.scene.paint.Color.BLACK);
         g.fillRect(0, 0, getWidth(), getHeight());
         g.setFill(javafx.scene.paint.Color.WHITE);
+        g.setStroke(Color.WHITE);
 
         double y = getHeight();
         double x = 0;
         double width = getWidth();
+        boolean underline = false;
+        boolean bold = false;
         int extraLine = 0;
         // We start at the bottom line, and draw upwards and downwards when wrapping lines
 
-        int scrollOffset = (int)vScrollBar.getMax()-(int) vScrollBar.getValue();
-        for (int i = (buffer.size() - 1)-scrollOffset; i > 0; i--) {
+        int scrollOffset = (int) vScrollBar.getMax() - (int) vScrollBar.getValue();
+        for (int i = (buffer.size() - 1) - scrollOffset; i > 0; i--) {
 
             // Don't bother drawing offscreen stuff.
             if (y < 0) {
@@ -239,7 +243,8 @@ public class Terminal extends HBox {
             int lineHeight = calculateNumberOfLines(line);
             QuickAttribute a = attributesInUse.get(Math.max(0, i - 2));
             g.setFill(a.color);
-
+            underline = a.underLine;
+            bold = a.bold;
 
             x = 0;
             y -= charHeight * lineHeight;
@@ -254,6 +259,8 @@ public class Terminal extends HBox {
                     j += da.size;
                     if (da.qa != null) {
                         g.setFill(da.qa.color);
+                        bold = da.qa.bold;
+                        underline = da.qa.underLine;
                     }
                 } else {
 
@@ -264,6 +271,12 @@ public class Terminal extends HBox {
                         x = 0;
                     } else {
                         g.fillText(String.valueOf((char) line[j]), x, y);
+                        if (bold) {
+                            g.fillText(String.valueOf((char) line[j]), x+1, y+1);
+                        }
+                        if (underline) {
+                            g.strokeLine(x, y+charHeight-baseline, x+charWidth, y+charHeight-baseline);
+                        }
                     }
                     x += charWidth;
 
