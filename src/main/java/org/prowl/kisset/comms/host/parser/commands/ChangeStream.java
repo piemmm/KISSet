@@ -65,6 +65,8 @@ public class ChangeStream extends Command {
             commandParser.getCurrentInterface().setCurrentStream(streamNumber);
             commandParser.setDivertStream(commandParser.getCurrentInterface().getCurrentStream().getOutputStream());
 
+            writeToTerminal("*** Stream changed to " + streamNumber);
+
         } catch(NumberFormatException e) {
             writeToTerminal("*** Invalid stream number");
             return true;
