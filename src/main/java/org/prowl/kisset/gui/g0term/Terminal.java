@@ -1,12 +1,14 @@
 package org.prowl.kisset.gui.g0term;
 
 import javafx.application.Platform;
+import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.ScrollBar;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import org.apache.commons.logging.Log;
@@ -60,8 +62,10 @@ public class Terminal extends HBox {
         super();
         font = Font.font("Monospaced", 12);
         recalculateFontMetrics();
-        getChildren().add(vScrollBar);
+        //getChildren().add(vScrollBar);
         getChildren().add(canvas);
+        setPadding(new Insets(0, 0, 0, 0));
+        setSpacing(0);
 
         vScrollBar.setOrientation(Orientation.VERTICAL);
         vScrollBar.setMinWidth(10);
@@ -83,6 +87,10 @@ public class Terminal extends HBox {
             }
 
             vScrollBar.setValue(value);
+        });
+
+        canvas.setOnMouseClicked(event -> {
+            getBufferLineAt(event.getY());
         });
 
 
@@ -179,12 +187,16 @@ public class Terminal extends HBox {
     /**
      * Appends the text to the terminal buffer for later drawing.
      */
-    public synchronized final void append(final int b) {
+    public synchronized final void append(int b) {
+        //b = b & 0xFF;
         // Store the byte in the buffer.
         if (b == 10) {
             precomputeCurrentLine();
             currentLine = new StringBuilder(); // don't use .delete as the backing byte[] would never get trimmed.
             makeNewLine();
+        } else if (b == 13) {
+            // ignore unprintable CR (but we let escape through)
+            updateCurrentLine();
         } else {
             currentLine.append((char) b);
             updateCurrentLine();
@@ -219,7 +231,11 @@ public class Terminal extends HBox {
     private int calculateNumberOfLines(int lineNumber) {
         // Now we can calculate the height of the line.
         double charactersWide = Math.ceil(getWidth() / charWidth);
-        return (int) Math.ceil((double) lineWidths.get(lineNumber) / charactersWide);
+        int numberOfLines = (int) Math.ceil((double) lineWidths.get(lineNumber) / charactersWide);
+        if (numberOfLines == 0) {
+            numberOfLines = 1;
+        }
+        return numberOfLines;
     }
 
     private void recalculateFontMetrics() {
@@ -242,6 +258,7 @@ public class Terminal extends HBox {
         g.setFill(javafx.scene.paint.Color.WHITE);
         g.setStroke(Color.WHITE);
 
+        Color background = null;
         double y = getHeight();
         double x = 0;
         double width = getWidth();
@@ -265,6 +282,7 @@ public class Terminal extends HBox {
             g.setFill(a.color);
             underline = a.underLine;
             bold = a.bold;
+            background = a.bgcolor;
 
             x = 0;
             y -= charHeight * lineHeight;
@@ -281,6 +299,7 @@ public class Terminal extends HBox {
                         g.setFill(da.qa.color);
                         bold = da.qa.bold;
                         underline = da.qa.underLine;
+                        background = da.qa.bgcolor;
                     }
                 } else {
 
@@ -290,6 +309,14 @@ public class Terminal extends HBox {
                         extraLine += charHeight;
                         x = 0;
                     } else {
+                        // If background is set, then we need to draw a rectangle first.
+                        if (background != null) {
+                            Paint currentFill = g.getFill();
+                            g.setFill(background);
+                            g.fillRect(x, y - charHeight, charWidth + 1, charHeight + (charHeight - baseline));
+                            g.setFill(currentFill);
+                        }
+
                         g.fillText(String.valueOf((char) line[j]), x, y);
                         if (bold) {
                             g.fillText(String.valueOf((char) line[j]), x + 1, y + 1);
@@ -302,6 +329,7 @@ public class Terminal extends HBox {
 
                 }
             }
+
         }
     }
 
@@ -358,6 +386,7 @@ public class Terminal extends HBox {
                         decodeQA.bold = false;
                         decodeQA.underLine = false;
                         decodeQA.color = Color.WHITE;
+                        decodeQA.bgcolor = null;
                         break;
                     case "1":
                         // Bold
@@ -416,22 +445,23 @@ public class Terminal extends HBox {
                         decodeQA.color = Color.BLACK;
                         break;
                     case "41":
-                        decodeQA.color = Color.RED;
+                        // Background
+                        decodeQA.bgcolor = Color.RED;
                         break;
                     case "42":
-                        decodeQA.color = Color.GREEN;
+                        decodeQA.bgcolor = Color.GREEN;
                         break;
                     case "43":
-                        decodeQA.color = Color.YELLOW;
+                        decodeQA.bgcolor = Color.YELLOW;
                         break;
                     case "44":
-                        decodeQA.color = Color.BLUE;
+                        decodeQA.bgcolor = Color.BLUE;
                         break;
                     case "45":
-                        decodeQA.color = Color.MAGENTA;
+                        decodeQA.bgcolor = Color.MAGENTA;
                         break;
                     case "46":
-                        decodeQA.color = Color.CYAN;
+                        decodeQA.bgcolor = Color.CYAN;
                         break;
                     default:
                         LOG.warn("Unknown ANSI code: " + code);
@@ -452,8 +482,9 @@ public class Terminal extends HBox {
     /**
      * Storing state information about the current ansi attributes in use.
      */
-    public class QuickAttribute {
+    public final class QuickAttribute {
         public Color color;
+        public Color bgcolor;
         public boolean underLine;
         public boolean bold;
 
@@ -463,6 +494,7 @@ public class Terminal extends HBox {
         public QuickAttribute copy() {
             QuickAttribute qa = new QuickAttribute();
             qa.color = color;
+            qa.bgcolor = bgcolor;
             qa.underLine = underLine;
             qa.bold = bold;
             return qa;
@@ -484,4 +516,43 @@ public class Terminal extends HBox {
 
 
     }
+
+    /**
+     * Get the character at the specified x,y position on the screen
+     * <p>
+     * We will need to retrieve this from the relevant array element in the buffer
+     *
+     * @param y
+     * @return
+     */
+    public byte[] getBufferLineAt(double y) {
+
+        LOG.debug("Clicked Y: " + y);
+        double height = getHeight();
+
+        // The line number inside our window
+        int lineNo = (int) ((height - y) / charHeight);
+        LOG.debug("Clicked Line: " + lineNo);
+
+        // We need to take into account the scroll bar position
+        // Count backwards taking into account the line heights from our precomputed array
+        int actualIndex = 0;
+        int scrollOffset = (int) vScrollBar.getMax() - (int) vScrollBar.getValue();
+        int i;
+        for (i = (buffer.size() - 1) - scrollOffset; i > 0; i--) {
+            actualIndex += calculateNumberOfLines(i);
+            if (actualIndex >= lineNo) {
+                break;
+            }
+        }
+
+        LOG.debug("bufferLine: " + i);
+
+        byte[] line = buffer.get(i);
+        LOG.debug("Clicked Line: " + Tools.byteArrayToReadableASCIIString(line));
+
+        return line;
+    }
+
+
 }
