@@ -36,7 +36,7 @@ public class Terminal extends HBox {
 
 
     StringBuilder currentLine = new StringBuilder();
-    private Thread redrawThread;
+    private volatile Thread redrawThread;
 
     private final QuickAttribute decodeQA = new QuickAttribute();
     private final DecodedAnsi decodeDA = new DecodedAnsi(decodeQA, 0);
