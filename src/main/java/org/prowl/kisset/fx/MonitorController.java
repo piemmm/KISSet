@@ -49,14 +49,13 @@ public class MonitorController {
     @Subscribe
     public void onConfigChanged(ConfigurationChangedEvent event) {
         Platform.runLater(() -> {
-            configureTerminal();
-            startTerminal();
+            terminal.setFont(getFont());
+            stackPane.getScene().getWindow().setOpacity(1 - (KISSet.INSTANCE.getConfig().getConfig(Conf.monitorTransparency, Conf.monitorTransparency.intDefault()) / 100.0));
         });
     }
 
-    public void configureTerminal() {
-        stackPane.getChildren().clear();
-        terminal = new Terminal();
+
+    public Font getFont() {
         float fontSize = 14;
         try {
             fontSize = KISSet.INSTANCE.getConfig().getConfig(Conf.terminalFontSize, Conf.terminalFontSize.intDefault());
@@ -64,7 +63,14 @@ public class MonitorController {
 
         }
         Font font = Font.font(KISSet.INSTANCE.getConfig().getConfig(Conf.terminalFont, Conf.terminalFont.stringDefault()), fontSize);
-        terminal.setFont(font);
+        return font;
+    }
+
+    public void configureTerminal() {
+        stackPane.getChildren().clear();
+        terminal = new Terminal();
+
+        terminal.setFont(getFont());
 
         stackPane.getChildren().add(terminal);
 
@@ -181,13 +187,6 @@ public class MonitorController {
         });
     }
 
-    // Update the opacity when the configuration is updated
-    @Subscribe
-    public void onConfigurationChanged(ConfigurationChangedEvent event) {
-        Platform.runLater(() -> {
-            stackPane.getScene().getWindow().setOpacity(1 - (KISSet.INSTANCE.getConfig().getConfig(Conf.monitorTransparency, Conf.monitorTransparency.intDefault()) / 100.0));
-        });
-    }
 
 
     // Convenience write class

@@ -98,17 +98,15 @@ public class KISSetController {
     @Subscribe
     public void onConfigChanged(ConfigurationChangedEvent event) {
         Platform.runLater(() -> {
-            configureTerminal();
-            startTerminal();
+            //configureTerminal();
+            //startTerminal();
+            terminal.setFont(getFont());
+            stackPane.getScene().getWindow().setOpacity(1 - (KISSet.INSTANCE.getConfig().getConfig(Conf.terminalTransparency, Conf.terminalTransparency.intDefault()) / 100.0));
+
         });
     }
 
-    public void configureTerminal() {
-        stackPane.getChildren().clear();
-        terminal = new Terminal();
-
-
-        // term.setForeGround(Color.WHITE);
+    public Font getFont() {
         float fontSize = 14;
         try {
             fontSize = KISSet.INSTANCE.getConfig().getConfig(Conf.terminalFontSize, Conf.terminalFontSize.intDefault());
@@ -116,7 +114,13 @@ public class KISSetController {
 
         }
         Font font = Font.font(KISSet.INSTANCE.getConfig().getConfig(Conf.terminalFont, Conf.terminalFont.stringDefault()), fontSize);
-        terminal.setFont(font);
+        return font;
+    }
+
+    public void configureTerminal() {
+        stackPane.getChildren().clear();
+        terminal = new Terminal();
+        terminal.setFont(getFont());
 
         //terminal.setFont(font);
         stackPane.getChildren().add(terminal);
@@ -129,13 +133,7 @@ public class KISSetController {
 
     }
 
-    // Update the opacity when the configuration is updated
-    @Subscribe
-    public void onConfigurationChanged(ConfigurationChangedEvent event) {
-        Platform.runLater(() -> {
-            stackPane.getScene().getWindow().setOpacity(1 - (KISSet.INSTANCE.getConfig().getConfig(Conf.terminalTransparency, Conf.terminalTransparency.intDefault()) / 100.0));
-        });
-    }
+
 
     public void setup() {
         SingleThreadBus.INSTANCE.register(this);
