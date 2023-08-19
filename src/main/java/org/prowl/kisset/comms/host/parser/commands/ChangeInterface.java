@@ -51,7 +51,7 @@ public class ChangeInterface extends Command {
         // Prevent interface changes whilst in connecting state
         if (commandParser.getCurrentInterface().getCurrentStream().getStreamState().equals(StreamState.CONNECTING)) {
             writeToTerminal("*** Cannot change interface whilst connecting");
-            return false;
+            return true;
         }
 
         // If a stream number is specified, change to that stream.
@@ -69,14 +69,13 @@ public class ChangeInterface extends Command {
             commandParser.getCurrentInterface().setCurrentStream(0);
             commandParser.setDivertStream(commandParser.getCurrentInterface().getCurrentStream().getOutputStream());
 
+            writeToTerminal("*** Changed to interface " + interfaceNumber + CR);
+
+            return true;
         } catch(NumberFormatException e) {
             writeToTerminal("*** Invalid stream number");
             return true;
         }
-
-
-
-        return false;
     }
 
 
