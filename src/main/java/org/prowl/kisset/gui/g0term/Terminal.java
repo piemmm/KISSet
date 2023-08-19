@@ -7,7 +7,6 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.ScrollBar;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
-import javafx.scene.paint.Paint;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import org.apache.commons.logging.Log;
@@ -19,9 +18,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Java FX component that emulates a ANSI compliant terminal
+ * Java FX component that emulates a terminal that understands some ANSI colour codes.
  * <p>
- * This aims to be memory efficient by only drawing the visible part of the terminal.
+ * This aims to be memory and cpu efficient by only drawing the visible part of the terminal.
  */
 public class Terminal extends HBox {
 
@@ -39,8 +38,8 @@ public class Terminal extends HBox {
     StringBuilder currentLine = new StringBuilder();
     private Thread redrawThread;
 
-    private QuickAttribute decodeQA = new QuickAttribute();
-    private DecodedAnsi decodeDA = new DecodedAnsi(decodeQA, 0);
+    private final QuickAttribute decodeQA = new QuickAttribute();
+    private final DecodedAnsi decodeDA = new DecodedAnsi(decodeQA, 0);
 
     Canvas canvas = new Canvas();
     ScrollBar vScrollBar = new ScrollBar();
@@ -62,7 +61,7 @@ public class Terminal extends HBox {
         vScrollBar.setMinWidth(10);
         vScrollBar.setPrefWidth(10);
         vScrollBar.setVisible(true);
-        vScrollBar.valueProperty().addListener((observable, oldValue, newValue) -> draw());
+        vScrollBar.valueProperty().addListener((observable, oldValue, newValue) -> queueRedraw());
         vScrollBar.setMin(0);
         // vScrollBar.setMax(1000); // This can be lines of text position.
         vScrollBar.setUnitIncrement(1);
@@ -87,12 +86,12 @@ public class Terminal extends HBox {
 
         widthProperty().addListener(evt -> {
             canvas.setWidth(getWidth());
-            draw();
+            queueRedraw();
         });
 
         heightProperty().addListener(evt -> {
             canvas.setHeight(getHeight());
-            draw();
+            queueRedraw();
         });
 
     }
@@ -100,6 +99,7 @@ public class Terminal extends HBox {
     public void setFont(Font font) {
         this.font = font;
         recalculateFontMetrics();
+        queueRedraw();
     }
 
     public void precomputeCurrentLine() {
@@ -164,7 +164,7 @@ public class Terminal extends HBox {
     /**
      * Appends the text to the terminal buffer for later drawing.
      */
-    public final void append(final int b) {
+    public synchronized final void append(final int b) {
         // Store the byte in the buffer.
         if (b == 10) {
             precomputeCurrentLine();
@@ -175,11 +175,20 @@ public class Terminal extends HBox {
             updateCurrentLine();
         }
 
+        queueRedraw();
+
+    }
+
+    /**
+     * Avoid pointless redraws by only redrawing when the previous redraw has finished, and at a rate humans
+     * can actually notice. This saves CPU cycles and gc churn.
+     */
+    public synchronized void queueRedraw() {
         if (redrawThread == null) {
             redrawThread = new Thread() {
 
                 public void run() {
-                    Tools.delay(100);
+                    Tools.delay(15);
                     Platform.runLater(() -> {
                         redrawThread = null;
                         draw();
@@ -190,7 +199,6 @@ public class Terminal extends HBox {
             };
             redrawThread.start();
         }
-
     }
 
     public int calculateNumberOfLines(byte[] data) {
@@ -213,7 +221,7 @@ public class Terminal extends HBox {
     /**
      * Draws the terminal buffer to the canvas.
      */
-    public final void draw() {
+    private synchronized void draw() {
         GraphicsContext g = canvas.getGraphicsContext2D();
         g.setFont(font);
         g.clearRect(0, 0, getWidth(), getHeight());
@@ -272,10 +280,10 @@ public class Terminal extends HBox {
                     } else {
                         g.fillText(String.valueOf((char) line[j]), x, y);
                         if (bold) {
-                            g.fillText(String.valueOf((char) line[j]), x+1, y+1);
+                            g.fillText(String.valueOf((char) line[j]), x + 1, y + 1);
                         }
                         if (underline) {
-                            g.strokeLine(x, y+charHeight-baseline, x+charWidth, y+charHeight-baseline);
+                            g.strokeLine(x, y + charHeight - baseline, x + charWidth, y + charHeight - baseline);
                         }
                     }
                     x += charWidth;
