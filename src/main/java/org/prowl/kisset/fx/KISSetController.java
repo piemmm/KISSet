@@ -91,7 +91,6 @@ public class KISSetController {
     @FXML
     protected void onKeyPressed(KeyEvent event) {
         // Handle copy/paste
-
         if (event.isShortcutDown() && event.getCode() == KeyCode.C && terminal.hasSelectedArea()) {
             terminal.copySelectedTextToClipboard();
         }
@@ -104,8 +103,6 @@ public class KISSetController {
     @Subscribe
     public void onConfigChanged(ConfigurationChangedEvent event) {
         Platform.runLater(() -> {
-            //configureTerminal();
-            //startTerminal();
             terminal.setFont(getFont());
             stackPane.getScene().getWindow().setOpacity(1 - (KISSet.INSTANCE.getConfig().getConfig(Conf.terminalTransparency, Conf.terminalTransparency.intDefault()) / 100.0));
         });

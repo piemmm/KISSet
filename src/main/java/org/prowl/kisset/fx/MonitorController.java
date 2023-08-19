@@ -9,6 +9,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.StackPane;
 import javafx.scene.text.Font;
 import org.apache.commons.logging.Log;
@@ -57,7 +58,6 @@ public class MonitorController {
         });
     }
 
-
     public Font getFont() {
         float fontSize = 14;
         try {
@@ -74,6 +74,14 @@ public class MonitorController {
         terminal = new Terminal();
 
         terminal.setFont(getFont());
+        terminal.setFocusTraversable(true);
+
+        terminal.setOnKeyPressed(event -> {
+            LOG.debug("Key pressed: " + event.getCode().getName());
+            if (terminal.hasSelectedArea() && event.isShortcutDown() && event.getCode().equals(KeyCode.C)) {
+                terminal.copySelectedTextToClipboard();
+            }
+        });
 
         stackPane.getChildren().add(terminal);
 
@@ -104,8 +112,6 @@ public class MonitorController {
                 //  KISSet.INSTANCE.getInterfaceHandler().getInterface(node.getInterface()).showContextMenu(heardList, event.getScreenX(), event.getScreenY());
             }
         });
-
-
     }
 
     public void setup() {

@@ -276,6 +276,7 @@ public class Terminal extends HBox {
             precomputeCurrentLine();
             currentLine = new StringBuilder(); // don't use .delete as the backing byte[] would never get trimmed.
             makeNewLine();
+            clearSelection();
         } else if (b == 13) {
             // ignore unprintable CR (but we let escape through)
             updateCurrentLine();
