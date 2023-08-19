@@ -27,7 +27,6 @@ import java.util.List;
 public class KISSviaSerial extends Interface {
 
     private static final Log LOG = LogFactory.getLog("KISSviaSerial");
-    public String uuid;
     private final String port;
     private final int dataBits;
     private final int stopBits;
