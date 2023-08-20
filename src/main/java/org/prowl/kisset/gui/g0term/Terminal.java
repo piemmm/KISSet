@@ -446,7 +446,7 @@ public class Terminal extends HBox {
 
                     g.fillText(String.valueOf((char) line[j]), x, y);
                     if (bold) {
-                        g.fillText(String.valueOf((char) line[j]), x + 1, y + 1);
+                        g.fillText(String.valueOf((char) line[j]), x + 1, y );
                     }
                     if (underline) {
                         g.strokeLine(x, y + charHeight - baseline, x + charWidth, y + charHeight - baseline);

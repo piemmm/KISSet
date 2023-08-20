@@ -5,7 +5,7 @@ import org.prowl.kisset.KISSet;
 import org.prowl.kisset.annotations.TNCCommand;
 import org.prowl.kisset.comms.host.parser.Mode;
 import org.prowl.kisset.io.Interface;
-import org.prowl.kisset.io.Stream;
+import org.prowl.kisset.io.InterfaceStatus;
 import org.prowl.kisset.io.StreamState;
 import org.prowl.kisset.util.ANSI;
 
@@ -33,17 +33,7 @@ public class ChangeInterface extends Command {
 
         // No parameter? Just list the interfaces then
         if (data.length == 1) {
-            writeToTerminal(CR+ANSI.BOLD+ANSI.UNDERLINE+"No. Interface                                      "+ANSI.NORMAL + CR);
-            int i = 0;
-            for (Interface anInterface : KISSet.INSTANCE.getInterfaceHandler().getInterfaces()) {
-                String status = anInterface.getFailReason();
-                if (status == null) {
-                    status = "OK";
-                }
-                writeToTerminal(StringUtils.rightPad(Integer.toString(i)+": ",4)+ StringUtils.rightPad(anInterface.toString(),25) + StringUtils.rightPad(status,30) + CR);
-                i++;
-            }
-            writeToTerminal(CR);
+            showInterfaces();
             return true;
         }
 
@@ -72,7 +62,7 @@ public class ChangeInterface extends Command {
             writeToTerminal("*** Changed to interface " + interfaceNumber + CR);
 
             return true;
-        } catch(NumberFormatException e) {
+        } catch (NumberFormatException e) {
             writeToTerminal("*** Invalid stream number");
             return true;
         }
@@ -85,4 +75,27 @@ public class ChangeInterface extends Command {
     }
 
 
+    public void showInterfaces() throws IOException {
+        writeToTerminal(CR + ANSI.BOLD + ANSI.UNDERLINE + "No. State Interface                                      " + ANSI.NORMAL + CR);
+        int i = 0;
+        for (Interface anInterface : KISSet.INSTANCE.getInterfaceHandler().getInterfaces()) {
+            InterfaceStatus interfaceStatus = anInterface.getInterfaceStatus();
+            String statusCol;
+            if (interfaceStatus.getState() == InterfaceStatus.State.OK) {
+                statusCol = ANSI.GREEN;
+            } else if (interfaceStatus.getState() == InterfaceStatus.State.WARN) {
+                statusCol = ANSI.YELLOW;
+            } else if (interfaceStatus.getState() == InterfaceStatus.State.ERROR) {
+                statusCol = ANSI.RED;
+            } else {
+                statusCol = ANSI.WHITE;
+            }
+            writeToTerminal(StringUtils.rightPad(Integer.toString(i) + ": ", 4) + statusCol + StringUtils.rightPad(interfaceStatus.getState().name(), 6) + ANSI.NORMAL + anInterface.toString() + CR);
+            if (interfaceStatus.getMessage() != null) {
+                writeToTerminal("      "+statusCol + "\\-" +interfaceStatus.getMessage() + ANSI.NORMAL + CR);
+            }
+            i++;
+        }
+        writeToTerminal(CR);
+    }
 }

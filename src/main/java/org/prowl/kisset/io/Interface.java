@@ -23,7 +23,7 @@ public abstract class Interface {
     protected BasicTransmittingConnector anInterface;
 
     // If the interface fails to start, the reason will be logged here.
-    String failReason;
+    InterfaceStatus interfaceStatus = new InterfaceStatus(InterfaceStatus.State.OK, null);
     private int currentStream = 0;
     private List<Stream> streams = new ArrayList<>();
     protected HierarchicalConfiguration config;
@@ -71,8 +71,8 @@ public abstract class Interface {
         return new ArrayList<>(streams);
     }
 
-    public String getFailReason() {
-        return failReason;
+    public InterfaceStatus getInterfaceStatus() {
+        return interfaceStatus;
     }
 
     public void setServices(List<Service> services) {

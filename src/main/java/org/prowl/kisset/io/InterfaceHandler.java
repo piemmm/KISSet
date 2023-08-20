@@ -116,6 +116,21 @@ public class InterfaceHandler {
         return null;
     }
 
+    public int getInterfaceNumber(String interfaceUUID) {
+        int i = 0;
+        for (Interface iface : interfaces) {
+            if (iface.getUUID().equals(interfaceUUID)) {
+                return i;
+            }
+            i++;
+        }
+        return -1;
+    }
+
+    public int getInterfaceNumber(Interface anInterface) {
+        return interfaces.indexOf(anInterface);
+    }
+
     /**
      * Returns a list of interfaces
      *

@@ -94,8 +94,8 @@ public class KISSviaSerial extends Interface {
         }
 
         if (serialPort == null) {
-            failReason = "Could not find serial port: " + port;
-            LOG.warn(failReason);
+            interfaceStatus = new InterfaceStatus(InterfaceStatus.State.ERROR,"Could not find serial port: " + port);
+            LOG.warn(interfaceStatus.getMessage());
             return;
         }
         LOG.debug(" ** Using serial port: " + serialPort.getSystemPortName());
@@ -255,7 +255,7 @@ public class KISSviaSerial extends Interface {
         if (serialPort == null) {
             return getClass().getSimpleName() + " ("+port+")";
         }
-        return getClass().getSimpleName() + " (" + serialPort.toString() + "/" + serialPort.getSystemPortName() + ")";
+        return getClass().getSimpleName() + " (" + serialPort.getSystemPortName() + ")";
     }
 
 }

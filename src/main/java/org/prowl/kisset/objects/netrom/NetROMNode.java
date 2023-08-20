@@ -72,6 +72,8 @@ public class NetROMNode {
     public String toString() {
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yy HH:mm:ss");
         StringBuilder builder = new StringBuilder();
+        int interfaceNumber = KISSet.INSTANCE.getInterfaceHandler().getInterfaceNumber(anInterface);
+        builder.append(interfaceNumber+": ");
         builder.append(sourceCallsign);
         builder.append(" advertises");
         builder.append(" " + destinationNodeCallsign + "/" + destinationNodeMnemonic);

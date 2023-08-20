@@ -8,6 +8,7 @@ import org.prowl.kisset.KISSet;
 import org.prowl.kisset.Messages;
 import org.prowl.kisset.comms.host.parser.CommandParser;
 import org.prowl.kisset.comms.host.parser.Mode;
+import org.prowl.kisset.comms.host.parser.commands.ChangeInterface;
 import org.prowl.kisset.config.Conf;
 import org.prowl.kisset.eventbus.SingleThreadBus;
 import org.prowl.kisset.eventbus.events.HeardNodeEvent;
@@ -51,7 +52,7 @@ public class TNCHost {
         this.parser = new CommandParser(this);
 
         // Get monitor state
-        monitorEnabled = KISSet.INSTANCE.getConfig().getConfig(Conf.monitor,Conf.monitor.boolDefault());
+        monitorEnabled = KISSet.INSTANCE.getConfig().getConfig(Conf.monitor, Conf.monitor.boolDefault());
 
         SingleThreadBus.INSTANCE.register(this);
         start();
@@ -63,21 +64,28 @@ public class TNCHost {
 
     // Start the TNC host
     public void start() {
-       Platform.runLater(new Runnable() {
+        Platform.runLater(new Runnable() {
             @Override
             public void run() {
 
                 try {
                     // Write welcome/init message to the client.
 
+                    send(CR + CR + CR);
+                    send(Messages.get("tncInit") + CR);
 
-                    send(ANSI.YELLOW+Messages.get("tncInit") + CR);
+                    Platform.runLater(() -> {
+                        Tools.delay(1000);
+                        try {
+                            checkConfiguration();
+                            send("");
+                            send(Messages.get("tncHelp") + CR);
+                            send(parser.getPrompt());
+                        }catch (IOException e) {
+                            LOG.error(e.getMessage(), e);
+                        }
+                    });
 
-                    checkConfiguration();
-
-                    send(Messages.get("tncHelp") + CR);
-
-                    send(parser.getPrompt());
                 } catch (IOException e) {
                     LOG.error(e.getMessage(), e);
                 }
@@ -132,15 +140,32 @@ public class TNCHost {
             // If there is a fail reason, then we need to display a warning to the user.
             List<Interface> interfaces = KISSet.INSTANCE.getInterfaceHandler().getInterfaces();
             if (interfaces.size() > 0) {
-                for (Interface iface : interfaces) {
-                    String failReason = iface.getFailReason();
-                    if (failReason != null) {
-                        send("*** " + failReason + CR);
-                    }
-                }
+
+                send(ANSI.BOLD+"Configured Interfaces:" +ANSI.NORMAL);
+                ChangeInterface changeInterface = new ChangeInterface();
+                changeInterface.setClient(this, null);
+                changeInterface.showInterfaces();
+
             } else {
                 send(ANSI.YELLOW + "*** No interfaces configured - please set one up in the preferences" + ANSI.NORMAL + CR);
             }
+
+
+            if (KISSet.INSTANCE.getMyCallNoSSID() == null || KISSet.INSTANCE.getMyCallNoSSID().length() < 2) {
+                send(ANSI.YELLOW + "*** No callsign configured - please set one up in the preferences" + ANSI.NORMAL + CR);
+            } else {
+                String callsignNoSSID = KISSet.INSTANCE.getMyCallNoSSID();
+                send(ANSI.BOLD+"Configured Callsign: " +ANSI.NORMAL);
+                send(KISSet.INSTANCE.getMyCall());
+                // Also show PMS if enabled
+                if (KISSet.INSTANCE.getConfig().getConfig(Conf.pmsEnabled, Conf.pmsEnabled.boolDefault())) {
+                    send(ANSI.BOLD+", Mailbox/PMS: " +ANSI.NORMAL);
+                    send(callsignNoSSID);
+                    send(KISSet.INSTANCE.getConfig().getConfig(Conf.pmsSSID, Conf.pmsSSID.stringDefault()));
+                }
+                send(CR);
+            }
+
         } catch (IOException e) {
             LOG.error(e.getMessage(), e);
         }
@@ -162,6 +187,7 @@ public class TNCHost {
 
     /**
      * Show packets when monitor mode is enabled
+     *
      * @param event
      */
     @Subscribe

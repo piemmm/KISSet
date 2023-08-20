@@ -90,9 +90,11 @@ public class KISSviaTCP extends Interface {
                 socketConnection = new Socket(InetAddress.getByName(address), port);
                 in = new BufferedInputStream(socketConnection.getInputStream());
                 out = new BufferedOutputStream(socketConnection.getOutputStream());
+                interfaceStatus = new InterfaceStatus(InterfaceStatus.State.OK,null);
                 LOG.info("Connected to kiss service at: " + address + ":" + port);
                 break;
             } catch (ConnectException e) {
+                interfaceStatus = new InterfaceStatus(InterfaceStatus.State.WARN, "Waiting 30s to connect due to: " + e.getMessage());
                 LOG.warn("Delaying 30s due to unable to connect to " + address + ":" + port + ": " + e.getMessage());
                 Tools.delay(30000);
             } catch (Exception e) {
@@ -102,7 +104,7 @@ public class KISSviaTCP extends Interface {
         }
 
         if (in == null || out == null) {
-            failReason = "Could not connect to remote KISS service at: " + address + ":" + port;
+            interfaceStatus = new InterfaceStatus(InterfaceStatus.State.ERROR, "Could not connect to remote KISS service at: " + address + ":" + port);
             LOG.error("Unable to connect to kiss service at: " + address + ":" + port + " - this connector is stopping.");
             running = false;
             return;
