@@ -152,7 +152,7 @@ public class TNCHost {
 
 
             if (KISSet.INSTANCE.getMyCallNoSSID() == null || KISSet.INSTANCE.getMyCallNoSSID().length() < 2) {
-                send(ANSI.YELLOW + "*** No callsign configured - please set one up in the preferences" + ANSI.NORMAL + CR);
+                send(ANSI.YELLOW + "*** No callsign configured - please set one in the preferences" + ANSI.NORMAL + CR);
             } else {
                 String callsignNoSSID = KISSet.INSTANCE.getMyCallNoSSID();
                 send(ANSI.BOLD+"Configured Callsign: " +ANSI.NORMAL);

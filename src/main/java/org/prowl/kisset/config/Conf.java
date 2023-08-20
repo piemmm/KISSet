@@ -10,8 +10,8 @@ public enum Conf {
     // Enum list of configuration variables with their defaults
     callsign(""),
     monitor(false),
-    terminalFont("Monospaced"),
-    terminalFontSize(12),
+    terminalFont(OSDefaults.getDefaultPlatformFont()),
+    terminalFontSize(14),
     monitorTransparency(0),
     terminalTransparency(0),
 
