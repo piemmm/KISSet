@@ -106,13 +106,13 @@ public class INP3Route {
     public enum INP3OptionType {
         ALIAS(0),
         IP(1),
-        APRS_POSITION(0x10), // Position in APRS format
+        APRS_POSITION(0x10), // 4 byes lat, 4 bytes lon, in degrees * 6000
         NODETYPE(0x11),
         TIMESTAMP(0x12),
-        TCP_SERVICE(0x13), // tcp service number for telnet via amprnet
+        TCP_SERVICE(0x13), // tcp service number for telnet via amprnet, 2 bytes in network byte order
         TZOFFSET(0x14), // Timezone offset from GMT
-        MAIDENHEAD(0x15), // Maidenhead locator
-        QTH(0x16), // QTH locator
+        MAIDENHEAD(0x15), // Maidenhead locator. String, no null terminator
+        QTH(0x16), // QTH locator, String, no null terminator
         SOFTWARE_VERSION(0x17);
 
         private int value;
