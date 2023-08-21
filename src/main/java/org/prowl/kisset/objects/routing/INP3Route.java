@@ -108,7 +108,7 @@ public class INP3Route {
         IP(1),
         APRS_POSITION(0x10), // 4 byes lat, 4 bytes lon, in degrees * 6000
         NODETYPE(0x11),
-        TIMESTAMP(0x12),
+        TIMESTAMP(0x12), // 4 bytes, secs since 1970, inserted by originator, must *never* be changed
         TCP_SERVICE(0x13), // tcp service number for telnet via amprnet, 2 bytes in network byte order
         TZOFFSET(0x14), // Timezone offset from GMT
         MAIDENHEAD(0x15), // Maidenhead locator. String, no null terminator
