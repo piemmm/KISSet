@@ -7,10 +7,10 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * This represents the contents of a routing packet sent using the INP3 protocol
+ */
 public class INP3Route {
-
-    // INP3 is time based, and this is the hard maximum age we will keep a 'non-responding' node for.
-    private static final long MAX_AGE = 1000 * 60 * 60 * 2; // 2 hours
 
     private String sourceCallsign;
     private Interface anInterface;
@@ -104,8 +104,9 @@ public class INP3Route {
      */
     public enum INP3OptionType {
         ALIAS(0),
-        IP(1);
-
+        IP(1),
+        APRS_POSITION(0x10), // Position in APRS format
+        TZOFFSET(0x14); // Timezone offset from GMT
         private int value;
 
         private INP3OptionType(int value) {
