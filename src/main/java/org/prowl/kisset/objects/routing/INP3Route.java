@@ -106,7 +106,14 @@ public class INP3Route {
         ALIAS(0),
         IP(1),
         APRS_POSITION(0x10), // Position in APRS format
-        TZOFFSET(0x14); // Timezone offset from GMT
+        NODETYPE(0x11),
+        TIMESTAMP(0x12),
+        TCP_SERVICE(0x13), // tcp service number for telnet via amprnet
+        TZOFFSET(0x14), // Timezone offset from GMT
+        MAIDENHEAD(0x15), // Maidenhead locator
+        QTH(0x16), // QTH locator
+        SOFTWARE_VERSION(0x17);
+
         private int value;
 
         private INP3OptionType(int value) {
