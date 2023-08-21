@@ -12,6 +12,7 @@ import java.util.List;
  */
 public class INP3Route {
 
+    private static final long MAX_AGE = 1000l * 60l * 60l * 2; // 2 hours for we drop the route as a hard limit.
     private String sourceCallsign;
     private Interface anInterface;
 
