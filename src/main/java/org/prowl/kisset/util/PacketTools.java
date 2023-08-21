@@ -10,9 +10,10 @@ import org.prowl.kisset.KISSet;
 import org.prowl.kisset.ax25.AX25Frame;
 import org.prowl.kisset.core.Node;
 import org.prowl.kisset.eventbus.events.HeardNodeEvent;
-import org.prowl.kisset.netrom.NetROMPacket;
-import org.prowl.kisset.netrom.NetROMRoutingPacket;
-import org.prowl.kisset.netrom.inp3.L3RTTPacket;
+import org.prowl.kisset.routing.netrom.NetROMPacket;
+import org.prowl.kisset.routing.netrom.NetROMRoutingPacket;
+import org.prowl.kisset.routing.xrouter.INP3RoutingPacket;
+import org.prowl.kisset.routing.xrouter.L3RTTPacket;
 
 import java.nio.ByteBuffer;
 
@@ -84,14 +85,25 @@ public class PacketTools {
     public static String decodeNetROMToText(Node node) {
 
         try {
-            if ((node.getFrame().getBody()[0] & 0xFF) == 0xFF) {
-                NetROMRoutingPacket netROMRoutingPacket = new NetROMRoutingPacket(node);
-                return netROMRoutingPacket.toString();
+            byte[] body = node.getFrame().getBody();
+            if ((body[0] & 0xFF) == 0xFF) {
+                // Check to see if this is an INP3 routing packet.
+                // INP3 ends with a 00 byte (which you don't get on netrom as that's a quality of 0)
+                if (body[body.length - 1] == 0x00) {
+                    // Check to see if this is L3RTT
+                    INP3RoutingPacket inp3RoutingPacket = new INP3RoutingPacket(node);
+                    return inp3RoutingPacket.toString();
+                } else {
+                    // Normal netrom
+                    NetROMRoutingPacket netROMRoutingPacket = new NetROMRoutingPacket(node);
+                    return netROMRoutingPacket.toString();
+                }
             } else if (L3RTTPacket.isL3RTT(node)) {
-                // Check to see if this is INP3/L3RTT
+                // Check to see if this is a L3RTT measurement packet
                 L3RTTPacket l3rttPacket = new L3RTTPacket(node);
                 return l3rttPacket.toString();
             } else {
+                // Generic Net/ROM packet.
                 NetROMPacket netROMPacket = new NetROMPacket(node);
                 return netROMPacket.toString();
             }

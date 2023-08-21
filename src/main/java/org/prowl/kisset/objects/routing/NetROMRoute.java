@@ -1,4 +1,4 @@
-package org.prowl.kisset.objects.netrom;
+package org.prowl.kisset.objects.routing;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -13,8 +13,8 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.text.SimpleDateFormat;
 
-public class NetROMNode {
-    private static final Log LOG = LogFactory.getLog("NetROMNode");
+public class NetROMRoute {
+    private static final Log LOG = LogFactory.getLog("NetROMRoute");
 
     private static final long MAX_AGE = 1000 * 60 * 60 * 2; // 2 hours
 
@@ -27,11 +27,11 @@ public class NetROMNode {
     public long lastHeard;
 
 
-    public NetROMNode() {
+    public NetROMRoute() {
 
     }
 
-    public NetROMNode(Interface anInterface, String sourceCallsign, String destinationNodeCallsign, String destinationNodeMnemonic, String neighbourNodeCallsign, int bestQualityValue) {
+    public NetROMRoute(Interface anInterface, String sourceCallsign, String destinationNodeCallsign, String destinationNodeMnemonic, String neighbourNodeCallsign, int bestQualityValue) {
         this.anInterface = anInterface;
         this.destinationNodeCallsign = destinationNodeCallsign;
         this.destinationNodeMnemonic = destinationNodeMnemonic;
@@ -69,6 +69,10 @@ public class NetROMNode {
         return lastHeard;
     }
 
+    /**
+     * Show a human readable version of the routing packet
+     * @return
+     */
     public String toString() {
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yy HH:mm:ss");
         StringBuilder builder = new StringBuilder();
@@ -119,7 +123,7 @@ public class NetROMNode {
     /**
      * Deserialise from a byte array
      **/
-    public NetROMNode fromPacket(DataInputStream din) throws InvalidMessageException {
+    public NetROMRoute fromPacket(DataInputStream din) throws InvalidMessageException {
 
         try {
             anInterface = KISSet.INSTANCE.getInterfaceHandler().getInterfaceByUUID(Tools.readString(din, din.readInt()));

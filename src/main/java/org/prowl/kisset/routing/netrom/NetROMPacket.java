@@ -1,4 +1,4 @@
-package org.prowl.kisset.netrom;
+package org.prowl.kisset.routing.netrom;
 
 import org.prowl.kisset.core.Node;
 import org.prowl.kisset.util.ANSI;
@@ -149,6 +149,9 @@ public class NetROMPacket {
         sb.append("\r\n reserved=").append(reserved);
         String name;
         switch (opCode) {
+            case 0:
+                name = "Protocol ID extension to network layer"; // No documentation
+                break;
             case 1:
                 name = "Connect Request";
                 break;
@@ -168,7 +171,10 @@ public class NetROMPacket {
                 name = "Information Acknowledge";
                 break;
             case 7:
-                name = "Reset"; // Operation designed by G8PZT
+                name = "Reset"; // Operation designed by G8PZT *OR* number of transport opcodes (to be checked which) - no documentation
+                break;
+            case 8:
+                name = "Extended Connection Request";// CREQX - some undocumented xrouter thing
                 break;
             default:
                 name = "unknown";

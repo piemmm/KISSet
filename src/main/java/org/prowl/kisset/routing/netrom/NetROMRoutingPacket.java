@@ -1,9 +1,9 @@
-package org.prowl.kisset.netrom;
+package org.prowl.kisset.routing.netrom;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.prowl.kisset.core.Node;
-import org.prowl.kisset.objects.netrom.NetROMNode;
+import org.prowl.kisset.objects.routing.NetROMRoute;
 import org.prowl.kisset.util.PacketTools;
 
 import java.nio.ByteBuffer;
@@ -18,7 +18,7 @@ public class NetROMRoutingPacket {
 
     private String sendingNode;
 
-    private List<NetROMNode> nodesInThisPacket = new ArrayList<>();
+    private List<NetROMRoute> nodesInThisPacket = new ArrayList<>();
 
     /**
      * Parse a netrom routing pocket. These appear to be loosely based on the ax.25 address spec,
@@ -26,14 +26,14 @@ public class NetROMRoutingPacket {
      * @param node
      */
     public NetROMRoutingPacket(Node node) {
+        byte[] body = node.getFrame().getBody();
+        ByteBuffer buffer = ByteBuffer.wrap(body);
 
-        ByteBuffer buffer = ByteBuffer.wrap(node.getFrame().getBody());
-
-        // Signature, should always be 0xFF
+        // Signature, first byte should always be 0xFF, and last not 0x00
+        int lastByte = body[body.length - 1] & 0xFF;
         int firstByte = buffer.get() & 0xFF;
-        if (firstByte == 0xFF) {
+        if (firstByte == 0xFF && lastByte != 0x00) {
             sendingNode = PacketTools.getData(buffer, 6, false);
-
             LOG.debug("Buffer size: + " + buffer.remaining() + " bytes");
             while (buffer.hasRemaining()) {
                 try {
@@ -42,9 +42,11 @@ public class NetROMRoutingPacket {
                     String neighbourNodeCallsign = PacketTools.getData(buffer, 7, true);
                     int bestQualityValue = buffer.get() & 0xFF;
                     LOG.debug("Adding routing entry: " + destinationNodeCallsign + "/" + destinationNodeMnemonic + " via " + neighbourNodeCallsign + " with quality " + bestQualityValue);
-                    NetROMNode routedNode = new NetROMNode(node.getInterface(), node.getCallsign(), destinationNodeCallsign, destinationNodeMnemonic, neighbourNodeCallsign, bestQualityValue);
+                    NetROMRoute routedNode = new NetROMRoute(node.getInterface(), node.getCallsign(), destinationNodeCallsign, destinationNodeMnemonic, neighbourNodeCallsign, bestQualityValue);
                     nodesInThisPacket.add(routedNode);
                 } catch (Throwable e) {
+                    // If the packet was corrupt, then don't trust anything in it.
+                    nodesInThisPacket.clear();
                     LOG.error(e.getMessage(), e);
                 }
             }
@@ -55,7 +57,7 @@ public class NetROMRoutingPacket {
      * Get the nodes in this packet
      * @return
      */
-    public List<NetROMNode> getNodesInThisPacket() {
+    public List<NetROMRoute> getRoutesInThisPacket() {
         return nodesInThisPacket;
     }
 
@@ -65,7 +67,7 @@ public class NetROMRoutingPacket {
         builder.append("Net/ROM routing packet from ");
         builder.append(sendingNode);
         builder.append(":\r\n");
-        for (NetROMNode node : nodesInThisPacket) {
+        for (NetROMRoute node : nodesInThisPacket) {
             builder.append(node.toString());
             builder.append("\r\n");
         }

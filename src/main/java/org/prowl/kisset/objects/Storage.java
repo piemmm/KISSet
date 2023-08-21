@@ -4,9 +4,9 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.prowl.kisset.netrom.RoutingTable;
+import org.prowl.kisset.routing.netrom.NetROMRoutingTable;
 import org.prowl.kisset.objects.messages.Message;
-import org.prowl.kisset.objects.netrom.NetROMNode;
+import org.prowl.kisset.objects.routing.NetROMRoute;
 
 import java.io.*;
 import java.util.*;
@@ -371,7 +371,7 @@ public class Storage {
      * Save the NetROM routing table to disk in a single file
      */
     public void saveNetROMRoutingTable() {
-        List<NetROMNode> nodes = new ArrayList<>(RoutingTable.INSTANCE.getNodes());
+        List<NetROMRoute> nodes = new ArrayList<>(NetROMRoutingTable.INSTANCE.getNodes());
 
         File routeFile = getRouteFile();
         routeFile.delete();
@@ -380,7 +380,7 @@ public class Storage {
              DataOutputStream dout = new DataOutputStream(fos)) {
 
             dout.writeInt(nodes.size());
-            for (NetROMNode node : nodes) {
+            for (NetROMRoute node : nodes) {
                 dout.write(node.toPacket());
             }
             dout.flush();
@@ -406,10 +406,10 @@ public class Storage {
 
             int count = din.readInt();
             for (int i = 0; i < count; i++) {
-                NetROMNode node = new NetROMNode();
+                NetROMRoute node = new NetROMRoute();
                 node.fromPacket(din);
                 if (!node.isExipred()) {
-                    RoutingTable.INSTANCE.addNode(node);
+                    NetROMRoutingTable.INSTANCE.addRoute(node);
                 }
             }
 

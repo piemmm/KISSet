@@ -10,8 +10,6 @@ import org.prowl.kisset.comms.host.parser.misc.StreamConnectionEstablishmentList
 import org.prowl.kisset.io.Interface;
 import org.prowl.kisset.io.Stream;
 import org.prowl.kisset.io.StreamState;
-import org.prowl.kisset.objects.netrom.NetROMNode;
-import org.prowl.kisset.netrom.RoutingTable;
 
 import java.io.IOException;
 

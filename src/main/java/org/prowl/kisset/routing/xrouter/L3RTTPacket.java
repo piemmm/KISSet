@@ -1,4 +1,4 @@
-package org.prowl.kisset.netrom.inp3;
+package org.prowl.kisset.routing.xrouter;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -84,8 +84,8 @@ public class L3RTTPacket {
 
         ByteBuffer buffer = ByteBuffer.wrap(node.getFrame().getBody());
         // Src and dest callsigns
-        PacketTools.getData(buffer, 7, true);
-        PacketTools.getData(buffer, 7, true);
+        String senderNodeCall = PacketTools.getData(buffer, 7, true);
+        String l3rttCall = PacketTools.getData(buffer, 7, true); // Always L3RTT-0
         int ttl = buffer.get() & 0xFF;
 
         // Dummy L4 header

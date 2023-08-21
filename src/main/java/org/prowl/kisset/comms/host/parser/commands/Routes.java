@@ -2,8 +2,8 @@ package org.prowl.kisset.comms.host.parser.commands;
 
 import org.prowl.kisset.annotations.TNCCommand;
 import org.prowl.kisset.comms.host.parser.Mode;
-import org.prowl.kisset.objects.netrom.NetROMNode;
-import org.prowl.kisset.netrom.RoutingTable;
+import org.prowl.kisset.objects.routing.NetROMRoute;
+import org.prowl.kisset.routing.netrom.NetROMRoutingTable;
 import org.prowl.kisset.util.ANSI;
 
 import java.io.IOException;
@@ -28,12 +28,12 @@ public class Routes extends Command {
         writeToTerminal(CR);
 
         // Get the routes and interate
-        List<NetROMNode> nodes = RoutingTable.INSTANCE.getNodes();
+        List<NetROMRoute> nodes = NetROMRoutingTable.INSTANCE.getNodes();
         if (nodes.size()> 0) {
             writeToTerminal(ANSI.BOLD+ANSI.UNDERLINE+"List of Net/ROM routes seen from local nodes:"+ANSI.NORMAL + CR);
 
             long now = System.currentTimeMillis();
-            for (NetROMNode node : nodes) {
+            for (NetROMRoute node : nodes) {
 
                 String color;
                 if (now - node.getLastHeard() < HOUR) {

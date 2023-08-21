@@ -26,12 +26,11 @@ import org.prowl.kisset.fx.KISSetController;
 import org.prowl.kisset.fx.MonitorController;
 import org.prowl.kisset.fx.PreferencesController;
 import org.prowl.kisset.io.InterfaceHandler;
-import org.prowl.kisset.netrom.RoutingListener;
+import org.prowl.kisset.routing.RoutingListener;
 import org.prowl.kisset.objects.Storage;
 import org.prowl.kisset.statistics.Statistics;
 
 import javax.swing.*;
-import javax.swing.filechooser.FileSystemView;
 import java.awt.*;
 import java.awt.desktop.AppReopenedEvent;
 import java.awt.desktop.AppReopenedListener;
