@@ -11,6 +11,10 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * This is currently incomplete, pending some more work and fixing a few issues
+ *
+ */
 public class INP3RoutingPacket {
 
     private static final Log LOG = LogFactory.getLog("INP3RoutingPacket");
@@ -39,7 +43,7 @@ public class INP3RoutingPacket {
                 int length = buffer.get() & 0xFF;
                 LOG.debug("INP3: option length="+length);
                 if (length > buffer.remaining()) {
-                    LOG.error("INP3: option length is greater than remaining buffer length of "+length+" > "+buffer.remaining());
+                    LOG.error("INP3: option length is greater than remaining buffer length: "+length+" > "+buffer.remaining());
                 }
                 INP3Route.INP3OptionType type = INP3Route.INP3OptionType.fromValue(buffer.get() & 0xFF);
                 LOG.debug("INP3: option type="+type);
