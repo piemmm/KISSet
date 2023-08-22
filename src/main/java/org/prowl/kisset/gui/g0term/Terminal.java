@@ -35,7 +35,7 @@ public class Terminal extends HBox {
     private static final Log LOG = LogFactory.getLog("G0Terminal");
 
     private static final int maxLines = 1000;
-    List<byte[]> buffer = new ArrayList<>();
+    private final List<byte[]> buffer = new ArrayList<>();
 
     final Clipboard clipboard = Clipboard.getSystemClipboard();
     final ClipboardContent content = new ClipboardContent();
@@ -85,7 +85,6 @@ public class Terminal extends HBox {
         vScrollBar.setVisible(true);
         vScrollBar.valueProperty().addListener((observable, oldValue, newValue) -> queueRedraw());
         vScrollBar.setMin(0);
-        // vScrollBar.setMax(1000); // This can be lines of text position.
         vScrollBar.setUnitIncrement(1);
         vScrollBar.setBlockIncrement(1);
 
@@ -212,42 +211,47 @@ public class Terminal extends HBox {
     }
 
     private void makeNewLine() {
-        String str = currentLine.toString();
-        byte[] bytes = str.getBytes();
-        buffer.add(bytes);
-        lineWidths.add(ANSI.stripAnsiCodes(str).length());
-        attributesInUse.add(new QuickAttribute());
+        synchronized (buffer) {
+            String str = currentLine.toString();
+            byte[] bytes = str.getBytes();
+            buffer.add(bytes);
+            lineWidths.add(ANSI.stripAnsiCodes(str).length());
+            attributesInUse.add(new QuickAttribute());
 
-        // If the scrollback buffer is full, then start chopping off the top.
-        if (buffer.size() > maxLines) {
-            buffer.remove(0);
-            lineWidths.remove(0);
-            attributesInUse.remove(0);
+            // If the scrollback buffer is full, then start chopping off the top.
+            if (buffer.size() > maxLines) {
+                buffer.remove(0);
+                lineWidths.remove(0);
+                attributesInUse.remove(0);
+            }
         }
+
+        final boolean atMax = vScrollBar.getValue() >= vScrollBar.getMax() - 1;
 
         Platform.runLater(() -> {
 
             // Update the scrollbar extents
             vScrollBar.setMin(0);
             vScrollBar.setVisibleAmount(Math.ceil(getHeight() / charHeight));
+            int screenful = (int) Math.ceil(getHeight() / charHeight);
+            vScrollBar.setMax(Math.max(0, buffer.size() - screenful));
 
             // Scroll to the bottom and keep it there only if the user is already scrolled at the bottom
-            if (vScrollBar.getValue() == vScrollBar.getMax() || firstTime) {
+            if (atMax || firstTime) {
                 firstTime = false;
-                vScrollBar.setMax(buffer.size()); // This can be lines of text position.
                 vScrollBar.setValue(vScrollBar.getMax());
-            } else {
-                vScrollBar.setMax(buffer.size()); // This can be lines of text position.
             }
         });
 
     }
 
     private void updateCurrentLine() {
-        String str = currentLine.toString();
-        byte[] bytes = str.getBytes();
-        buffer.set(buffer.size() - 1, bytes);
-        lineWidths.set(lineWidths.size() - 1, ANSI.stripAnsiCodes(str).length());
+        synchronized (buffer) {
+            String str = currentLine.toString();
+            byte[] bytes = str.getBytes();
+            buffer.set(buffer.size() - 1, bytes);
+            lineWidths.set(lineWidths.size() - 1, ANSI.stripAnsiCodes(str).length());
+        }
     }
 
     /**
@@ -446,7 +450,7 @@ public class Terminal extends HBox {
 
                     g.fillText(String.valueOf((char) line[j]), x, y);
                     if (bold) {
-                        g.fillText(String.valueOf((char) line[j]), x + 1, y );
+                        g.fillText(String.valueOf((char) line[j]), x + 1, y);
                     }
                     if (underline) {
                         g.strokeLine(x, y + charHeight - baseline, x + charWidth, y + charHeight - baseline);
