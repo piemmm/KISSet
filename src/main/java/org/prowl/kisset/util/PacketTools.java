@@ -82,7 +82,7 @@ public class PacketTools {
      * @param node
      * @return
      */
-    public static String decodeNetROMToText(Node node) {
+    public synchronized static String decodeNetROMToText(Node node) {
 
         try {
             byte[] body = node.getFrame().getBody();

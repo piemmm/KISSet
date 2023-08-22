@@ -12,8 +12,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * This is currently incomplete, pending some more work and fixing a few issues
- *
+ * This is currently incomplete probably incorrect for xrouter which has extended the spec,
+ * and is pending some more work to make this work with xrouter whilst still keeping inp3 compatibility.
+ * dependent on documentation for xrouter extensions to INP3.
  */
 public class INP3RoutingPacket {
 
@@ -25,42 +26,54 @@ public class INP3RoutingPacket {
     private String destinationCallsign; // The advertised node callsign.
     private int hops;
     private int tripTime;
-    private List<INP3Route.INP3Option> options = new ArrayList<>();
 
     public INP3RoutingPacket(Node node) {
         try {
             originCallsign = node.getCallsign();
-            LOG.debug("INP3: originCallsign="+originCallsign);
+            LOG.debug("originCallsign=" + originCallsign);
             ByteBuffer buffer = ByteBuffer.wrap(node.getFrame().getBody());
             buffer.get(); // 0xFF
 
+            // RIF header
             destinationCallsign = PacketTools.getData(buffer, 7, true);
             hops = buffer.get() & 0xFF;
             tripTime = buffer.getShort() & 0xFFFF;
+            List<INP3Route.INP3Option> options = new ArrayList<>();
+            INP3Route inp3Route = new INP3Route(node.getInterface(), originCallsign, destinationCallsign, hops, tripTime, options);
+            LOG.debug("dest=" + destinationCallsign + ", hops=" + hops + ", tripTime=" + tripTime);
 
-            LOG.debug("INP3: dest="+destinationCallsign+", hops="+hops+", tripTime="+tripTime);
-            while (buffer.remaining() > 2) {
+            do {
+
+                // Standard RIP inside RIF
                 int length = buffer.get() & 0xFF;
-                LOG.debug("INP3: option length="+length);
-                if (length > buffer.remaining()) {
-                    LOG.error("INP3: option length is greater than remaining buffer length: "+length+" > "+buffer.remaining());
+
+                // Check the packet hasn't ended.
+                if (length == 0) {
+                    // End of packet marker.  We follow spec so exit.
+                    if (buffer.remaining() > 4) {
+                        // Screwed packet, or xrouter extensions which we ignore due to no documentation.
+                        LOG.warn("packet ended but there is still data in the buffer.  This is probably a proprietary xrouter extension.");
+                    }
+                    routes.add(inp3Route);
+                    return; // End of packet
                 }
-                INP3Route.INP3OptionType type = INP3Route.INP3OptionType.fromValue(buffer.get() & 0xFF);
-                LOG.debug("INP3: option type="+type);
+                LOG.debug("option length=" + length);
+
+                // Sense check on packet length
+                if (length > buffer.remaining()) {
+                    LOG.error("option length is greater than remaining buffer length: " + length + " > " + buffer.remaining());
+                    return; // Invalid packet
+                }
+                int typeId = buffer.get() & 0xFF;
+                INP3Route.INP3OptionType type = INP3Route.INP3OptionType.fromValue(typeId);
+                LOG.debug("option type=" + type + "(0x" + Integer.toString(typeId, 16) + ")");
+
                 byte[] data = new byte[length];
                 buffer.get(data);
-                LOG.debug("INP3: option data="+ Tools.byteArrayToReadableASCIIString(data));
+                LOG.debug("option data=" + Tools.byteArrayToReadableASCIIString(data));
                 options.add(new INP3Route.INP3Option(type, data));
-            }
-            // end frame marker is 0x00
-            int endMarker = buffer.get();
-            if (endMarker == 0x00) {
-                LOG.debug("INP3: end marker found, adding route.");
-                routes.add(new INP3Route(node.getInterface(), originCallsign, destinationCallsign, hops, tripTime, options));
-            } else {
-                // Invalid INP3 frame not following current documentation for INP3 - log it.
-                LOG.error("Invalid INP3 frame from " + originCallsign + " detected:" + Tools.byteArrayToReadableASCIIString(node.getFrame().getBody()));
-            }
+
+            } while (buffer.remaining() > 0);
 
         } catch (Throwable e) {
             LOG.error("Invalid INP3 frame from " + originCallsign + " detected:" + Tools.byteArrayToReadableASCIIString(node.getFrame().getBody()));
@@ -79,7 +92,7 @@ public class INP3RoutingPacket {
         builder.append("INP3 routing packet from ");
         builder.append(originCallsign);
         builder.append(":\r\n");
-        for (INP3Route route: getRoutes()) {
+        for (INP3Route route : getRoutes()) {
             builder.append(route);
             builder.append("\r\n");
         }

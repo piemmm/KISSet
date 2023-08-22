@@ -171,7 +171,7 @@ public class NetROMPacket {
                 name = "Information Acknowledge";
                 break;
             case 7:
-                name = "Reset"; // Operation designed by G8PZT *OR* number of transport opcodes (to be checked which) - no documentation
+                name = "Reset"; // Operation designed by G8PZT
                 break;
             case 8:
                 name = "Extended Connection Request";// CREQX - some undocumented xrouter thing
