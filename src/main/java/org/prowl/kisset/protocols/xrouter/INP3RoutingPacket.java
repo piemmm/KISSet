@@ -12,9 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * This is currently incomplete probably incorrect for xrouter which has extended the spec,
- * and is pending some more work to make this work with xrouter whilst still keeping inp3 compatibility.
- * dependent on documentation for xrouter extensions to INP3.
+ * Decodes an INP3 routing packet.
  */
 public class INP3RoutingPacket {
 
@@ -46,14 +44,14 @@ public class INP3RoutingPacket {
             do {
 
                 // Standard RIP inside RIF
-                int length = buffer.get() & 0xFF;
+                int length = (buffer.get() & 0xFF)-2;
 
                 // Check the packet hasn't ended.
-                if (length == 0) {
-                    // End of packet marker.  We follow spec so exit.
-                    if (buffer.remaining() > 4) {
-                        // Screwed packet, or xrouter extensions which we ignore due to no documentation.
-                        LOG.warn("packet ended but there is still data in the buffer.  This is probably a proprietary xrouter extension.");
+                if (length < 0) {
+                    // End of packet marker.  We follow spec so still exit.
+                    if (buffer.remaining() > 0) {
+                        // Screwed packet
+                        LOG.warn("packet ended but there is still data in the buffer:" + buffer.remaining() + " bytes");
                     }
                     routes.add(inp3Route);
                     return; // End of packet
