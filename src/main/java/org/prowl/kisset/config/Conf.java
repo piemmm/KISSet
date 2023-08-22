@@ -54,7 +54,6 @@ public enum Conf {
     // MQTT settings
     mqttPacketUploadEnabled(false),
     mqttBrokerHostname(""),
-    mqttBrokerPort(1883),
     mqttBrokerUsername(""),
     mqttBrokerPassword(""),
     mqttBrokerTopic("");

@@ -22,10 +22,11 @@ module org.prowl.kisset {
     requires javAPRSlib;
     requires javafx.web;
     requires com.gluonhq.maps;
-
+    requires org.eclipse.paho.client.mqttv3;
 
     opens org.prowl.kisset to javafx.fxml;
     exports org.prowl.kisset.eventbus.events;
+    exports org.prowl.kisset.protocols.mqtt;
     exports org.prowl.kisset;
     exports org.prowl.kisset.fx;
     exports org.prowl.kisset.protocols.aprs;

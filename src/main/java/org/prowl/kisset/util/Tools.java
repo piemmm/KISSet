@@ -5,6 +5,8 @@ import javafx.scene.text.FontPosture;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import net.ab0oo.aprs.parser.APRSPacket;
+import net.ab0oo.aprs.parser.APRSTypes;
+import net.ab0oo.aprs.parser.InformationField;
 import net.ab0oo.aprs.parser.Parser;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -94,7 +96,16 @@ public class Tools {
             try {
                 String aprsString = frame.sender.toString() + ">" + frame.dest.toString() + ":" + frame.getAsciiFrame();
                 APRSPacket packet = Parser.parse(aprsString);
-                isAprs = packet.isAprs();
+                if (packet.isAprs()) {
+                    InformationField informationField = packet.getAprsInformation();
+                    if (informationField != null) {
+                        if (informationField.getAprsData(APRSTypes.T_POSITION) != null ||
+                                informationField.getAprsData(APRSTypes.T_OBJECT) != null ||
+                                informationField.getAprsData(APRSTypes.T_ITEM) != null) {
+                            isAprs = true;
+                        }
+                    }
+                }
             } catch (Throwable e) {
                 // Ignore - probably not aprs. or unable to parse MICe
             }

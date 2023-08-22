@@ -8,6 +8,7 @@
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.PasswordField?>
 <?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.Slider?>
 <?import javafx.scene.control.Tab?>
@@ -369,7 +370,7 @@
                                           <Insets right="5.0" />
                                        </GridPane.margin>
                                     </Label>
-                                    <TextField fx:id="mqttServerHostAndPort" promptText="severname:portnumber" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                                    <TextField fx:id="mqttServerHostAndPort" promptText="eg: tcp://mqtt.server.com:1833" GridPane.columnIndex="1" GridPane.rowIndex="1">
                                        <GridPane.margin>
                                           <Insets right="10.0" />
                                        </GridPane.margin>
@@ -379,16 +380,16 @@
                                           <Insets right="10.0" />
                                        </GridPane.margin>
                                     </TextField>
-                                    <TextField fx:id="mqttPassword" GridPane.columnIndex="1" GridPane.rowIndex="3">
-                                       <GridPane.margin>
-                                          <Insets right="10.0" />
-                                       </GridPane.margin>
-                                    </TextField>
                                     <TextField fx:id="mqttTopic" GridPane.columnIndex="1" GridPane.rowIndex="4">
                                        <GridPane.margin>
                                           <Insets right="10.0" />
                                        </GridPane.margin>
                                     </TextField>
+                                    <PasswordField fx:id="mqttPassword" GridPane.columnIndex="1" GridPane.rowIndex="3">
+                                       <GridPane.margin>
+                                          <Insets right="10.0" />
+                                       </GridPane.margin>
+                                    </PasswordField>
                                  </children>
                               </GridPane>
                            </children>

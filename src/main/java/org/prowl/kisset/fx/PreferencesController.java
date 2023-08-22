@@ -82,7 +82,7 @@ public class PreferencesController {
     @FXML
     private CheckBox enableAPRSDecoderKISS;
     @FXML
-    private ChoiceBox connectToAPRSIS;
+    private CheckBox connectToAPRSIS;
     @FXML
     private TextField aprsisServerHost;
 
@@ -140,6 +140,18 @@ public class PreferencesController {
         config.setProperty(Conf.netromSSID, netromNodeSSIDChoiceBox.getSelectionModel().getSelectedItem());
         config.setProperty(Conf.netromAlias, netromNodeAliasTextField.getText());
         config.setProperty(Conf.netromGreetingText, netromGreetingTextField.getText());
+
+        // APRS
+        config.setProperty(Conf.aprsDecoingOverKISSEnabled, enableAPRSDecoderKISS.isSelected());
+        config.setProperty(Conf.connectToAPRSIServer, connectToAPRSIS.isSelected());
+        config.setProperty(Conf.aprsIServerHostname, aprsisServerHost.getText());
+
+        // MQTT
+        config.setProperty(Conf.mqttPacketUploadEnabled, enableMQTTCheckbox.isSelected());
+        config.setProperty(Conf.mqttBrokerHostname, mqttServerHostAndPort.getText());
+        config.setProperty(Conf.mqttBrokerUsername, mqttUsername.getText());
+        config.setProperty(Conf.mqttBrokerPassword, mqttPassword.getText());
+        config.setProperty(Conf.mqttBrokerTopic, mqttTopic.getText());
 
         // Interfaces preference pane
         // Save our preferences config
@@ -242,6 +254,18 @@ public class PreferencesController {
         }
         netromNodeAliasTextField.setText(alias);
         netromGreetingTextField.setText(config.getConfig(Conf.netromGreetingText, Conf.netromGreetingText.stringDefault()));
+
+        // APRS
+        enableAPRSDecoderKISS.setSelected(config.getConfig(Conf.aprsDecoingOverKISSEnabled, Conf.aprsDecoingOverKISSEnabled.boolDefault()));
+        connectToAPRSIS.setSelected(config.getConfig(Conf.connectToAPRSIServer, Conf.connectToAPRSIServer.boolDefault()));
+        aprsisServerHost.setText(config.getConfig(Conf.aprsIServerHostname, Conf.aprsIServerHostname.stringDefault()));
+
+        // MQTT
+        enableMQTTCheckbox.setSelected(config.getConfig(Conf.mqttPacketUploadEnabled, Conf.mqttPacketUploadEnabled.boolDefault()));
+        mqttServerHostAndPort.setText(config.getConfig(Conf.mqttBrokerHostname, Conf.mqttBrokerHostname.stringDefault()));
+        mqttUsername.setText(config.getConfig(Conf.mqttBrokerUsername, Conf.mqttBrokerUsername.stringDefault()));
+        mqttPassword.setText(config.getConfig(Conf.mqttBrokerPassword, Conf.mqttBrokerPassword.stringDefault()));
+        mqttTopic.setText(config.getConfig(Conf.mqttBrokerTopic, Conf.mqttBrokerTopic.stringDefault()));
 
         // Set current font
         fontSelector.getSelectionModel().select(config.getConfig(Conf.terminalFont, Conf.terminalFont.stringDefault()));

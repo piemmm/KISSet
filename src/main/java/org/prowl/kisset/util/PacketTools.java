@@ -182,7 +182,15 @@ public class PacketTools {
                         String aprsString = frame.sender.toString() + ">" + frame.dest.toString() + ":" + frame.getAsciiFrame();
                         APRSPacket packet = Parser.parse(aprsString);
                         if (packet.isAprs()) {
-                            builder.append(readableTextFromAPRSFrame(packet));
+                            InformationField informationField = packet.getAprsInformation();
+                            if (informationField != null) {
+                                if (informationField.getAprsData(APRSTypes.T_POSITION) != null ||
+                                        informationField.getAprsData(APRSTypes.T_OBJECT) != null ||
+                                        informationField.getAprsData(APRSTypes.T_ITEM) != null) {
+
+                                    builder.append(readableTextFromAPRSFrame(packet));
+                                }
+                            }
                         }
                     } catch (Throwable e) {
                         // Ignore - probably not aprs. or unable to parse MICe
@@ -263,7 +271,7 @@ public class PacketTools {
         //builder.append(" Type:" + packet.getType() + CR);
         InformationField info = packet.getAprsInformation();
         if (info != null) {
-            PositionField positionField = (PositionField)info.getAprsData(APRSTypes.T_POSITION);
+            PositionField positionField = (PositionField) info.getAprsData(APRSTypes.T_POSITION);
             if (positionField != null) {
                 Position position = positionField.getPosition();
                 builder.append(" Latitude: " + position.getLatitude() + CR);
@@ -272,14 +280,14 @@ public class PacketTools {
                 builder.append(" Ambiguity: " + position.getPositionAmbiguity() + CR);
             }
 
-            ItemField itemField = (ItemField)info.getAprsData(APRSTypes.T_ITEM);
+            ItemField itemField = (ItemField) info.getAprsData(APRSTypes.T_ITEM);
             if (itemField != null) {
                 // ItemPacket item = (ItemPacket) info;
                 //builder.append(" Item Name: " + item.g+ CR);
 
             }
 
-            ObjectField objectField = (ObjectField)info.getAprsData(APRSTypes.T_OBJECT);
+            ObjectField objectField = (ObjectField) info.getAprsData(APRSTypes.T_OBJECT);
             if (objectField != null) {
                 builder.append(" Object Name: " + objectField.getObjectName() + CR);
             }

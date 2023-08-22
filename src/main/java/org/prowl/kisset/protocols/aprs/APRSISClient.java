@@ -1,6 +1,11 @@
 package org.prowl.kisset.protocols.aprs;
 
 import net.ab0oo.aprs.parser.*;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.prowl.kisset.KISSet;
+import org.prowl.kisset.config.Conf;
+import org.prowl.kisset.config.Config;
 import org.prowl.kisset.eventbus.SingleThreadBus;
 import org.prowl.kisset.eventbus.events.APRSPacketEvent;
 
@@ -22,10 +27,15 @@ public enum APRSISClient {
 
     INSTANCE;
 
+    private static final Log LOG = LogFactory.getLog("APRSISClient");
+
     public static final String SERVER = "rotate.aprs.net";
     public static final int PORT = 14580;
 
+    private Config config;
     private Timer timer;
+
+    private boolean running = false;
 
     // testing
     double lat = 52.0542919;
@@ -33,6 +43,7 @@ public enum APRSISClient {
 
 
     private APRSISClient() {
+        config = KISSet.INSTANCE.getConfig();
         timer = new Timer();
         timer.schedule(new TimerTask() {
             public void run() {
@@ -41,7 +52,19 @@ public enum APRSISClient {
         }, 10000, 60000);
     }
 
+    public void stop() {
+        timer.cancel();
+        running = false;
+    }
+
     public void connect() {
+        running = true;
+        boolean isEnabled = config.getConfig(Conf.mqttPacketUploadEnabled, Conf.mqttPacketUploadEnabled.boolDefault());
+        if (!isEnabled) {
+            return;
+        }
+
+
         try {
             Socket s = new Socket(InetAddress.getByName(SERVER), PORT);
             try {
@@ -55,12 +78,12 @@ public enum APRSISClient {
             InputStream in = s.getInputStream();
             OutputStream out = s.getOutputStream();
 
-            out.write(("user APRSPR-TS pass -1 filter r/"+lat+"/"+lon+"/100\n").getBytes());
+            out.write(("user APRSPR-TS pass -1 filter r/" + lat + "/" + lon + "/100\n").getBytes());
             out.flush();
 
             BufferedReader reader = new BufferedReader(new InputStreamReader(in), 32768);
 
-            while (!s.isClosed()) {
+            while (!s.isClosed() && running) {
 
                 String line = reader.readLine();
                 if (!line.startsWith("#")) {

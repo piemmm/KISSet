@@ -28,6 +28,7 @@ import org.prowl.kisset.objects.Storage;
 import org.prowl.kisset.protocols.aprs.APRSISClient;
 import org.prowl.kisset.protocols.aprs.APRSListener;
 import org.prowl.kisset.protocols.dxcluster.DXListener;
+import org.prowl.kisset.protocols.mqtt.MQTTClient;
 import org.prowl.kisset.statistics.Statistics;
 
 import javax.swing.*;
@@ -221,6 +222,10 @@ public class KISSet extends Application {
 
             // APRS-IS client
             APRSISClient client = APRSISClient.INSTANCE;
+
+            MQTTClient mqttClient = new MQTTClient();
+            mqttClient.start();
+
 
             initMonitor();
             initDX();
