@@ -1,4 +1,4 @@
-package org.prowl.kisset.routing.netrom;
+package org.prowl.kisset.protocols.netrom;
 
 import org.prowl.kisset.core.Node;
 import org.prowl.kisset.util.ANSI;

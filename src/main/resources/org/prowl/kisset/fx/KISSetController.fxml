@@ -3,10 +3,8 @@
 <?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.MenuItem?>
-<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.SeparatorMenuItem?>
 <?import javafx.scene.control.TextField?>
-<?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
@@ -25,6 +23,9 @@
                 <Menu mnemonicParsing="false" text="Window">
                     <items>
                         <MenuItem mnemonicParsing="false" onAction="#onMonitorAction" text="Monitor traffic" />
+                  <MenuItem mnemonicParsing="false" onAction="#onFBBAction" text="FBB Messages" />
+                  <MenuItem mnemonicParsing="false" onAction="#onDXAction" text="DX Spot Monitor" />
+                  <MenuItem mnemonicParsing="false" onAction="#onAPRSAction" text="APRS View" />
                     </items>
                 </Menu>
 

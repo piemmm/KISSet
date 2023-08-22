@@ -1,19 +1,16 @@
 package org.prowl.kisset.util;
 
+import net.ab0oo.aprs.parser.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.prowl.aprslib.parser.*;
-import org.prowl.aprslib.position.Ambiguity;
-import org.prowl.aprslib.position.Position;
-import org.prowl.aprslib.position.PositionPacket;
 import org.prowl.kisset.KISSet;
 import org.prowl.kisset.ax25.AX25Frame;
 import org.prowl.kisset.core.Node;
 import org.prowl.kisset.eventbus.events.HeardNodeEvent;
-import org.prowl.kisset.routing.netrom.NetROMPacket;
-import org.prowl.kisset.routing.netrom.NetROMRoutingPacket;
-import org.prowl.kisset.routing.xrouter.INP3RoutingPacket;
-import org.prowl.kisset.routing.xrouter.L3RTTPacket;
+import org.prowl.kisset.protocols.netrom.NetROMPacket;
+import org.prowl.kisset.protocols.netrom.NetROMRoutingPacket;
+import org.prowl.kisset.protocols.xrouter.INP3RoutingPacket;
+import org.prowl.kisset.protocols.xrouter.L3RTTPacket;
 
 import java.nio.ByteBuffer;
 
@@ -43,7 +40,7 @@ public class PacketTools {
                     // Stick the SSID on the end of the callsign after trimming it.
                     int ssid = Integer.parseInt(new String(new byte[]{callsign[callsign.length - 1]}), 16);
                     return new String(callsign, 0, callsign.length - 1).trim() + "-" + ssid;
-                } catch(Throwable e) {
+                } catch (Throwable e) {
                     //LOG.error(e.getMessage(), e);
                     // Ignore, because netrom keepalive packets don't have an SSID and are 7 characters.
                 }
@@ -170,24 +167,22 @@ public class PacketTools {
         if (node.getFrame().getByteFrame().length > 0) {
             builder.append(":");
             builder.append(CR);
-            builder.append(Tools.byteArrayToReadableASCIIString(node.getFrame().getByteFrame())+CR);
+            builder.append(Tools.byteArrayToReadableASCIIString(node.getFrame().getByteFrame()) + CR);
 
             // Print out anything we can decode
             AX25Frame frame = node.getFrame();
             byte pid = frame.getPid();
             if (pid == AX25Frame.PID_NETROM) {
                 // NetRom frame
-                builder.append(ANSI.MAGENTA + PacketTools.decodeNetROMToText(node) + CR+ANSI.NORMAL);
+                builder.append(ANSI.MAGENTA + PacketTools.decodeNetROMToText(node) + CR + ANSI.NORMAL);
             } else {
                 if (pid == AX25Frame.PID_NOLVL3) {
                     boolean isAprs = false;
                     try {
                         String aprsString = frame.sender.toString() + ">" + frame.dest.toString() + ":" + frame.getAsciiFrame();
                         APRSPacket packet = Parser.parse(aprsString);
-                        isAprs = packet.getType() != APRSTypes.UNSPECIFIED;//packet.isAprs();
-                        if (isAprs) {
+                        if (packet.isAprs()) {
                             builder.append(readableTextFromAPRSFrame(packet));
-
                         }
                     } catch (Throwable e) {
                         // Ignore - probably not aprs. or unable to parse MICe
@@ -265,38 +260,37 @@ public class PacketTools {
         StringBuilder builder = new StringBuilder();
         builder.append(ANSI.MAGENTA);
         builder.append("APRS Packet:");
-        builder.append(" Type:" + packet.getType() + CR);
+        //builder.append(" Type:" + packet.getType() + CR);
         InformationField info = packet.getAprsInformation();
         if (info != null) {
-            if (info instanceof PositionPacket) {
-                Position position = ((PositionPacket) info).getPosition();
+            PositionField positionField = (PositionField)info.getAprsData(APRSTypes.T_POSITION);
+            if (positionField != null) {
+                Position position = positionField.getPosition();
                 builder.append(" Latitude: " + position.getLatitude() + CR);
                 builder.append(" Longitude: " + position.getLongitude() + CR);
                 builder.append(" Altitude: " + position.getAltitude() + CR);
+                builder.append(" Ambiguity: " + position.getPositionAmbiguity() + CR);
+            }
 
-                Ambiguity ambiguity = position.getPositionAmbiguity();
-                if (ambiguity != null) {
-                    builder.append(" Ambiguity: " + ambiguity + CR);
-                }
-            } else if (info instanceof ItemPacket) {
-                    ItemPacket item = (ItemPacket) info;
-                    builder.append(" Item Name: " + item.getObjectName()+ CR);
-                    builder.append(" Latitude: " + item.getPosition().getLatitude() + CR);
-                    builder.append(" Longitude: " + item.getPosition().getLongitude() + CR);
-                    builder.append(" Altitude: " + item.getPosition().getAltitude() + CR);
-            } else if (info instanceof ObjectPacket) {
-                ObjectPacket object = (ObjectPacket) info;
-                builder.append(" Object Name: " + object.getObjectName() + CR);
-                builder.append(" Latitude: " + object.getPosition().getLatitude() + CR);
-                builder.append(" Longitude: " + object.getPosition().getLongitude() + CR);
-                builder.append(" Altitude: " + object.getPosition().getAltitude() + CR);
-            } else if (info instanceof MessagePacket) {
+            ItemField itemField = (ItemField)info.getAprsData(APRSTypes.T_ITEM);
+            if (itemField != null) {
+                // ItemPacket item = (ItemPacket) info;
+                //builder.append(" Item Name: " + item.g+ CR);
+
+            }
+
+            ObjectField objectField = (ObjectField)info.getAprsData(APRSTypes.T_OBJECT);
+            if (objectField != null) {
+                builder.append(" Object Name: " + objectField.getObjectName() + CR);
+            }
+
+            if (info instanceof MessagePacket) {
                 MessagePacket message = (MessagePacket) info;
                 builder.append(" Target Callsign: " + message.getTargetCallsign() + CR);
-                builder.append( "Message Number: " + message.getMessageNumber() + CR);
+                builder.append("Message Number: " + message.getMessageNumber() + CR);
                 builder.append(" Message: " + message.getMessageBody() + CR);
-                builder.append(" IsAck: "+message.isAck());
-                builder.append(" IsRej: "+message.isRej());
+                builder.append(" IsAck: " + message.isAck());
+                builder.append(" IsRej: " + message.isRej());
             }
         }
 

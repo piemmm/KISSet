@@ -1,4 +1,4 @@
-package org.prowl.kisset.routing.netrom;
+package org.prowl.kisset.protocols.netrom;
 
 import org.prowl.kisset.objects.routing.NetROMRoute;
 

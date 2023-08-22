@@ -4,11 +4,10 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontPosture;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
+import net.ab0oo.aprs.parser.APRSPacket;
+import net.ab0oo.aprs.parser.Parser;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.prowl.aprslib.parser.APRSPacket;
-import org.prowl.aprslib.parser.APRSTypes;
-import org.prowl.aprslib.parser.Parser;
 import org.prowl.kisset.ax25.AX25Frame;
 import org.prowl.kisset.core.Capability;
 import org.prowl.kisset.core.Node;
@@ -82,6 +81,7 @@ public class Tools {
 
     /**
      * Determine the nodes capability from the packet types seen
+     *
      * @param node
      * @param frame
      */
@@ -94,7 +94,7 @@ public class Tools {
             try {
                 String aprsString = frame.sender.toString() + ">" + frame.dest.toString() + ":" + frame.getAsciiFrame();
                 APRSPacket packet = Parser.parse(aprsString);
-                isAprs = packet.getType() != APRSTypes.UNSPECIFIED;//packet.isAprs();
+                isAprs = packet.isAprs();
             } catch (Throwable e) {
                 // Ignore - probably not aprs. or unable to parse MICe
             }

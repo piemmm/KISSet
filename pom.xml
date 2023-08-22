@@ -61,6 +61,13 @@
 
     <dependencies>
 
+        <dependency>
+            <groupId>com.gluonhq</groupId>
+            <artifactId>maps</artifactId>
+            <version>2.0.0-ea+6</version>
+        </dependency>
+
+
         <!--        These are required for the menu and theme stuff.-->
         <dependency>
             <groupId>io.github.g00fy2</groupId>
@@ -102,7 +109,6 @@
             <version>1.1.0</version>
         </dependency>
 
-
         <!-- Guava, mainly for the caching and event bus -->
         <dependency>
             <groupId>com.google.guava</groupId>
@@ -112,11 +118,11 @@
 
         <!-- Our modified (and unit tested) aprslib -->
         <dependency>
-            <groupId>org.prowl</groupId>
-            <artifactId>aprslib</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
+            <groupId>net.ab0oo</groupId>
+            <artifactId>javAPRSlib</artifactId>
+            <version>2.0</version>
             <scope>system</scope>
-            <systemPath>${project.basedir}/lib/aprslib-1.0.0-SNAPSHOT.jar</systemPath>
+            <systemPath>${project.basedir}/lib/javAPRSlib-2.0.jar</systemPath>
         </dependency>
 
         <!-- Reflections, for finding classes in the classpath -->

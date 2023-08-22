@@ -19,19 +19,23 @@ module org.prowl.kisset {
     requires com.github.oshi;
     requires versioncompare;
     requires com.google.common;
-    requires aprslib;
+    requires javAPRSlib;
     requires javafx.web;
+    requires com.gluonhq.maps;
 
 
     opens org.prowl.kisset to javafx.fxml;
     exports org.prowl.kisset.eventbus.events;
     exports org.prowl.kisset;
     exports org.prowl.kisset.fx;
+    exports org.prowl.kisset.protocols.aprs;
     exports org.prowl.kisset.statistics.types;
-    exports org.prowl.kisset.routing;
+    exports org.prowl.kisset.protocols;
+    exports org.prowl.kisset.protocols.dxcluster;
+    exports org.prowl.kisset.protocols.fbb;
     exports org.prowl.kisset.comms.host;
     exports org.prowl.kisset.comms.remote.pms;
     opens org.prowl.kisset.fx to javafx.fxml;
     exports org.prowl.kisset.objects.routing;
-    exports org.prowl.kisset.routing.netrom;
+    exports org.prowl.kisset.protocols.netrom;
 }

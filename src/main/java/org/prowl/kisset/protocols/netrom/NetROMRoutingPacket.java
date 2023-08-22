@@ -1,4 +1,4 @@
-package org.prowl.kisset.routing.netrom;
+package org.prowl.kisset.protocols.netrom;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

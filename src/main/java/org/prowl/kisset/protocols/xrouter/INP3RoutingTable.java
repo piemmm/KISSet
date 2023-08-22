@@ -1,7 +1,6 @@
-package org.prowl.kisset.routing.xrouter;
+package org.prowl.kisset.protocols.xrouter;
 
 import org.prowl.kisset.objects.routing.INP3Route;
-import org.prowl.kisset.objects.routing.NetROMRoute;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -3,7 +3,7 @@ package org.prowl.kisset.comms.host.parser.commands;
 import org.prowl.kisset.annotations.TNCCommand;
 import org.prowl.kisset.comms.host.parser.Mode;
 import org.prowl.kisset.objects.routing.NetROMRoute;
-import org.prowl.kisset.routing.netrom.NetROMRoutingTable;
+import org.prowl.kisset.protocols.netrom.NetROMRoutingTable;
 import org.prowl.kisset.util.ANSI;
 
 import java.io.IOException;

@@ -14,6 +14,9 @@ public enum Conf {
     terminalFontSize(14),
     monitorTransparency(0),
     terminalTransparency(0),
+    dxTransparency(0),
+    fbbTransparency(0),
+
 
     // These settings are set per-interface
     uuid(""),
@@ -41,7 +44,20 @@ public enum Conf {
 
     // FBB compatible client system
     fbbListeningActive(true),
-    fbbPreferredBBSCallsign("");
+    fbbPreferredBBSCallsign(""),
+
+    // APRS settings
+    aprsDecoingOverKISSEnabled(true),
+    connectToAPRSIServer(true),
+    aprsIServerHostname("aprs-cache.g0tai.net:14580"),
+
+    // MQTT settings
+    mqttPacketUploadEnabled(false),
+    mqttBrokerHostname(""),
+    mqttBrokerPort(1883),
+    mqttBrokerUsername(""),
+    mqttBrokerPassword(""),
+    mqttBrokerTopic("");
 
     public Object defaultSetting;
 

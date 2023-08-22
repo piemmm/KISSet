@@ -4,7 +4,7 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.prowl.kisset.routing.netrom.NetROMRoutingTable;
+import org.prowl.kisset.protocols.netrom.NetROMRoutingTable;
 import org.prowl.kisset.objects.messages.Message;
 import org.prowl.kisset.objects.routing.NetROMRoute;
 

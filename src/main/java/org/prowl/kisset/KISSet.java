@@ -21,13 +21,13 @@ import org.prowl.kisset.config.Conf;
 import org.prowl.kisset.config.Config;
 import org.prowl.kisset.eventbus.SingleThreadBus;
 import org.prowl.kisset.eventbus.events.ConfigurationChangedEvent;
-import org.prowl.kisset.fx.AboutController;
-import org.prowl.kisset.fx.KISSetController;
-import org.prowl.kisset.fx.MonitorController;
-import org.prowl.kisset.fx.PreferencesController;
+import org.prowl.kisset.fx.*;
 import org.prowl.kisset.io.InterfaceHandler;
-import org.prowl.kisset.routing.RoutingListener;
+import org.prowl.kisset.protocols.RoutingListener;
 import org.prowl.kisset.objects.Storage;
+import org.prowl.kisset.protocols.aprs.APRSISClient;
+import org.prowl.kisset.protocols.aprs.APRSListener;
+import org.prowl.kisset.protocols.dxcluster.DXListener;
 import org.prowl.kisset.statistics.Statistics;
 
 import javax.swing.*;
@@ -48,6 +48,9 @@ public class KISSet extends Application {
     private InterfaceHandler interfaceHandler;
     private Statistics statistics;
     private Stage monitorStage;
+    private Stage dxStage;
+    private Stage fbbStage;
+    private Stage aprsStage;
     private Storage storage;
     protected List<Service> serviceList = Collections.synchronizedList(new ArrayList<>());
 
@@ -210,8 +213,19 @@ public class KISSet extends Application {
             // Start listening for route broadcasts
             RoutingListener routingListener = RoutingListener.INSTANCE;
 
-            initMonitor();
+            // DX listener
+            DXListener dxListener = DXListener.INSTANCE;
 
+            // APRS listener
+            APRSListener aprsListener = APRSListener.INSTANCE;
+
+            // APRS-IS client
+            APRSISClient client = APRSISClient.INSTANCE;
+
+            initMonitor();
+            initDX();
+            initFBB();
+            initAPRS();
         } catch (Throwable e) {
             LOG.error(e.getMessage(), e);
             System.exit(1);
@@ -282,10 +296,114 @@ public class KISSet extends Application {
     }
 
     public void showMonitor() {
-
         monitorStage.show();
-
     }
+
+    public void initDX() {
+        try {
+            if (dxStage == null) {
+                dxStage = new Stage();
+                FXMLLoader fxmlLoader = new FXMLLoader(KISSet.class.getResource("fx/DXController.fxml"));
+                Parent root = fxmlLoader.load();
+                DXController controller = fxmlLoader.getController();
+                Scene scene = new Scene(root, 800, 280);
+                dxStage.setTitle("DX Monitor");
+                dxStage.setScene(scene);
+                dxStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+                    @Override
+                    public void handle(WindowEvent t) {
+                        SingleThreadBus.INSTANCE.unregister(controller);
+                        dxStage.close();
+                    }
+                });
+                dxStage.setOpacity(1 - (configuration.getConfig(Conf.dxTransparency, Conf.dxTransparency.intDefault()) / 100.0));
+
+                // This is an unfortunate hack for layout issues.
+                dxStage.show();
+                Platform.runLater(() -> {
+                    dxStage.hide();
+                });
+                controller.setup();
+            }
+        } catch(IOException e) {
+            LOG.error(e.getMessage(), e);
+        }
+    }
+
+    public void showDX() {
+        dxStage.show();
+    }
+
+    public void initFBB() {
+        try {
+            if (fbbStage == null) {
+                fbbStage = new Stage();
+                FXMLLoader fxmlLoader = new FXMLLoader(KISSet.class.getResource("fx/FBBController.fxml"));
+                Parent root = fxmlLoader.load();
+                FBBController controller = fxmlLoader.getController();
+                Scene scene = new Scene(root, 800, 280);
+                fbbStage.setTitle("Broadcast FBB Messages");
+                fbbStage.setScene(scene);
+                fbbStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+                    @Override
+                    public void handle(WindowEvent t) {
+                        SingleThreadBus.INSTANCE.unregister(controller);
+                        fbbStage.close();
+                    }
+                });
+                fbbStage.setOpacity(1 - (configuration.getConfig(Conf.dxTransparency, Conf.dxTransparency.intDefault()) / 100.0));
+
+                // This is an unfortunate hack for layout issues.
+                fbbStage.show();
+                Platform.runLater(() -> {
+                    fbbStage.hide();
+                });
+                controller.setup();
+            }
+        } catch(IOException e) {
+            LOG.error(e.getMessage(), e);
+        }
+    }
+
+    public void showFBB() {
+        fbbStage.show();
+    }
+
+    public void initAPRS() {
+        try {
+            if (aprsStage == null) {
+                aprsStage = new Stage();
+                FXMLLoader fxmlLoader = new FXMLLoader(KISSet.class.getResource("fx/APRSController.fxml"));
+                Parent root = fxmlLoader.load();
+                APRSController controller = fxmlLoader.getController();
+                Scene scene = new Scene(root, 800, 280);
+                aprsStage.setTitle("Broadcast FBB Messages");
+                aprsStage.setScene(scene);
+                aprsStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+                    @Override
+                    public void handle(WindowEvent t) {
+                        SingleThreadBus.INSTANCE.unregister(controller);
+                        aprsStage.close();
+                    }
+                });
+
+                // This is an unfortunate hack for layout issues.
+                aprsStage.show();
+                Platform.runLater(() -> {
+                    aprsStage.hide();
+                });
+                controller.setup();
+            }
+        } catch(IOException e) {
+            LOG.error(e.getMessage(), e);
+        }
+    }
+
+    public void showAPRS() {
+        aprsStage.show();
+    }
+
+
 
     public void showAbout() {
         try {

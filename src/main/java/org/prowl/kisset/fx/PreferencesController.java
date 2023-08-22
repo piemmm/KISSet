@@ -12,6 +12,7 @@ import javafx.scene.control.cell.ComboBoxListCell;
 import javafx.scene.text.Font;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import net.synedra.validatorfx.Check;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -78,6 +79,24 @@ public class PreferencesController {
 
 
     // APRS
+    @FXML
+    private CheckBox enableAPRSDecoderKISS;
+    @FXML
+    private ChoiceBox connectToAPRSIS;
+    @FXML
+    private TextField aprsisServerHost;
+
+    // MQTT
+    @FXML
+    private CheckBox enableMQTTCheckbox;
+    @FXML
+    private TextField mqttServerHostAndPort;
+    @FXML
+    private TextField mqttUsername;
+    @FXML
+    private TextField mqttPassword;
+    @FXML
+    private TextField mqttTopic;
 
 
     private final List<Interface> interfaces = new ArrayList<>();

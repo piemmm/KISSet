@@ -1,4 +1,4 @@
-package org.prowl.kisset.routing;
+package org.prowl.kisset.protocols;
 
 import com.google.common.eventbus.Subscribe;
 import org.apache.commons.logging.Log;
@@ -7,10 +7,10 @@ import org.prowl.kisset.KISSet;
 import org.prowl.kisset.ax25.AX25Frame;
 import org.prowl.kisset.eventbus.SingleThreadBus;
 import org.prowl.kisset.eventbus.events.HeardNodeEvent;
-import org.prowl.kisset.routing.netrom.NetROMRoutingPacket;
-import org.prowl.kisset.routing.netrom.NetROMRoutingTable;
-import org.prowl.kisset.routing.xrouter.INP3RoutingPacket;
-import org.prowl.kisset.routing.xrouter.INP3RoutingTable;
+import org.prowl.kisset.protocols.netrom.NetROMRoutingPacket;
+import org.prowl.kisset.protocols.netrom.NetROMRoutingTable;
+import org.prowl.kisset.protocols.xrouter.INP3RoutingPacket;
+import org.prowl.kisset.protocols.xrouter.INP3RoutingTable;
 
 /**
  * Listen to node packets and use it to build a list of routes

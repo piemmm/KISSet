@@ -1,4 +1,4 @@
-package org.prowl.kisset.routing.xrouter;
+package org.prowl.kisset.protocols.xrouter;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

@@ -75,6 +75,21 @@ public class KISSetController {
     }
 
     @FXML
+    protected void onDXAction() {
+        KISSet.INSTANCE.showDX();
+    }
+
+    @FXML
+    protected void onFBBAction() {
+        KISSet.INSTANCE.showFBB();
+    }
+
+    @FXML
+    protected void onAPRSAction() {
+        KISSet.INSTANCE.showAPRS();
+    }
+
+    @FXML
     protected void onTextEnteredAction(ActionEvent event) {
         try {
             outpos.write(textEntry.getText().getBytes());
