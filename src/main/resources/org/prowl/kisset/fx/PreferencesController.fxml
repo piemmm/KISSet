@@ -312,7 +312,7 @@
                                     <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                 </rowConstraints>
                                  <children>
-                                    <CheckBox fx:id="enableAPRSDecoderKISS" disable="true" mnemonicParsing="false" text="Enable APRS decoder over KISS" GridPane.columnIndex="1" />
+                                    <CheckBox fx:id="enableAPRSDecoderKISS" mnemonicParsing="false" text="Enable APRS decoder over KISS" GridPane.columnIndex="1" />
                                     <CheckBox fx:id="connectToAPRSIS" disable="true" mnemonicParsing="false" text="Connect to APRS-IS over Internet" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                                     <Label text="APRS-IS Server Address:" GridPane.halignment="RIGHT" GridPane.rowIndex="2">
                                        <GridPane.margin>
@@ -349,7 +349,7 @@
                                     <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                 </rowConstraints>
                                  <children>
-                                    <CheckBox fx:id="enableMQTTCheckbox" disable="true" mnemonicParsing="false" text="Enable received packet sending to MQTT" GridPane.columnIndex="1" />
+                                    <CheckBox fx:id="enableMQTTCheckbox" mnemonicParsing="false" text="Enable received packet sending to MQTT" GridPane.columnIndex="1" />
                                     <Label text="MQTT Server Hostname:" GridPane.halignment="RIGHT" GridPane.rowIndex="1">
                                        <GridPane.margin>
                                           <Insets right="5.0" />
