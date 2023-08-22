@@ -95,6 +95,17 @@ public class INP3Route {
         byte[] data;
 
         public INP3Option(INP3OptionType type, byte[] data) {
+
+            // BUGBUG workaround for XRouter incorrectly appends a CRLF to the destinationcallsign in
+            //        INP3 packets. - we need to log this incorrectness and strip it.
+            if (INP3OptionType.ALIAS.equals(type)) {
+                String alias = new String(data);
+                if (alias.contains("\r") || alias.contains("\n")) {
+                    alias = alias.replaceAll("\r", "").replaceAll("\n", "");
+                    data = alias.getBytes();
+                }
+            }
+
             this.type = type;
             this.data = data;
         }
