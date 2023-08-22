@@ -24,6 +24,8 @@ public class INP3RoutingPacket {
     private String destinationCallsign; // The advertised node callsign.
     private int hops;
     private int tripTime;
+    private INP3Route inp3Route;
+    private List<INP3Route.INP3Option> options;
 
     public INP3RoutingPacket(Node node) {
         try {
@@ -33,28 +35,25 @@ public class INP3RoutingPacket {
             buffer.get(); // 0xFF
 
             // RIF header
-            destinationCallsign = PacketTools.getData(buffer, 7, true);
-
-            hops = buffer.get() & 0xFF;
-            tripTime = buffer.getShort() & 0xFFFF;
-            List<INP3Route.INP3Option> options = new ArrayList<>();
-            INP3Route inp3Route = new INP3Route(node.getInterface(), originCallsign, destinationCallsign, hops, tripTime, options);
-            LOG.debug("dest=" + destinationCallsign + ", hops=" + hops + ", tripTime=" + tripTime);
+            consumeHeader(buffer, node);
 
             do {
-
                 // Standard RIP inside RIF
                 int length = (buffer.get() & 0xFF)-2;
 
                 // Check the packet hasn't ended.
                 if (length < 0) {
                     // End of packet marker.  We follow spec so still exit.
-                    if (buffer.remaining() > 0) {
-                        // Screwed packet
-                        LOG.warn("packet ended but there is still data in the buffer:" + buffer.remaining() + " bytes");
-                    }
                     routes.add(inp3Route);
-                    return; // End of packet
+                    if (buffer.remaining() == 0) {
+                       return;
+                    }
+                    // New packet.  Consume header.
+                    consumeHeader(buffer, node);
+                    length = (buffer.get() & 0xFF)-2;
+                    if (length < 0) {
+                        return;
+                    }
                 }
                 LOG.debug("option length=" + length);
 
@@ -77,6 +76,16 @@ public class INP3RoutingPacket {
         } catch (Throwable e) {
             LOG.error("Invalid INP3 frame from " + originCallsign + " detected:" + Tools.byteArrayToReadableASCIIString(node.getFrame().getBody()));
         }
+    }
+
+    public void consumeHeader(ByteBuffer buffer, Node node) {
+        // RIF header
+        destinationCallsign = PacketTools.getData(buffer, 7, true);
+        hops = buffer.get() & 0xFF;
+        tripTime = buffer.getShort() & 0xFFFF;
+        options = new ArrayList<>();
+        inp3Route = new INP3Route(node.getInterface(), originCallsign, destinationCallsign, hops, tripTime, options);
+        LOG.debug("dest=" + destinationCallsign + ", hops=" + hops + ", tripTime=" + tripTime);
     }
 
     /**
