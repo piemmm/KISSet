@@ -36,6 +36,12 @@ public class INP3RoutingPacket {
 
             // RIF header
             destinationCallsign = PacketTools.getData(buffer, 7, true);
+
+            // XRouter incorrectly appends a CRLF to the destinationcallsign in inp3 packets. - we need to log this incorrectness and stip it.
+            if (destinationCallsign.contains("\r") || destinationCallsign.contains("\n")) {
+                destinationCallsign = destinationCallsign.replaceAll("\r", "").replaceAll("\n", "");
+            }
+
             hops = buffer.get() & 0xFF;
             tripTime = buffer.getShort() & 0xFFFF;
             List<INP3Route.INP3Option> options = new ArrayList<>();
