@@ -81,7 +81,9 @@ public class StreamConnectionEstablishmentListener implements ConnectionEstablis
                                         enableExtensions(responseString.toString());
                                         stream.setExtensionState(ExtensionState.ENABLED);
                                     } else {
+                                        // First line was not a match, so we can assume no extensions are enabled.
                                         LOG.debug("Response string: " + responseString + "(no match)");
+                                        stream.setExtensionState(ExtensionState.NOT_SUPPORTED);
                                     }
                                 }
 
