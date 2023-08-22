@@ -80,12 +80,17 @@ public class Tools {
     }
 
 
+    /**
+     * Determine the nodes capability from the packet types seen
+     * @param node
+     * @param frame
+     */
     public static void determineCapabilities(Node node, AX25Frame frame) {
 
         byte pid = frame.getPid();
         if (pid == AX25Frame.PID_NOLVL3) {
+            // Check for APRS
             boolean isAprs = false;
-
             try {
                 String aprsString = frame.sender.toString() + ">" + frame.dest.toString() + ":" + frame.getAsciiFrame();
                 APRSPacket packet = Parser.parse(aprsString);
@@ -96,6 +101,15 @@ public class Tools {
             if (isAprs) {
                 node.addCapabilityOrUpdate(new Capability(Node.Service.APRS));
             }
+
+            // Check to see if this is a BBS - look for 'FBB' in the destination address starts with a message
+            // fragment that looks like an FBB message broadcast
+            // (because BPQ falsely broadcasts to FBB as well)
+            if (frame.dest.toString().equals("FBB") && frame.getAsciiFrame().matches("[0-9][0-9]+ ")) {
+                node.addCapabilityOrUpdate(new Capability(Node.Service.BBS));
+            }
+
+
         } else if (pid == AX25Frame.PID_NETROM) {
             node.addCapabilityOrUpdate(new Capability(Node.Service.NETROM));
         } else if (pid == AX25Frame.PID_IP) {
