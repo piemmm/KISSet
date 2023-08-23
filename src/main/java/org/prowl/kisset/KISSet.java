@@ -382,7 +382,7 @@ public class KISSet extends Application {
                 Parent root = fxmlLoader.load();
                 APRSController controller = fxmlLoader.getController();
                 Scene scene = new Scene(root, 800, 280);
-                aprsStage.setTitle("Broadcast FBB Messages");
+                aprsStage.setTitle("APRS Map Viewer");
                 aprsStage.setScene(scene);
                 aprsStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
                     @Override
