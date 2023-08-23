@@ -23,8 +23,8 @@ import org.prowl.kisset.eventbus.SingleThreadBus;
 import org.prowl.kisset.eventbus.events.ConfigurationChangedEvent;
 import org.prowl.kisset.fx.*;
 import org.prowl.kisset.io.InterfaceHandler;
-import org.prowl.kisset.protocols.RoutingListener;
 import org.prowl.kisset.objects.Storage;
+import org.prowl.kisset.protocols.RoutingListener;
 import org.prowl.kisset.protocols.aprs.APRSISClient;
 import org.prowl.kisset.protocols.aprs.APRSListener;
 import org.prowl.kisset.protocols.dxcluster.DXListener;
@@ -35,10 +35,10 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.desktop.AppReopenedEvent;
 import java.awt.desktop.AppReopenedListener;
-import java.io.*;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 public class KISSet extends Application {
 
@@ -183,6 +183,9 @@ public class KISSet extends Application {
     public void initAll() {
         try {
 
+            // This will always be desktop=
+            System.setProperty("javafx.platform", "Desktop");
+
             // Statistics (heard, etc)
             statistics = new Statistics();
 
@@ -242,7 +245,7 @@ public class KISSet extends Application {
         serviceList.clear();
         boolean pmsEnabled = configuration.getConfig(Conf.pmsEnabled, Conf.pmsEnabled.boolDefault());
         if (pmsEnabled) {
-            serviceList.add(new PMSService("PMS", getMyCallNoSSID()+configuration.getConfig(Conf.pmsSSID, Conf.pmsSSID.stringDefault())));
+            serviceList.add(new PMSService("PMS", getMyCallNoSSID() + configuration.getConfig(Conf.pmsSSID, Conf.pmsSSID.stringDefault())));
         }
 
         // Net/ROM
@@ -295,7 +298,7 @@ public class KISSet extends Application {
                 });
                 controller.setup();
             }
-        } catch(IOException e) {
+        } catch (IOException e) {
             LOG.error(e.getMessage(), e);
         }
     }
@@ -330,7 +333,7 @@ public class KISSet extends Application {
                 });
                 controller.setup();
             }
-        } catch(IOException e) {
+        } catch (IOException e) {
             LOG.error(e.getMessage(), e);
         }
     }
@@ -365,7 +368,7 @@ public class KISSet extends Application {
                 });
                 controller.setup();
             }
-        } catch(IOException e) {
+        } catch (IOException e) {
             LOG.error(e.getMessage(), e);
         }
     }
@@ -399,7 +402,7 @@ public class KISSet extends Application {
                 });
                 controller.setup();
             }
-        } catch(IOException e) {
+        } catch (IOException e) {
             LOG.error(e.getMessage(), e);
         }
     }
@@ -407,7 +410,6 @@ public class KISSet extends Application {
     public void showAPRS() {
         aprsStage.show();
     }
-
 
 
     public void showAbout() {
@@ -504,6 +506,7 @@ public class KISSet extends Application {
      * C = Compression
      * P = PMS
      * Z = Escape sequences for next block
+     *
      * @return
      */
     public String getStationCapabilities() {
@@ -512,6 +515,8 @@ public class KISSet extends Application {
 
     public List<Service> getServices() {
         return serviceList;
-    };
+    }
+
+    ;
 
 }

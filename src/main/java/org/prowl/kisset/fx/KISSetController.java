@@ -27,7 +27,7 @@ import org.prowl.kisset.comms.host.parser.Mode;
 import org.prowl.kisset.config.Conf;
 import org.prowl.kisset.eventbus.SingleThreadBus;
 import org.prowl.kisset.eventbus.events.ConfigurationChangedEvent;
-import org.prowl.kisset.gui.g0term.Terminal;
+import org.prowl.kisset.gui.g0term.ANSITerminal;
 import org.prowl.kisset.util.Tools;
 
 import java.awt.*;
@@ -50,7 +50,7 @@ public class KISSetController {
     MenuItem preferencesMenuItem;
     @FXML
     StackPane stackPane;
-    Terminal terminal;
+    ANSITerminal terminal;
     // TerminalCanvas canvas;
     private PipedInputStream inpis;
     private PipedOutputStream outpos;
@@ -136,7 +136,7 @@ public class KISSetController {
 
     public void configureTerminal() {
         stackPane.getChildren().clear();
-        terminal = new Terminal();
+        terminal = new ANSITerminal();
         terminal.setFont(getFont());
 
         //terminal.setFont(font);

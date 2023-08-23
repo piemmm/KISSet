@@ -22,6 +22,8 @@ module org.prowl.kisset {
     requires javAPRSlib;
     requires javafx.web;
     requires com.gluonhq.maps;
+    requires com.gluonhq.attach.storage;
+    requires com.gluonhq.attach.util;
     requires org.eclipse.paho.client.mqttv3;
 
     opens org.prowl.kisset to javafx.fxml;

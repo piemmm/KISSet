@@ -6,16 +6,11 @@ import com.gluonhq.maps.MapPoint;
 import com.gluonhq.maps.MapView;
 import com.google.common.eventbus.Subscribe;
 import javafx.application.Platform;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.geometry.Point2D;
 import javafx.scene.Node;
-import javafx.scene.control.ListView;
-import javafx.scene.input.KeyCode;
-import javafx.scene.layout.StackPane;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
+import javafx.scene.control.Tooltip;
+import javafx.scene.shape.Polyline;
 import javafx.scene.text.Font;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -24,15 +19,10 @@ import org.prowl.kisset.config.Conf;
 import org.prowl.kisset.eventbus.SingleThreadBus;
 import org.prowl.kisset.eventbus.events.APRSPacketEvent;
 import org.prowl.kisset.eventbus.events.ConfigurationChangedEvent;
-import org.prowl.kisset.gui.g0term.Terminal;
 import org.prowl.kisset.protocols.aprs.APRSNode;
-import org.prowl.kisset.util.Tools;
+import org.prowl.kisset.protocols.aprs.TrackShape;
 
-import java.io.IOException;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class APRSController {
 
@@ -52,6 +42,7 @@ public class APRSController {
 
     }
 
+
     public Font getFont() {
         float fontSize = 14;
         try {
@@ -64,22 +55,18 @@ public class APRSController {
     }
 
 
-
+    /**
+     * Setup the map
+     */
     public void setup() {
         mapView.setZoom(8);
         aprsLayer = new APRSLayer();
         mapView.addLayer(aprsLayer);
-
-
     }
-
-
-
-
 
     public class APRSLayer extends MapLayer {
 
-        private List<APRSNode> nodes = new ArrayList<>();
+        private Map<String,APRSNode> nodeMap = Collections.synchronizedMap(new HashMap<>());
 
         public APRSLayer() {
             super();
@@ -91,14 +78,16 @@ public class APRSController {
          */
         @Override
         protected void layoutLayer() {
+
+            Collection<APRSNode> nodes = nodeMap.values();
             for (APRSNode node: nodes) {
-                MapPoint location = node.getLocation();
-                Node icon = node.getIcon();
-                Point2D mapPoint = getMapPoint(location.getLatitude(), location.getLongitude());
-                icon.setVisible(true);
-                icon.setTranslateX(mapPoint.getX());
-                icon.setTranslateY(mapPoint.getY());
+               updateNode(node);
+               updateTrack(node);
             }
+        }
+
+        public Point2D getMapPointExt(double lat, double lon) {
+            return getMapPoint(lat, lon);
         }
 
 
@@ -119,16 +108,73 @@ public class APRSController {
                 if (node.getLocation() == null) {
                     return; // no point if no location
                 }
-                // shoudl probably dedupe/update heree
-                nodes.add(node);
 
-                getChildren().add(node.getIcon());
+                if (node.getLocation().getLatitude() == 0 && node.getLocation().getLongitude() == 0) {
+                    return; // we're treating 0,0 as an invalid GPS location that's just 'junk' data.
+                }
 
-               markDirty();
+                APRSNode existingNode = nodeMap.get(node.getSourceCallsign());
+                if (existingNode == null) {
+                    // Add new node to map
+                    nodeMap.put(node.getSourceCallsign(), node);
+                    //getChildren().add(node.getIcon());
+                    addNode(node, node.getLocation());
+                } else {
+                    // Update existing node, possibly adding a track line.
+                    boolean firstAddPolyline = false;
+                    Polyline polyLine = existingNode.getTrack();
+                    if (polyLine == null) {
+                        // first polyline, so add
+                        firstAddPolyline = true;
+                    }
+                    existingNode.updateLocation(event.getAprsPacket().getRecevedTimestamp().getTime(), node.getLocation(), aprsLayer);
+                    if (firstAddPolyline) {
+                      //  addNode(existingNode.getTrack(), existingNode.getLocation());
+                        getChildren().add(existingNode.getTrack());
+                    }
+                    updateNode(existingNode);
+
+
+                }
+
+              // markDirty();
             });
         }
 
+        public void updateNode(APRSNode node) {
+            MapPoint location = node.getLocation();
 
+            // Get the icon
+            Node icon = node.getIcon();
+            Point2D mapPoint = getMapPoint(location.getLatitude(), location.getLongitude());
+            icon.setVisible(true);
+            icon.setTranslateX(mapPoint.getX() - (16));
+            icon.setTranslateY(mapPoint.getY() - 16);
+
+        }
+
+        public void updateTrack(APRSNode node) {
+            // Same for any track poly
+            TrackShape trackLine = node.getTrack();
+            if (trackLine != null) {
+                trackLine.update();
+            }
+        }
+
+
+        public void addNode(APRSNode aprsNode, MapPoint location) {
+            // Get the icon
+            Node node = aprsNode.getIcon();
+            Point2D mapPoint = getMapPoint(location.getLatitude(), location.getLongitude());
+            node.setVisible(true);
+            node.setTranslateX(mapPoint.getX()-(16));
+            node.setTranslateY(mapPoint.getY()-16);
+
+            Tooltip t = new Tooltip(aprsNode.getSourceCallsign());
+            Tooltip.install(node, t);
+
+            getChildren().add(node);
+        }
 
     }
 

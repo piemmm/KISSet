@@ -104,11 +104,7 @@ public enum APRSISClient {
             PositionField positionField = (PositionField) f.getAprsData(APRSTypes.T_POSITION);
             if (positionField != null) {
                 Position pos = positionField.getPosition();
-
                 SingleThreadBus.INSTANCE.post(new APRSPacketEvent(p));
-
-
-                //     APRSLookup.INSTANCE.add(p, pos);
             } else {
                 //  System.err.println("No position for:" +packet);
             }

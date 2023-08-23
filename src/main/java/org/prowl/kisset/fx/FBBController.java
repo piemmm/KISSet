@@ -6,7 +6,6 @@ import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.StackPane;
@@ -18,7 +17,7 @@ import org.prowl.kisset.config.Conf;
 import org.prowl.kisset.core.Node;
 import org.prowl.kisset.eventbus.SingleThreadBus;
 import org.prowl.kisset.eventbus.events.ConfigurationChangedEvent;
-import org.prowl.kisset.gui.g0term.Terminal;
+import org.prowl.kisset.gui.g0term.ANSITerminal;
 import org.prowl.kisset.util.Tools;
 
 import java.io.IOException;
@@ -37,7 +36,7 @@ public class FBBController {
     ListView<Node> heardList;
 
     private ObservableList<Node> heardNodes = FXCollections.observableArrayList(new ArrayList<>());
-    private Terminal terminal;
+    private ANSITerminal terminal;
     private PipedInputStream inpis;
     private PipedOutputStream inpos;
     private PipedInputStream outpis;
@@ -65,7 +64,7 @@ public class FBBController {
 
     public void configureTerminal() {
         stackPane.getChildren().clear();
-        terminal = new Terminal();
+        terminal = new ANSITerminal();
 
         terminal.setFont(getFont());
         terminal.setFocusTraversable(true);

@@ -1,5 +1,8 @@
 package org.prowl.kisset.objects;
 
+import com.gluonhq.attach.storage.StorageService;
+import com.gluonhq.attach.util.Services;
+//import com.gluonhq.attach.util.impl.ServiceFactory;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import org.apache.commons.logging.Log;
@@ -26,14 +29,57 @@ public class Storage {
     private static final String NETROM = "netrom";
     private static final String USER = "user";
     // Cache of messages
-    private static final Cache<String, Message> BIDMIDToMsg = CacheBuilder.newBuilder().maximumSize(10000).expireAfterAccess(7, TimeUnit.DAYS).build();
-    private static final Cache<Long, Message> messageIdToMsg = CacheBuilder.newBuilder().maximumSize(10000).expireAfterAccess(7, TimeUnit.DAYS).build();
-    private static final Cache<File, Message> messageFileToMsg = CacheBuilder.newBuilder().maximumSize(10000).expireAfterAccess(7, TimeUnit.DAYS).build();
+    private static final Cache<String, Message> BIDMIDToMsg = CacheBuilder.newBuilder().maximumSize(100).expireAfterAccess(1, TimeUnit.DAYS).build();
+    private static final Cache<Long, Message> messageIdToMsg = CacheBuilder.newBuilder().maximumSize(100).expireAfterAccess(1, TimeUnit.DAYS).build();
+    private static final Cache<File, Message> messageFileToMsg = CacheBuilder.newBuilder().maximumSize(100).expireAfterAccess(1, TimeUnit.DAYS).build();
     private static long highestMessageIdSeen = -1;
     private File locationDir = getStorageDir();
 
-
     public Storage() {
+
+        // Can't do this until gluon fix their module export for ServiceFactory (which is currently limited to their utils package).
+        // gluonhq attach issue 368
+//        StorageService storageService = new StorageService() {
+//            @Override
+//            public Optional<File> getPrivateStorage() {
+//                return Optional.of(new File(getStorageDir(),"mapcache"));
+//            }
+//
+//            @Override
+//            public Optional<File> getPublicStorage(String subdirectory) {
+//                return getPrivateStorage();
+//            }
+//
+//            @Override
+//            public boolean isExternalStorageWritable() {
+//                return getPrivateStorage().get().canWrite();
+//            }
+//
+//            @Override
+//            public boolean isExternalStorageReadable() {
+//                return getPrivateStorage().get().canRead();
+//            }
+//        };
+//
+//        // define service factory for desktop
+//        ServiceFactory<StorageService> storageServiceFactory = new ServiceFactory<StorageService>() {
+//
+//            @Override
+//            public Class<StorageService> getServiceType() {
+//                return StorageService.class;
+//            }
+//
+//            @Override
+//            public Optional<StorageService> getInstance() {
+//                return Optional.of(storageService);
+//            }
+//
+//        };
+//
+//        // register service
+//        Services.registerServiceFactory(storageServiceFactory);
+
+
     }
 
 

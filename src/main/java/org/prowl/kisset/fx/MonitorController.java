@@ -8,7 +8,6 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
-import javafx.scene.control.ScrollPane;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.StackPane;
 import javafx.scene.text.Font;
@@ -21,7 +20,7 @@ import org.prowl.kisset.eventbus.SingleThreadBus;
 import org.prowl.kisset.eventbus.events.ConfigurationChangedEvent;
 import org.prowl.kisset.eventbus.events.HeardNodeEvent;
 import org.prowl.kisset.eventbus.events.InvalidFrameEvent;
-import org.prowl.kisset.gui.g0term.Terminal;
+import org.prowl.kisset.gui.g0term.ANSITerminal;
 import org.prowl.kisset.io.Interface;
 import org.prowl.kisset.util.ANSI;
 import org.prowl.kisset.util.PacketTools;
@@ -43,7 +42,7 @@ public class MonitorController {
     ListView<Node> heardList;
 
     private ObservableList<Node> heardNodes = FXCollections.observableArrayList(new ArrayList<>());
-    private Terminal terminal;
+    private ANSITerminal terminal;
     private PipedInputStream inpis;
     private PipedOutputStream inpos;
     private PipedInputStream outpis;
@@ -71,7 +70,7 @@ public class MonitorController {
 
     public void configureTerminal() {
         stackPane.getChildren().clear();
-        terminal = new Terminal();
+        terminal = new ANSITerminal();
 
         terminal.setFont(getFont());
         terminal.setFocusTraversable(true);

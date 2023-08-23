@@ -47,8 +47,8 @@ public class SymbolCache {
 
         int iconSize = (int) (tableImage.getWidth() / 16d);
 
-        int x = (((int) code) - 32) % 16;
-        int y = code / 16;
+        int x = (((int) code) - 33) % 16;
+        int y = (code-33) / 16;
 
         x = x * iconSize;
         y = y * iconSize;
