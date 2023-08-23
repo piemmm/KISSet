@@ -111,14 +111,15 @@ public class APRSController {
         @Subscribe
         public void heardAPRS(APRSPacketEvent event) {
 
-            APRSNode node = new APRSNode(event.getAprsPacket());
 
-            if (node.getLocation() == null) {
-                return; // no point if no location
-            }
-            // shoudl probably dedupe/update here.
 
             Platform.runLater(() -> {
+                APRSNode node = new APRSNode(event.getAprsPacket());
+
+                if (node.getLocation() == null) {
+                    return; // no point if no location
+                }
+                // shoudl probably dedupe/update heree
                 nodes.add(node);
 
                 getChildren().add(node.getIcon());

@@ -30,7 +30,7 @@ public enum APRSISClient {
     private static final Log LOG = LogFactory.getLog("APRSISClient");
 
     public static final String SERVER = "rotate.aprs.net";
-    public static final int PORT = 14580;
+    public static final int PORT = 14580; // 10152 full feed, 14580 filtered feed
 
     private Config config;
     private Timer timer;
@@ -59,7 +59,7 @@ public enum APRSISClient {
 
     public void connect() {
         running = true;
-        boolean isEnabled = config.getConfig(Conf.mqttPacketUploadEnabled, Conf.mqttPacketUploadEnabled.boolDefault());
+        boolean isEnabled = config.getConfig(Conf.connectToAPRSIServer, Conf.connectToAPRSIServer.boolDefault());
         if (!isEnabled) {
             return;
         }
