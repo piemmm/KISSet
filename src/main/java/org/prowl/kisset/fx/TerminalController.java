@@ -90,7 +90,7 @@ public class TerminalController {
     }
 
     /**
-     * Start processing the i/o on the terminal.
+     * Start processing the i/o on the terminal
      */
     public void start() {
         Tools.runOnThread(() -> {
@@ -99,11 +99,16 @@ public class TerminalController {
                     terminal.append(in.read());
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+               LOG.error(e.getMessage(),e);
             }
         });
     }
 
+    /**
+     * Streams to use for the terminal
+     * @param in
+     * @param out
+     */
     public void setConnection(InputStream in, OutputStream out) {
         this.in = in;
         this.out = out;

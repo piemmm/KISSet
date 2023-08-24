@@ -30,6 +30,7 @@ import org.prowl.kisset.protocols.aprs.APRSListener;
 import org.prowl.kisset.protocols.dxcluster.DXListener;
 import org.prowl.kisset.protocols.mqtt.MQTTClient;
 import org.prowl.kisset.statistics.Statistics;
+import org.prowl.kisset.util.Tools;
 
 import javax.swing.*;
 import java.awt.*;
@@ -264,12 +265,10 @@ public class KISSet extends Application {
 //            terminalStage.show();
 //            controller.setup();
 //
-////
-////            Socket s = new Socket(InetAddress.getByName("glasstty.com"), 6502);
-////            controller.setConnection(s.getInputStream(), s.getOutputStream());
-////            controller.start();
 //
-//
+//            Socket s = new Socket(InetAddress.getByName("glasstty.com"), 6502);
+//            controller.setConnection(s.getInputStream(), s.getOutputStream());
+//            controller.start();
 //        } catch (Throwable e) {
 //            LOG.error(e.getMessage(), e);
 //        }
@@ -320,7 +319,6 @@ public class KISSet extends Application {
                 monitorStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
                     @Override
                     public void handle(WindowEvent t) {
-                        SingleThreadBus.INSTANCE.unregister(controller);
                         monitorStage.close();
                     }
                 });
@@ -351,7 +349,6 @@ public class KISSet extends Application {
                 dxStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
                     @Override
                     public void handle(WindowEvent t) {
-                        SingleThreadBus.INSTANCE.unregister(controller);
                         dxStage.close();
                     }
                 });
@@ -382,7 +379,6 @@ public class KISSet extends Application {
                 fbbStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
                     @Override
                     public void handle(WindowEvent t) {
-                        SingleThreadBus.INSTANCE.unregister(controller);
                         fbbStage.close();
                     }
                 });
