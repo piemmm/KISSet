@@ -326,11 +326,7 @@ public class KISSet extends Application {
                 });
                 monitorStage.setOpacity(1 - (configuration.getConfig(Conf.monitorTransparency, Conf.monitorTransparency.intDefault()) / 100.0));
 
-                // This is an unfortunate hack for layout issues.
-                monitorStage.show();
-                Platform.runLater(() -> {
-                    monitorStage.hide();
-                });
+
                 controller.setup();
             }
         } catch (IOException e) {
@@ -361,11 +357,7 @@ public class KISSet extends Application {
                 });
                 dxStage.setOpacity(1 - (configuration.getConfig(Conf.dxTransparency, Conf.dxTransparency.intDefault()) / 100.0));
 
-                // This is an unfortunate hack for layout issues.
-                dxStage.show();
-                Platform.runLater(() -> {
-                    dxStage.hide();
-                });
+
                 controller.setup();
             }
         } catch (IOException e) {
@@ -396,11 +388,7 @@ public class KISSet extends Application {
                 });
                 fbbStage.setOpacity(1 - (configuration.getConfig(Conf.dxTransparency, Conf.dxTransparency.intDefault()) / 100.0));
 
-                // This is an unfortunate hack for layout issues.
-                fbbStage.show();
-                Platform.runLater(() -> {
-                    fbbStage.hide();
-                });
+
                 controller.setup();
             }
         } catch (IOException e) {
@@ -425,16 +413,11 @@ public class KISSet extends Application {
                 aprsStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
                     @Override
                     public void handle(WindowEvent t) {
-                        SingleThreadBus.INSTANCE.unregister(controller);
                         aprsStage.close();
                     }
                 });
 
-                // This is an unfortunate hack for layout issues.
-                aprsStage.show();
-                Platform.runLater(() -> {
-                    aprsStage.hide();
-                });
+
                 controller.setup();
             }
         } catch (IOException e) {
