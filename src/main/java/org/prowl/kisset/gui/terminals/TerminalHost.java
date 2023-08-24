@@ -6,6 +6,6 @@ public interface TerminalHost {
 
     Terminal getTerminal();
 
-    void setStatus(String status);
+    void setStatus(String statusText, int currentStream);
 
 }

@@ -297,9 +297,10 @@ public class KISSetController implements TerminalHost {
         return terminal;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(String status, int currentStream) {
         Platform.runLater(() -> {
             statusText.setText(status);
+            streamId.setText(Integer.toString(currentStream));
         });
     }
 }

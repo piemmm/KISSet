@@ -16,6 +16,7 @@ import org.prowl.kisset.gui.terminals.ANSITerminal;
 import org.prowl.kisset.gui.terminals.Terminal;
 import org.prowl.kisset.gui.terminals.TerminalHost;
 import org.prowl.kisset.io.Interface;
+import org.prowl.kisset.io.Stream;
 import org.prowl.kisset.io.StreamState;
 import org.prowl.kisset.util.ANSI;
 import org.prowl.kisset.util.PacketTools;
@@ -72,8 +73,10 @@ public class TNCHost {
     // Convenience method for setStatus on the terminalHost
     public void updateStatus() {
         String status = Messages.get("idle");
-
+        int currentStream = 0;
         if (parser.getCurrentInterface() != null && parser.getCurrentInterface().getCurrentStream() != null) {
+            Stream stream = parser.getCurrentInterface().getCurrentStream();
+            currentStream = parser.getCurrentInterface().getStreams().indexOf(stream);
             StreamState streamState = parser.getCurrentInterface().getCurrentStream().getStreamState();
             if (streamState != null && streamState == StreamState.CONNECTED) {
                 status = streamState.toString() + " " + parser.getCurrentInterface().getCurrentStream().getRemoteCall();
@@ -82,7 +85,7 @@ public class TNCHost {
             }
         }
 
-        host.setStatus(status);
+        host.setStatus(status, currentStream);
     }
 
     public void setTerminalType(Terminal terminal) {
