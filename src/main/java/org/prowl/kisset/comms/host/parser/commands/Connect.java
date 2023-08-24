@@ -48,7 +48,7 @@ public class Connect extends Command {
         }
 
         if (data.length < 2 || data[1].equals("?")) {
-            writeToTerminal("*** Usage: connect [<port number>] <station>" + CR);
+            writeToTerminal("*** Usage: connect <station>" + CR);
             return true;
         }
 
@@ -72,16 +72,9 @@ public class Connect extends Command {
             currentStream.setRemoteCall(station);
             anInterface.connect(data[1].toUpperCase(), KISSet.INSTANCE.getMyCall(), new StreamConnectionEstablishmentListener(commandParser, stream));
             anInterface.getCurrentStream().setStreamState(StreamState.CONNECTING);
-
-        } else if (data.length == 3) {
-            // Connect: C 2 GB7MNK (to connect via port 2)
-            String station = data[2].toUpperCase();
-            writeToTerminal("*** Connecting to " + station + CR);
-            anInterface.getCurrentStream().setStreamState(StreamState.CONNECTING);
-            currentStream.setRemoteCall(station);
-            anInterface.connect(data[2].toUpperCase(), KISSet.INSTANCE.getMyCall(), new StreamConnectionEstablishmentListener(commandParser, stream));
+            tncHost.updateStatus();
         } else {
-            writeToTerminal("*** Usage: connect [<port number>] <station>" + CR);
+            writeToTerminal("*** Usage: connect <station>" + CR);
         }
 
         writeToTerminal(CR);

@@ -2,6 +2,7 @@ package org.prowl.kisset.comms.host.parser.misc;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.prowl.kisset.Messages;
 import org.prowl.kisset.ax25.ConnState;
 import org.prowl.kisset.ax25.ConnectionEstablishmentListener;
 import org.prowl.kisset.comms.host.parser.CommandParser;
@@ -41,7 +42,6 @@ public class StreamConnectionEstablishmentListener implements ConnectionEstablis
             if (stream.getRemoteCall() == null) {
                 return;
             }
-
             commandParser.writeToTerminal("*** Connected to " + conn.getDst().toString().toUpperCase() + CR);
             commandParser.setModeIfCurrentStream(Mode.CONNECTED_TO_STATION, stream);
             commandParser.getCurrentInterface().getCurrentStream().setStreamState(StreamState.CONNECTED);
@@ -118,6 +118,7 @@ public class StreamConnectionEstablishmentListener implements ConnectionEstablis
                 commandParser.setModeIfCurrentStream(Mode.CMD, stream);
 
             });
+            commandParser.updateStatus();
         } catch (IOException e) {
             commandParser.setDivertStream(null);
             LOG.error("Error writing to client:" + e.getMessage(), e);
@@ -130,6 +131,7 @@ public class StreamConnectionEstablishmentListener implements ConnectionEstablis
             stream.setStreamState(StreamState.DISCONNECTED);
             commandParser.writeToTerminal("*** Unable to connect: " + reason + CR);
             commandParser.setModeIfCurrentStream(Mode.CMD, stream, true);
+            commandParser.updateStatus();
         } catch (IOException e) {
             LOG.error("Error writing to client:" + e.getMessage(), e);
         }
@@ -140,8 +142,10 @@ public class StreamConnectionEstablishmentListener implements ConnectionEstablis
     public void connectionClosed(Object sessionIdentifier, boolean fromOtherEnd) {
         try {
             stream.setStreamState(StreamState.DISCONNECTED);
+
             commandParser.writeToTerminal("*** Connection closed" + CR);
             commandParser.setModeIfCurrentStream(Mode.CMD, stream, true);
+            commandParser.updateStatus();
         } catch (IOException e) {
             LOG.error("Error writing to client:" + e.getMessage(), e);
         }
@@ -154,6 +158,7 @@ public class StreamConnectionEstablishmentListener implements ConnectionEstablis
             stream.setStreamState(StreamState.DISCONNECTED);
             commandParser.writeToTerminal("*** Lost connection: " + reason + CR);
             commandParser.setModeIfCurrentStream(Mode.CMD, stream,true);
+            commandParser.updateStatus();
         } catch (IOException e) {
             LOG.error("Error writing to client:" + e.getMessage(), e);
         }

@@ -296,4 +296,10 @@ public class KISSetController implements TerminalHost {
     public Terminal getTerminal() {
         return terminal;
     }
+
+    public void setStatus(String status) {
+        Platform.runLater(() -> {
+            statusText.setText(status);
+        });
+    }
 }

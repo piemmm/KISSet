@@ -76,7 +76,7 @@
                   <Insets right="5.0" />
                </HBox.margin>
             </Label>
-            <Label fx:id="statusText" prefHeight="17.0" prefWidth="176.0" text="Idle" />
+            <Label fx:id="statusText" prefHeight="17.0" prefWidth="176.0" />
          </children>
          <padding>
             <Insets bottom="2.0" left="2.0" right="2.0" top="2.0" />

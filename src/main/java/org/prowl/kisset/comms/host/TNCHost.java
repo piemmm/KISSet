@@ -69,6 +69,22 @@ public class TNCHost {
         return host.getTerminal();
     }
 
+    // Convenience method for setStatus on the terminalHost
+    public void updateStatus() {
+        String status = Messages.get("idle");
+
+        if (parser.getCurrentInterface() != null && parser.getCurrentInterface().getCurrentStream() != null) {
+            StreamState streamState = parser.getCurrentInterface().getCurrentStream().getStreamState();
+            if (streamState != null && streamState == StreamState.CONNECTED) {
+                status = streamState.toString() + " " + parser.getCurrentInterface().getCurrentStream().getRemoteCall();
+            } else {
+                status = streamState.toString();
+            }
+        }
+
+        host.setStatus(status);
+    }
+
     public void setTerminalType(Terminal terminal) {
         host.setTerminal(terminal);
     }
@@ -89,6 +105,8 @@ public class TNCHost {
                     send(CR + CR + CR);
                     send(Messages.get("tncInit") + CR);
 
+                    updateStatus();
+
                     Platform.runLater(() -> {
                         Tools.delay(1000);
                         try {
@@ -96,7 +114,7 @@ public class TNCHost {
                             send("");
                             send(Messages.get("tncHelp") + CR);
                             send(parser.getPrompt());
-                        }catch (IOException e) {
+                        } catch (IOException e) {
                             LOG.error(e.getMessage(), e);
                         }
                     });
@@ -162,7 +180,7 @@ public class TNCHost {
             List<Interface> interfaces = KISSet.INSTANCE.getInterfaceHandler().getInterfaces();
             if (interfaces.size() > 0) {
 
-                send(ANSI.BOLD+"Configured Interfaces:" +ANSI.NORMAL);
+                send(ANSI.BOLD + "Configured Interfaces:" + ANSI.NORMAL);
                 ChangeInterface changeInterface = new ChangeInterface();
                 changeInterface.setClient(this, null);
                 changeInterface.showInterfaces();
@@ -176,11 +194,11 @@ public class TNCHost {
                 send(ANSI.YELLOW + "*** No callsign configured - please set one in the preferences" + ANSI.NORMAL + CR);
             } else {
                 String callsignNoSSID = KISSet.INSTANCE.getMyCallNoSSID();
-                send(ANSI.BOLD+"Configured Callsign: " +ANSI.NORMAL);
+                send(ANSI.BOLD + "Configured Callsign: " + ANSI.NORMAL);
                 send(KISSet.INSTANCE.getMyCall());
                 // Also show PMS if enabled
                 if (KISSet.INSTANCE.getConfig().getConfig(Conf.pmsEnabled, Conf.pmsEnabled.boolDefault())) {
-                    send(ANSI.BOLD+", Mailbox/PMS: " +ANSI.NORMAL);
+                    send(ANSI.BOLD + ", Mailbox/PMS: " + ANSI.NORMAL);
                     send(callsignNoSSID);
                     send(KISSet.INSTANCE.getConfig().getConfig(Conf.pmsSSID, Conf.pmsSSID.stringDefault()));
                 }

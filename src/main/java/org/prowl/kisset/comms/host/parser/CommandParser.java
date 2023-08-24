@@ -48,6 +48,10 @@ public class CommandParser {
         finishInit();
     }
 
+    public void updateStatus() {
+        tncHost.updateStatus();
+    }
+
     /**
      * Instantiate all the available commands in the CommandItem enum - this lets others add commands as external jars
      * without having to modify this class by using the @Commandable annotation in their command class.
