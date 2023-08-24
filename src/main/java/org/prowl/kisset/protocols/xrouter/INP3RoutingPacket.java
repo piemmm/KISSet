@@ -8,6 +8,7 @@ import org.prowl.kisset.util.PacketTools;
 import org.prowl.kisset.util.Tools;
 
 import java.nio.ByteBuffer;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -78,7 +79,7 @@ public class INP3RoutingPacket {
         }
     }
 
-    public void consumeHeader(ByteBuffer buffer, Node node) {
+    public void consumeHeader(ByteBuffer buffer, Node node) throws ParseException {
         // RIF header
         destinationCallsign = PacketTools.getData(buffer, 7, true);
         hops = buffer.get() & 0xFF;

@@ -6,6 +6,7 @@ import org.prowl.kisset.util.PacketTools;
 import org.prowl.kisset.util.Tools;
 
 import java.nio.ByteBuffer;
+import java.text.ParseException;
 
 /**
  * This will be a noteboard on netrom whilst I search for documentation.
@@ -45,7 +46,7 @@ public class NetROMPacket {
     /**
      * Decode a Net/ROM broadcast packet from an AX.25 frame
      **/
-    public NetROMPacket(Node node) {
+    public NetROMPacket(Node node) throws ParseException {
         ByteBuffer buffer = ByteBuffer.wrap(node.getFrame().getBody());
         raw = node.getFrame().getBody();
 

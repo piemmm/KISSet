@@ -7,6 +7,7 @@ import org.prowl.kisset.util.PacketTools;
 import org.prowl.kisset.util.Tools;
 
 import java.nio.ByteBuffer;
+import java.text.ParseException;
 import java.util.StringTokenizer;
 
 /**
@@ -35,12 +36,12 @@ public class L3RTTPacket {
 
     /**
      * Decode an INP3 L3RTT packet including the callsign from the body of the packet
-     *
+     * <p>
      * These packets aren't efficiently encoded.
      *
      * @param node
      */
-    public L3RTTPacket(Node node) {
+    public L3RTTPacket(Node node) throws ParseException {
 
         ByteBuffer buffer = ByteBuffer.wrap(node.getFrame().getBody());
         // Src and dest callsigns
@@ -57,7 +58,7 @@ public class L3RTTPacket {
 
 
         String textPortion = new String(buffer.array(), buffer.position(), buffer.remaining());
-        StringTokenizer st = new StringTokenizer(textPortion," ");
+        StringTokenizer st = new StringTokenizer(textPortion, " ");
 
         // Now decode the payload
         fid = st.nextToken();
@@ -77,6 +78,7 @@ public class L3RTTPacket {
 
     /**
      * Is this a valid L3RTT packet?
+     *
      * @param node
      * @return
      */
@@ -84,8 +86,12 @@ public class L3RTTPacket {
 
         ByteBuffer buffer = ByteBuffer.wrap(node.getFrame().getBody());
         // Src and dest callsigns
-        String senderNodeCall = PacketTools.getData(buffer, 7, true);
-        String l3rttCall = PacketTools.getData(buffer, 7, true); // Always L3RTT-0
+        try {
+            String senderNodeCall = PacketTools.getData(buffer, 7, true);
+            String l3rttCall = PacketTools.getData(buffer, 7, true); // Always L3RTT-0
+        } catch (ParseException e) {
+            return false;
+        }
         int ttl = buffer.get() & 0xFF;
 
         // Dummy L4 header
@@ -110,7 +116,7 @@ public class L3RTTPacket {
             if (z1 == 0 && z2 == 0 && z3 == 0 && z4 == 0 && b1 == 5 && fid.equals("L3RTT:")) {
                 return true;
             }
-        } catch(Throwable e) {
+        } catch (Throwable e) {
             LOG.debug("Invalid L3RTT packet:" + Tools.byteArrayToReadableASCIIString(node.getFrame().getBody()), e);
         }
         return false;
@@ -126,6 +132,7 @@ public class L3RTTPacket {
 
     /**
      * Get the TTL - it is decremented upon reception of this packet
+     *
      * @return
      */
     public int getL3ttl() {

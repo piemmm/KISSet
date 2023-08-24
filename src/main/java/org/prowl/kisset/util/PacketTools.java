@@ -13,6 +13,7 @@ import org.prowl.kisset.protocols.xrouter.INP3RoutingPacket;
 import org.prowl.kisset.protocols.xrouter.L3RTTPacket;
 
 import java.nio.ByteBuffer;
+import java.text.ParseException;
 
 public class PacketTools {
 
@@ -23,7 +24,7 @@ public class PacketTools {
     /**
      * Get a sequence of 6 or 7 bytes representing a callsign with optional bit shifting
      */
-    public static String getData(ByteBuffer buffer, int length, boolean shift) {
+    public static String getData(ByteBuffer buffer, int length, boolean shift) throws ParseException  {
         byte[] callsign = new byte[length];
         for (int i = 0; i < length; i++) {
             if (shift) {
@@ -38,7 +39,11 @@ public class PacketTools {
             if (callsign[callsign.length - 1] > 0x20) {
                 try {
                     // Stick the SSID on the end of the callsign after trimming it.
-                    int ssid = Integer.parseInt(new String(new byte[]{callsign[callsign.length - 1]}), 16);
+                    int ssid = (callsign[callsign.length - 1] & 0x0F);// Should get us 0x30-0x3F
+                    // If out of bounds then throw exception
+                    if (ssid < 0 || ssid > 15) {
+                        throw new ParseException("Invalid SSID in callsign:" + ssid, callsign.length - 1);
+                    }
                     return new String(callsign, 0, callsign.length - 1).trim() + "-" + ssid;
                 } catch (Throwable e) {
                     //LOG.error(e.getMessage(), e);

@@ -7,6 +7,7 @@ import org.prowl.kisset.objects.routing.NetROMRoute;
 import org.prowl.kisset.util.PacketTools;
 
 import java.nio.ByteBuffer;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,7 +26,7 @@ public class NetROMRoutingPacket {
      * though no idea if the HDLC bit is used.
      * @param node
      */
-    public NetROMRoutingPacket(Node node) {
+    public NetROMRoutingPacket(Node node) throws ParseException {
         byte[] body = node.getFrame().getBody();
         ByteBuffer buffer = ByteBuffer.wrap(body);
 

@@ -9,6 +9,8 @@ import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.geometry.Point2D;
 import javafx.scene.Node;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
 import javafx.scene.shape.Polyline;
 import javafx.scene.text.Font;
@@ -31,6 +33,11 @@ public class APRSController {
 
     @FXML
     MapView mapView;
+    @FXML
+    Label searchResultsLabel;
+    @FXML
+    TextField searchBox;
+
 
     /**
      * This is the map layer that will display aprs locations.
@@ -39,6 +46,25 @@ public class APRSController {
 
     @Subscribe
     public void onConfigChanged(ConfigurationChangedEvent event) {
+
+    }
+
+    @FXML
+    private void onSearch() {
+        String searchText = searchBox.getText();
+
+        List<APRSNode> results = aprsLayer.search(searchText);
+        if (results.size() == 0) {
+            searchResultsLabel.setText("No results");
+        } else {
+            searchResultsLabel.setText(results.size() + " results");
+        }
+
+        // Now tell the map to redraw around all of the nodes as a bounding box for all the results combined, so that
+        // they are all visible
+        if (results.size() > 0) {
+            mapView.setCenter(results.get(0).getLocation().getLatitude(), results.get(0).getLocation().getLongitude());
+        }
 
     }
 
@@ -66,11 +92,29 @@ public class APRSController {
 
     public class APRSLayer extends MapLayer {
 
-        private Map<String,APRSNode> nodeMap = Collections.synchronizedMap(new HashMap<>());
+        private Map<String, APRSNode> nodeMap = Collections.synchronizedMap(new HashMap<>());
 
         public APRSLayer() {
             super();
             SingleThreadBus.INSTANCE.register(this);
+        }
+
+        public void clear() {
+            nodeMap.clear();
+            getChildren().clear();
+        }
+
+        /**
+         * Search for a callsign and return a list of matching nodes. Wildcards of * are allowed.
+         */
+        public List<APRSNode> search(String searchText) {
+            List<APRSNode> results = new ArrayList<>();
+            for (APRSNode node : nodeMap.values()) {
+                if (node.getSourceCallsign().matches(searchText)) {
+                    results.add(node);
+                }
+            }
+            return results;
         }
 
         /**
@@ -80,16 +124,15 @@ public class APRSController {
         protected void layoutLayer() {
 
             Collection<APRSNode> nodes = nodeMap.values();
-            for (APRSNode node: nodes) {
-               updateNode(node);
-               updateTrack(node);
+            for (APRSNode node : nodes) {
+                updateNode(node);
+                updateTrack(node);
             }
         }
 
         public Point2D getMapPointExt(double lat, double lon) {
             return getMapPoint(lat, lon);
         }
-
 
 
         /**
@@ -99,7 +142,6 @@ public class APRSController {
          */
         @Subscribe
         public void heardAPRS(APRSPacketEvent event) {
-
 
 
             Platform.runLater(() -> {
@@ -129,7 +171,7 @@ public class APRSController {
                     }
                     existingNode.updateLocation(event.getAprsPacket().getRecevedTimestamp().getTime(), node.getLocation(), aprsLayer);
                     if (firstAddPolyline) {
-                      //  addNode(existingNode.getTrack(), existingNode.getLocation());
+                        //  addNode(existingNode.getTrack(), existingNode.getLocation());
                         getChildren().add(existingNode.getTrack());
                     }
                     updateNode(existingNode);
@@ -137,7 +179,7 @@ public class APRSController {
 
                 }
 
-              // markDirty();
+                // markDirty();
             });
         }
 
@@ -167,8 +209,8 @@ public class APRSController {
             Node node = aprsNode.getIcon();
             Point2D mapPoint = getMapPoint(location.getLatitude(), location.getLongitude());
             node.setVisible(true);
-            node.setTranslateX(mapPoint.getX()-(16));
-            node.setTranslateY(mapPoint.getY()-16);
+            node.setTranslateX(mapPoint.getX() - (16));
+            node.setTranslateY(mapPoint.getY() - 16);
 
             Tooltip t = new Tooltip(aprsNode.getSourceCallsign());
             Tooltip.install(node, t);
