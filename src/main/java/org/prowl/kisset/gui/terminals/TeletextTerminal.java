@@ -16,12 +16,16 @@ import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.text.Font;
+import javafx.scene.text.FontSmoothingType;
 import javafx.scene.text.Text;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.prowl.kisset.KISSet;
 import org.prowl.kisset.util.Tools;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -212,8 +216,12 @@ public class TeletextTerminal extends HBox implements Terminal {
     }
 
     public void setFont(Font font) {
-       // this.font = Font.loadFont(getClass().getResourceAsStream("/fonts/galax/MODEL7GX3.TTF"), font.getSize());
-        this.font = Font.loadFont(getClass().getResourceAsStream("/fonts/bedstead/bedstead.otf"), 55);//font.getSize());
+       //this.font = Font.loadFont(KISSet.class.getResource("/fonts/galax/MODE7GX3.TTF").toExternalForm(), 44);
+        this.font = Font.loadFont(KISSet.class.getResourceAsStream("/fonts/bedstead/bedstead.otf"), font.getSize()+4);
+
+
+        LOG.debug("FONT NAME:"+this.font );
+      //  this.font = Font.loadFont(getClass().getResourceAsStream("/fonts/bedstead/bedstead.otf"), 55);//font.getSize());
 
 
         recalculateFontMetrics();
@@ -224,18 +232,7 @@ public class TeletextTerminal extends HBox implements Terminal {
         return this;
     }
 
-    private void precomputeCurrentLine() {
-        byte[] bytes = currentLine.toString().getBytes();
-        QuickAttribute previousLine;
-        if (attributesInUse.size() > 1) {
-            previousLine = attributesInUse.get(attributesInUse.size() - 2);
-        } else {
-            previousLine = new QuickAttribute();
-        }
-        QuickAttribute qa = decodeLineTeletext(bytes, previousLine);
-        attributesInUse.set(attributesInUse.size() - 1, qa.copy());
-        //  LOG.debug("Line:" + Tools.byteArrayToReadableASCIIString(bytes)+"   att:"+qa.color);
-    }
+
 
     private void makeNewLine() {
         synchronized (buffer) {
@@ -288,7 +285,7 @@ public class TeletextTerminal extends HBox implements Terminal {
         for (int j = 0; j < line.length; j++) {
             // If the character is an ansi code, then we need to handle it.
             // 127 == black text - part of a differnet spec, for now we will ignore it.
-            if ((line[j] & 0xFF) >= 128 || line[j] < 32) {
+            if ((line[j] & 0xFF) >= 127 || line[j] < 32) {
                 DecodedTeletextChar da = decodeTeletextChar(line, j, new DecodedTeletextChar(qa, 0));
                 j += da.size;
             } else {
@@ -299,7 +296,7 @@ public class TeletextTerminal extends HBox implements Terminal {
     }
 
     private boolean inEscape = false;
-
+    private int inPosition =0;
     public void clearScreen() {
         for (int i = 0; i < buffer.size(); i++) {
             byte[] line = buffer.get(i);
@@ -312,15 +309,30 @@ public class TeletextTerminal extends HBox implements Terminal {
     /**
      * Appends the text to the terminal buffer for later drawing.
      */
-    public synchronized final void append(int b) {
-        b = b & 0xFF;
+    public synchronized final void append(int ob) {
+        int b = ob & 0xFF;
+
+
 
         if (inEscape) {
             inEscape = false;
             b = 128 + (b % 32);
         }
+        LOG.debug("Append:" + b + "(" + Integer.toString(b, 16) + ")"+(ob & 0xFF)+": " + (char) b + "   charX:" + charXPos+"   charY:"+charYPos);
+        // Not implemented yet
+        if (inPosition == 2) {
+            // xpos
+            inPosition--;
+            return;
+        } else if (inPosition == 1) {
+            // ypos
+            inPosition--;
+            return;
+        }
 
-        LOG.debug("Append:" + b + "(" + Integer.toString(b, 16) + "): " + (char) b + "   charX:" + charXPos);
+
+
+
         // Store the byte in the buffer.
         if (b == 30) {
             // Return cursor to initial position
@@ -339,16 +351,13 @@ public class TeletextTerminal extends HBox implements Terminal {
             charXPos = -1;
             charYPos = 0;
         } else if (b == 10) {
-//            precomputeCurrentLine();
-//            currentLine = new StringBuilder(); // don't use .delete as the backing byte[] would never get trimmed.
-//            makeNewLine();
-//            clearSelection();
+
             if (charYPos < 24) {
                 charYPos++;
             } else {
                 charYPos = 0;
             }
-            charXPos = -1; // This isn't documented for 10, but it seems to be the case.
+            charXPos -= 1;
         } else if (b == 11) {
             if (charYPos > 0) {
                 charYPos--;
@@ -363,6 +372,9 @@ public class TeletextTerminal extends HBox implements Terminal {
         } else if (b == 20) {
             // Cursor off
             charXPos--;
+        } else if (b == 31) {
+            // Position cursor
+            inPosition = 2;
         } else {
 
 
@@ -376,6 +388,8 @@ public class TeletextTerminal extends HBox implements Terminal {
             charXPos = 0;
             if (charYPos < 24) {
                 charYPos++; // This'll do for the moment.
+            } else {
+                charYPos = 0;
             }
         } else {
             charXPos++;
@@ -443,7 +457,7 @@ public class TeletextTerminal extends HBox implements Terminal {
         g.setFill(Color.WHITE);
         g.setStroke(Color.WHITE);
 
-        Color background = null;
+        Color background = Color.BLACK;
         double y = 0;//getHeight();
         double x = 0;
         double width = getWidth();
@@ -452,6 +466,7 @@ public class TeletextTerminal extends HBox implements Terminal {
         boolean inverse = false;
         int extraLine = 0;
         boolean graphics = false;
+        boolean lining = false;
         // We start at the bottom line, and draw upwards and downwards when wrapping lines
 
         int scrollOffset = (int) vScrollBar.getMax() - (int) vScrollBar.getValue();
@@ -469,8 +484,10 @@ public class TeletextTerminal extends HBox implements Terminal {
             // g.setFill(a.color);
             underline = false;
             bold = false;
-            background = null;
+            background = Color.BLACK;
             graphics = false;
+            lining = false;
+            g.setFill(Color.WHITE);
 
             x = 0;
 
@@ -479,8 +496,14 @@ public class TeletextTerminal extends HBox implements Terminal {
             extraLine = 0;
 
 
+            decodeQA.color = Color.WHITE;
+            decodeQA.bgcolor = Color.BLACK;
+            decodeQA.lining = false;
+            decodeQA.graphics = false;
+            decodeQA.bold = false;
             int skippedAnsi = 0;
             for (int j = 0; j < line.length; j++) {
+                boolean inGraphicsChar = false;
                 // If the character is an ansi code, then we need to handle it.
                 if ((line[j] & 0xFF) >= 128) {
                     DecodedTeletextChar da = decodeTeletextChar(line, j, decodeDA);
@@ -492,6 +515,10 @@ public class TeletextTerminal extends HBox implements Terminal {
                         underline = da.qa.underLine;
                         background = da.qa.bgcolor;
                         graphics = da.qa.graphics;
+                        lining = da.qa.lining;
+                        if (graphics) {
+                            inGraphicsChar = true;
+                        }
                     }
 
                 }
@@ -537,7 +564,7 @@ public class TeletextTerminal extends HBox implements Terminal {
                 if (inverse) {
                     Paint currentFill = g.getFill();
                     g.setFill(Color.color(0.5, 0.5, 0.5, 0.5));
-                    g.fillRect(x, y - charHeight, charWidth + 1, charHeight + (charHeight - baseline));
+                    g.fillRect(x, y - charHeight+(charHeight-baseline), charWidth , charHeight );
                     g.setFill(currentFill);
                 } else {
                     g.setEffect(null);
@@ -548,18 +575,26 @@ public class TeletextTerminal extends HBox implements Terminal {
                 if (background != null) {
                     Paint currentFill = g.getFill();
                     g.setFill(background);
-                    g.fillRect(x, y - charHeight, charWidth + 1, charHeight + (charHeight - baseline));
+                    g.fillRect(x, y - charHeight+(charHeight-baseline), charWidth , charHeight );
                     g.setFill(currentFill);
                 }
 
                 // Only draw if it's low byte
                 if ((line[j] & 0xFF) < 0x7F || graphics) {
                     int b = (line[j] & 0xFF);
-                    if (graphics) {
-                            b = b + '\uee00';
+                    if (graphics &&  !(b >=64 && b<=95)) {
+                        if (!inGraphicsChar) {
+                            // EE00 & EDE0
+                            int set = 0xEDE0;
+                            if (lining) {
+                                set = 0xEE00;
+                            }
+                            g.fillText(""+(char)(b+set), x, y);
+                            //drawSixel(g, b - 32, x, y);
+                        }
+                    } else {
+                        g.fillText(String.valueOf((char) b), x, y);
                     }
-
-                 g.fillText(String.valueOf((char) b), x, y);
                     if (bold) {
                         g.fillText(String.valueOf((char) b), x + 1, y);
                     }
@@ -586,11 +621,12 @@ public class TeletextTerminal extends HBox implements Terminal {
      * @return the new starting point after the ANSI code has been read
      */
     private DecodedTeletextChar decodeTeletextChar(byte[] line, int start, DecodedTeletextChar testDA) {
-        QuickAttribute decodeQA = new QuickAttribute();// testDA.qa;
+        QuickAttribute decodeQA = testDA.qa;
         int ansiSize = 0;
         if (start >= line.length) {
             //testDA.qa = null;
             testDA.size = 0;
+            testDA.qa = decodeQA;
             return testDA;
         }
 
@@ -618,33 +654,51 @@ public class TeletextTerminal extends HBox implements Terminal {
 //                    charXPos = 0;
 //                    charYPos = 0;
 //                    break;
+                case 128:
+                    // Black foreground alphabetic
+                   // decodeQA.color = Color.BLACK;
+                    decodeQA.graphics = false;
+                    break;
                 case 129:
                     // Alphanumeric red
                     decodeQA.color = Color.RED;
+                    decodeQA.graphics = false;
                     break;
                 case 130:
                     // Alphanumeric green
                     decodeQA.color = Color.GREEN;
+                    decodeQA.graphics = false;
+
                     break;
                 case 131:
                     // Alphanumeric yellow
                     decodeQA.color = Color.YELLOW;
+                    decodeQA.graphics = false;
+
                     break;
                 case 132:
                     // Alphanumeric blue
                     decodeQA.color = Color.BLUE;
+                    decodeQA.graphics = false;
+
                     break;
                 case 133:
                     // Alphanumeric magenta
                     decodeQA.color = Color.MAGENTA;
+                    decodeQA.graphics = false;
+
                     break;
                 case 134:
                     // Alphanumeric cyan
                     decodeQA.color = Color.CYAN;
+                    decodeQA.graphics = false;
+
                     break;
                 case 135:
                     // Alphanumeric white
                     decodeQA.color = Color.WHITE;
+                    decodeQA.graphics = false;
+
                     break;
                 case 136:
                     // Flash (not supported yet)
@@ -652,14 +706,28 @@ public class TeletextTerminal extends HBox implements Terminal {
                 case 137:
                     // Steady (not supported yet)
                     break;
+                    case 138:
+                        // Normal size / end box
+                        break;
+                case 139:
+                    // size control/medium/start box
+                    break;
                 case 140:
                     // Normal Height
                     break;
                 case 141:
                     // Double Height
                     break;
+                case 142:
+                    // cursor visible
+                    break;
+                case 143:
+                    // invisible cursor
+                    break;
                 case 144:
                     // Black graphics (not in older spec)
+                    decodeQA.color = Color.BLACK;
+                    decodeQA.graphics = true;
                 case 145:
                     // Graphics Red
                     decodeQA.color = Color.RED;
@@ -699,9 +767,13 @@ public class TeletextTerminal extends HBox implements Terminal {
                     // Conceal
                     break;
                 case 153:
+                    // Stop lining
+                    decodeQA.lining = false;
                     // Contiguous Graphics
                     break;
                 case 154:
+                    decodeQA.lining = true;
+                    // start lining
                     // Separated Graphics
                     break;
                 case 156:
@@ -709,13 +781,16 @@ public class TeletextTerminal extends HBox implements Terminal {
                     decodeQA.bgcolor = Color.BLACK;
                     break;
                 case 157:
-                    // New Background
+                    // Set backgroun as current foreground color
+                    decodeQA.bgcolor = decodeQA.color;
                     break;
                 case 158:
-                    // Hold Graphics
+                    // Hold Graphics - image stored as the last received mosaic(graphics) character
+                    // basically switching colours without gaps. remembering the next used character going forward
                     break;
                 case 159:
                     // Release Graphics
+                    decodeQA.graphics = false;
                     break;
                 // 160 and above are block graphics characters
                 default:
@@ -739,10 +814,11 @@ public class TeletextTerminal extends HBox implements Terminal {
      */
     public final class QuickAttribute {
         public Color color;
-        public Color bgcolor;
+        public Color bgcolor = Color.BLACK;
         public boolean graphics;
         public boolean underLine;
         public boolean bold;
+        public boolean lining;
 
         public QuickAttribute() {
         }
@@ -754,6 +830,7 @@ public class TeletextTerminal extends HBox implements Terminal {
             qa.graphics = graphics;
             qa.underLine = underLine;
             qa.bold = bold;
+            qa.lining = lining;
             return qa;
         }
 
@@ -882,6 +959,40 @@ public class TeletextTerminal extends HBox implements Terminal {
 
     public String getName() {
         return "Teletext";
+    }
+
+
+    /**
+     * Draw a 'sixel'. A sixel is a character composed of 6 blocks (sixels) arranged in a 2x3 grid.
+     *
+     * Each 'sixel' is the binary representation of the sixelCode passed in from 0 to 63. The sixel is drawn from top left
+     * to bottom right, with the top left being the least significant bit.
+     *
+     * @param sixelCode The numeric sixel code already subtracted by 160 from it's character code so we end up with 0-63
+     */
+    private void drawSixel(GraphicsContext g, int sixelCode, double x, double y) {
+        boolean[] bits = new boolean[6];
+        for (int i = 0; i < 6; i++) {
+            bits[i] = ((sixelCode >> i) & 0x01) == 1;
+        }
+
+        double blockWidth = charWidth / 2d;
+        double blockHeight = charHeight / 3d;
+
+        double blockX = x;
+        double blockY = y-(charHeight-blockHeight);
+
+        // Draw the 6 blocks
+        for (int i = 0; i < 6; i++) {
+            if (bits[i]) {
+                g.fillRect(blockX, blockY, blockWidth, blockHeight);
+            }
+            blockX += blockWidth;
+            if (i % 2 == 1) {
+                blockX = x;
+                blockY += blockHeight;
+            }
+        }
     }
 
 }

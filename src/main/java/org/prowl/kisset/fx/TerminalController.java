@@ -95,6 +95,25 @@ public class TerminalController {
     public void start() {
         Tools.runOnThread(() -> {
             try {
+//                terminal.append(27);
+//                terminal.append(0x93-64);
+//                for (int i = 0; i < 64; i++) {
+//                    terminal.append(32);
+//                    terminal.append(32);
+//                    terminal.append(i+32);
+//                    terminal.append(32);
+//                    terminal.append(32);
+//                    if (i % 8 == 7) {
+//                        terminal.append(13);
+//                        terminal.append(10);
+//                        terminal.append(13);
+//                        terminal.append(10);
+//                        terminal.append(27);
+//                        terminal.append(84-64);
+//                    }
+//                }
+
+
                 while (true) {
                     terminal.append(in.read());
                 }

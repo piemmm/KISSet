@@ -275,21 +275,28 @@ public class ANSITerminal extends HBox implements Terminal {
         return qa;
     }
 
+    boolean lastByteWasCR = false;
     /**
      * Appends the text to the terminal buffer for later drawing.
      */
     public synchronized final void append(int b) {
         //b = b & 0xFF;
+       // LOG.debug("Append:" + Integer.toString(b,16));
         // Store the byte in the buffer.
+
         if (b == 10) {
+            lastByteWasCR = false;
+            // ignore unprintable CR (but we let escape through)
+            updateCurrentLine();
+        } else if (b == 13) {
+            lastByteWasCR = true;
             precomputeCurrentLine();
             currentLine = new StringBuilder(); // don't use .delete as the backing byte[] would never get trimmed.
             makeNewLine();
             clearSelection();
-        } else if (b == 13) {
-            // ignore unprintable CR (but we let escape through)
-            updateCurrentLine();
+
         } else {
+            lastByteWasCR = false;
             currentLine.append((char) b);
             updateCurrentLine();
         }

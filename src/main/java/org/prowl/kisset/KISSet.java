@@ -237,7 +237,7 @@ public class KISSet extends Application {
             initDX();
             initFBB();
             initAPRS();
-            //testConnectionTerminal();
+          //  testConnectionTerminal();
         } catch (Throwable e) {
             LOG.error(e.getMessage(), e);
             System.exit(1);
@@ -266,9 +266,12 @@ public class KISSet extends Application {
 //            controller.setup();
 //
 //
+//
+//
+////
 //            Socket s = new Socket(InetAddress.getByName("glasstty.com"), 6502);
 //            controller.setConnection(s.getInputStream(), s.getOutputStream());
-//            controller.start();
+//           controller.start();
 //        } catch (Throwable e) {
 //            LOG.error(e.getMessage(), e);
 //        }

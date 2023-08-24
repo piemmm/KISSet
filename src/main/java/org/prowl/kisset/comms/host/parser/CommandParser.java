@@ -233,6 +233,10 @@ public class CommandParser {
         tncHost.send(s);
     }
 
+    public void writeRawToTerminal(int data) throws IOException {
+        tncHost.writeDirect(data);
+    }
+
     /**
      * Convenience method to write a detokenized string
      *

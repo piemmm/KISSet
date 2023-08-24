@@ -62,7 +62,7 @@ public class StreamConnectionEstablishmentListener implements ConnectionEstablis
                     while (true) {
 
                         if (in.available() > 0) {
-                            int b = in.read();
+                            int b = in.read() & 0xFF;
                             if (b == -1) {
                                 break;
                             }
@@ -96,16 +96,17 @@ public class StreamConnectionEstablishmentListener implements ConnectionEstablis
 
 
                                 // Send a newline to the terminal screen on our computer
-                                commandParser.writeToTerminal("\n");
+                            //    commandParser.writeToTerminal("\r");
                                 responseString.delete(0, responseString.length());
                             }
+
                             String data = String.valueOf((char) b); // Inefficient for now.
                             // Build our response line if negotiating a connection.
                             if ((stream.getExtensionState() == ExtensionState.NONE || stream.getExtensionState() == ExtensionState.NEGOTIATING) && b > 13) {
                                 responseString.append(data);
                             }
 
-                            commandParser.writeToTerminal(data);
+                            commandParser.writeRawToTerminal(b);
                         } else {
                             // Crude.
                             Tools.delay(100);

@@ -167,6 +167,15 @@ public class TNCHost {
     }
 
     /**
+     * Direct write to the output stream with no processing - handy for terminal emulation.
+     * @param data
+     * @throws IOException
+     */
+    public void writeDirect(int data) throws IOException {
+       out.write(data);
+    }
+
+    /**
      * Flush the output stream.
      *
      * @throws IOException
