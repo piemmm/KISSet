@@ -27,7 +27,9 @@ import org.prowl.kisset.comms.host.parser.Mode;
 import org.prowl.kisset.config.Conf;
 import org.prowl.kisset.eventbus.SingleThreadBus;
 import org.prowl.kisset.eventbus.events.ConfigurationChangedEvent;
-import org.prowl.kisset.gui.g0term.ANSITerminal;
+import org.prowl.kisset.gui.terminals.ANSITerminal;
+import org.prowl.kisset.gui.terminals.Terminal;
+import org.prowl.kisset.gui.terminals.TerminalHost;
 import org.prowl.kisset.util.Tools;
 
 import java.awt.*;
@@ -36,7 +38,7 @@ import java.awt.desktop.AboutHandler;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 
-public class KISSetController {
+public class KISSetController implements TerminalHost {
 
     private static final Log LOG = LogFactory.getLog("KISSetController");
 
@@ -50,7 +52,7 @@ public class KISSetController {
     MenuItem preferencesMenuItem;
     @FXML
     StackPane stackPane;
-    ANSITerminal terminal;
+    Terminal terminal = new ANSITerminal(); // The default terminal type.
     // TerminalCanvas canvas;
     private PipedInputStream inpis;
     private PipedOutputStream outpos;
@@ -136,17 +138,11 @@ public class KISSetController {
 
     public void configureTerminal() {
         stackPane.getChildren().clear();
-        terminal = new ANSITerminal();
         terminal.setFont(getFont());
-
-        //terminal.setFont(font);
-        stackPane.getChildren().add(terminal);
-
-        terminal.setOnMouseClicked(event -> {
+        stackPane.getChildren().add(terminal.getNode());
+        terminal.getNode().setOnMouseClicked(event -> {
             textEntry.requestFocus();
         });
-
-
     }
 
 
@@ -207,23 +203,35 @@ public class KISSetController {
             e.printStackTrace();
         }
 
-
-        tncHost = new TNCHost(outpis, inpos);
-
+        tncHost = new TNCHost(this, outpis, inpos);
 
         Tools.runOnThread(() -> {
             try {
                 while (true) {
                     terminal.append(inpis.read());
-
-
                 }
             } catch (Exception e) {
                 LOG.debug(e.getMessage(), e);
             }
-
         });
     }
 
+    /**
+     * Change the terminal type to the new terminal
+     *
+     * @param terminal
+     */
+    public void setTerminal(Terminal terminal) {
+        this.terminal = terminal;
 
+        Platform.runLater(() -> {
+            configureTerminal();
+        });
+
+    }
+
+    @Override
+    public Terminal getTerminal() {
+        return terminal;
+    }
 }

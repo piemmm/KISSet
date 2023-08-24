@@ -1,8 +1,9 @@
-package org.prowl.kisset.gui.g0term;
+package org.prowl.kisset.gui.terminals;
 
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
+import javafx.scene.Node;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.ScrollBar;
@@ -16,9 +17,9 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.prowl.kisset.util.ANSI;
 import org.prowl.kisset.util.Tools;
 
 import java.util.ArrayList;
@@ -26,15 +27,20 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Java FX component that emulates a terminal that understands some ANSI colour codes.
+ * Java FX component that emulates a terminal that understands SAA5050 teletext codes.
  * <p>
  * This aims to be memory and cpu efficient by only drawing the visible part of the terminal.
+ *
+ * This is still a bit of an in-progress mess and will be tidied in due course
  */
-public class TeletextTerminal extends HBox {
+public class TeletextTerminal extends HBox implements Terminal {
 
-    private static final Log LOG = LogFactory.getLog("Teletext");
+    int charXPos = 0;
+    int charYPos = 0;
 
-    private static final int maxLines = 1000;
+    private static final Log LOG = LogFactory.getLog("TeletextTerminal");
+
+    private static final int maxLines = 25;
     private final List<byte[]> buffer = new ArrayList<>();
 
     final Clipboard clipboard = Clipboard.getSystemClipboard();
@@ -59,6 +65,7 @@ public class TeletextTerminal extends HBox {
     private final DecodedTeletextChar decodeDA = new DecodedTeletextChar(decodeQA, 0);
 
     Canvas canvas = new Canvas();
+
     ScrollBar vScrollBar = new ScrollBar();
 
     private BufferPosition startSelect;
@@ -71,9 +78,14 @@ public class TeletextTerminal extends HBox {
     double baseline;
 
     public TeletextTerminal() {
+
+
         super();
-        font = Font.font("Monospaced", 12);
-        recalculateFontMetrics();
+
+
+
+        //font = Font.font("Monospaced", 12);
+       // recalculateFontMetrics();
         //getChildren().add(vScrollBar);
         getChildren().add(canvas);
         setPadding(new Insets(0, 0, 0, 0));
@@ -136,6 +148,14 @@ public class TeletextTerminal extends HBox {
             queueRedraw();
         });
 
+        // Make the initial buffer.
+        for (int i = 0; i < 25; i++) {
+            makeNewLine();
+            currentLine = new StringBuilder();
+            currentLine.append(StringUtils.leftPad("", 40, ' '));
+            updateCurrentLine();
+        }
+
     }
 
     public boolean hasSelectedArea() {
@@ -166,7 +186,7 @@ public class TeletextTerminal extends HBox {
                 for (int i = startLine; i <= endLine; i++) {
                     byte[] bytes = buffer.get(i);
                     String str = new String(bytes);
-                    String stripped = ANSI.stripAnsiCodes(str);
+                    String stripped = str;
                     if (i == startLine) {
                         stripped = stripped.substring(startCol);
                     }
@@ -192,11 +212,16 @@ public class TeletextTerminal extends HBox {
     }
 
     public void setFont(Font font) {
-        this.font = font;
-        this.font = Font.loadFont(getClass().getResourceAsStream("/fonts/teletext/EuropeanTeletext.ttf"), font.getSize());
+       // this.font = Font.loadFont(getClass().getResourceAsStream("/fonts/galax/MODEL7GX3.TTF"), font.getSize());
+        this.font = Font.loadFont(getClass().getResourceAsStream("/fonts/bedstead/bedstead.otf"), 55);//font.getSize());
+
 
         recalculateFontMetrics();
         queueRedraw();
+    }
+
+    public Node getNode() {
+        return this;
     }
 
     private void precomputeCurrentLine() {
@@ -207,7 +232,7 @@ public class TeletextTerminal extends HBox {
         } else {
             previousLine = new QuickAttribute();
         }
-        QuickAttribute qa = decodeLineAnsi(bytes, previousLine);
+        QuickAttribute qa = decodeLineTeletext(bytes, previousLine);
         attributesInUse.set(attributesInUse.size() - 1, qa.copy());
         //  LOG.debug("Line:" + Tools.byteArrayToReadableASCIIString(bytes)+"   att:"+qa.color);
     }
@@ -217,7 +242,7 @@ public class TeletextTerminal extends HBox {
             String str = currentLine.toString();
             byte[] bytes = str.getBytes();
             buffer.add(bytes);
-            lineWidths.add(ANSI.stripAnsiCodes(str).length());
+            lineWidths.add(str.length());
             attributesInUse.add(new QuickAttribute());
 
             // If the scrollback buffer is full, then start chopping off the top.
@@ -252,17 +277,18 @@ public class TeletextTerminal extends HBox {
             String str = currentLine.toString();
             byte[] bytes = str.getBytes();
             buffer.set(buffer.size() - 1, bytes);
-            lineWidths.set(lineWidths.size() - 1, ANSI.stripAnsiCodes(str).length());
+            lineWidths.set(lineWidths.size() - 1, str.length());
         }
     }
 
     /**
      * Get the ANSI codes in-force at the end of the line passed in
      */
-    private QuickAttribute decodeLineAnsi(byte[] line, QuickAttribute qa) {
+    private QuickAttribute decodeLineTeletext(byte[] line, QuickAttribute qa) {
         for (int j = 0; j < line.length; j++) {
             // If the character is an ansi code, then we need to handle it.
-            if (line[j] == 0x1B) {
+            // 127 == black text - part of a differnet spec, for now we will ignore it.
+            if ((line[j] & 0xFF) >= 128 || line[j] < 32) {
                 DecodedTeletextChar da = decodeTeletextChar(line, j, new DecodedTeletextChar(qa, 0));
                 j += da.size;
             } else {
@@ -272,24 +298,93 @@ public class TeletextTerminal extends HBox {
         return qa;
     }
 
+    private boolean inEscape = false;
+
+    public void clearScreen() {
+        for (int i = 0; i < buffer.size(); i++) {
+            byte[] line = buffer.get(i);
+            for (int j = 0; j < line.length; j++) {
+                line[j] = 32;
+            }
+        }
+    }
+
     /**
      * Appends the text to the terminal buffer for later drawing.
      */
     public synchronized final void append(int b) {
-        //b = b & 0xFF;
-        // Store the byte in the buffer.
-        if (b == 10) {
-            precomputeCurrentLine();
-            currentLine = new StringBuilder(); // don't use .delete as the backing byte[] would never get trimmed.
-            makeNewLine();
-            clearSelection();
-        } else if (b == 13) {
-            // ignore unprintable CR (but we let escape through)
-            updateCurrentLine();
-        } else {
-            currentLine.append((char) b);
-            updateCurrentLine();
+        b = b & 0xFF;
+
+        if (inEscape) {
+            inEscape = false;
+            b = 128 + (b % 32);
         }
+
+        LOG.debug("Append:" + b + "(" + Integer.toString(b, 16) + "): " + (char) b + "   charX:" + charXPos);
+        // Store the byte in the buffer.
+        if (b == 30) {
+            // Return cursor to initial position
+            charXPos = -1;
+            charYPos = 0;
+        } else if (b == 8) {
+            // Moves cursor one position backwards
+            if (charXPos > 0) {
+                charXPos--;
+            } else if (charXPos == 0) {
+                charYPos--;
+                charXPos = 38;
+            }
+        } else if (b == 12) {
+            clearScreen();
+            charXPos = -1;
+            charYPos = 0;
+        } else if (b == 10) {
+//            precomputeCurrentLine();
+//            currentLine = new StringBuilder(); // don't use .delete as the backing byte[] would never get trimmed.
+//            makeNewLine();
+//            clearSelection();
+            if (charYPos < 24) {
+                charYPos++;
+            } else {
+                charYPos = 0;
+            }
+            charXPos = -1; // This isn't documented for 10, but it seems to be the case.
+        } else if (b == 11) {
+            if (charYPos > 0) {
+                charYPos--;
+            }
+        } else if (b == 13) {
+//            // ignore unprintable CR (but we let escape through)
+//            updateCurrentLine();
+            charXPos = -1;
+        } else if (b == 27) {
+            inEscape = true;
+            charXPos--;
+        } else if (b == 20) {
+            // Cursor off
+            charXPos--;
+        } else {
+
+
+            if (b != 9) {
+                byte[] line = buffer.get(charYPos);
+                line[charXPos] = (byte) b;
+            }
+        }
+
+        if (charXPos == 39) {
+            charXPos = 0;
+            if (charYPos < 24) {
+                charYPos++; // This'll do for the moment.
+            }
+        } else {
+            charXPos++;
+        }
+
+        // At the end of the line?
+//            currentLine.append((char) b);
+//            updateCurrentLine();
+
 
         queueRedraw();
 
@@ -341,6 +436,7 @@ public class TeletextTerminal extends HBox {
     private synchronized void draw() {
         GraphicsContext g = canvas.getGraphicsContext2D();
         g.setFont(font);
+
         g.clearRect(0, 0, getWidth(), getHeight());
         g.setFill(Color.BLACK);
         g.fillRect(0, 0, getWidth(), getHeight());
@@ -348,17 +444,19 @@ public class TeletextTerminal extends HBox {
         g.setStroke(Color.WHITE);
 
         Color background = null;
-        double y = getHeight();
+        double y = 0;//getHeight();
         double x = 0;
         double width = getWidth();
         boolean underline = false;
         boolean bold = false;
         boolean inverse = false;
         int extraLine = 0;
+        boolean graphics = false;
         // We start at the bottom line, and draw upwards and downwards when wrapping lines
 
         int scrollOffset = (int) vScrollBar.getMax() - (int) vScrollBar.getValue();
-        for (int i = (buffer.size() - 1) - scrollOffset; i > 0; i--) {
+        //  for (int i = (buffer.size() - 1) - scrollOffset; i >= 0; i--) {
+        for (int i = 0; i < buffer.size(); i++) {
 
             // Don't bother drawing offscreen stuff.
             if (y < 0) {
@@ -366,16 +464,17 @@ public class TeletextTerminal extends HBox {
             }
 
             byte[] line = buffer.get(i);
-            // pre-walk the line so we know how high it is and therefore where to start drawing.
-            int lineHeight = calculateNumberOfLines(i);
-            QuickAttribute a = attributesInUse.get(Math.max(0, i - 2));
-            g.setFill(a.color);
-            underline = a.underLine;
-            bold = a.bold;
-            background = a.bgcolor;
+
+            //QuickAttribute a = attributesInUse.get(Math.max(0, i - 2));
+            // g.setFill(a.color);
+            underline = false;
+            bold = false;
+            background = null;
+            graphics = false;
 
             x = 0;
-            y -= charHeight * lineHeight;
+
+            y += charHeight;
             y = y - extraLine;
             extraLine = 0;
 
@@ -383,7 +482,7 @@ public class TeletextTerminal extends HBox {
             int skippedAnsi = 0;
             for (int j = 0; j < line.length; j++) {
                 // If the character is an ansi code, then we need to handle it.
-                if (line[j] == 0x1B) {
+                if ((line[j] & 0xFF) >= 128) {
                     DecodedTeletextChar da = decodeTeletextChar(line, j, decodeDA);
                     skippedAnsi += da.size + 1;
                     j += da.size;
@@ -392,75 +491,87 @@ public class TeletextTerminal extends HBox {
                         bold = da.qa.bold;
                         underline = da.qa.underLine;
                         background = da.qa.bgcolor;
-                    }
-                } else {
-
-                    // Now draw the byte array with line wrapping
-                    if (x + charWidth >= width) {
-                        y += charHeight;
-                        extraLine += charHeight;
-                        x = 0;
+                        graphics = da.qa.graphics;
                     }
 
-                    if (startSelect != null && endSelect != null) {
-                        BufferPosition select1 = startSelect;
-                        BufferPosition select2 = endSelect;
-                        if (select2.compareTo(select1) > 0) {
-                            BufferPosition tmp = select1;
-                            select1 = select2;
-                            select2 = tmp;
+                }
+                //} else {
+
+//                    // Now draw the byte array with line wrapping
+//                    if (x + charWidth >= width) {
+//                        y += charHeight;
+//                        extraLine += charHeight;
+//                        x = 0;
+//                    }
+
+                if (startSelect != null && endSelect != null) {
+                    BufferPosition select1 = startSelect;
+                    BufferPosition select2 = endSelect;
+                    if (select2.compareTo(select1) > 0) {
+                        BufferPosition tmp = select1;
+                        select1 = select2;
+                        select2 = tmp;
+                    }
+
+                    if (select1.arrayIndex == select2.arrayIndex) {
+                        if (select1.arrayIndex == i && select1.characterIndex + skippedAnsi == j) {
+                            Effect inverseEffect = new Blend(BlendMode.HARD_LIGHT);
+                            g.applyEffect(inverseEffect);
+                            inverse = true;
                         }
-
-                        if (select1.arrayIndex == select2.arrayIndex) {
-                            if (select1.arrayIndex == i && select1.characterIndex + skippedAnsi == j) {
-                                Effect inverseEffect = new Blend(BlendMode.HARD_LIGHT);
-                                g.applyEffect(inverseEffect);
-                                inverse = true;
-                            }
-                            if (select2.arrayIndex == i && select2.characterIndex + skippedAnsi == j) {
-                                inverse = false;
-                            }
-                        } else {
-                            if (select1.arrayIndex == i && j == 0) {
-                                Effect inverseEffect = new Blend(BlendMode.HARD_LIGHT);
-                                g.applyEffect(inverseEffect);
-                                inverse = true;
-                            }
-                            if (select2.arrayIndex == i && j == line.length - 1) {
-                                inverse = false;
-                            }
+                        if (select2.arrayIndex == i && select2.characterIndex + skippedAnsi == j) {
+                            inverse = false;
                         }
-                    }
-
-                    if (inverse) {
-                        Paint currentFill = g.getFill();
-                        g.setFill(Color.color(0.5, 0.5, 0.5, 0.5));
-                        g.fillRect(x, y - charHeight, charWidth + 1, charHeight + (charHeight - baseline));
-                        g.setFill(currentFill);
                     } else {
-                        g.setEffect(null);
+                        if (select1.arrayIndex == i && j == 0) {
+                            Effect inverseEffect = new Blend(BlendMode.HARD_LIGHT);
+                            g.applyEffect(inverseEffect);
+                            inverse = true;
+                        }
+                        if (select2.arrayIndex == i && j == line.length - 1) {
+                            inverse = false;
+                        }
+                    }
+                }
+
+                if (inverse) {
+                    Paint currentFill = g.getFill();
+                    g.setFill(Color.color(0.5, 0.5, 0.5, 0.5));
+                    g.fillRect(x, y - charHeight, charWidth + 1, charHeight + (charHeight - baseline));
+                    g.setFill(currentFill);
+                } else {
+                    g.setEffect(null);
+                }
+
+
+                // If background is set, then we need to draw a rectangle first.
+                if (background != null) {
+                    Paint currentFill = g.getFill();
+                    g.setFill(background);
+                    g.fillRect(x, y - charHeight, charWidth + 1, charHeight + (charHeight - baseline));
+                    g.setFill(currentFill);
+                }
+
+                // Only draw if it's low byte
+                if ((line[j] & 0xFF) < 0x7F || graphics) {
+                    int b = (line[j] & 0xFF);
+                    if (graphics) {
+                            b = b + '\uee00';
                     }
 
-
-                    // If background is set, then we need to draw a rectangle first.
-                    if (background != null) {
-                        Paint currentFill = g.getFill();
-                        g.setFill(background);
-                        g.fillRect(x, y - charHeight, charWidth + 1, charHeight + (charHeight - baseline));
-                        g.setFill(currentFill);
-                    }
-
-                    g.fillText(String.valueOf((char) line[j]), x, y);
+                 g.fillText(String.valueOf((char) b), x, y);
                     if (bold) {
-                        g.fillText(String.valueOf((char) line[j]), x + 1, y);
+                        g.fillText(String.valueOf((char) b), x + 1, y);
                     }
+                    //}
                     if (underline) {
                         g.strokeLine(x, y + charHeight - baseline, x + charWidth, y + charHeight - baseline);
                     }
-                    x += charWidth;
-
-
                 }
+                x += charWidth;
+
+
+                //}
             }
 
         }
@@ -468,14 +579,14 @@ public class TeletextTerminal extends HBox {
 
 
     /**
-     * Change the graphics paint color according to the ANSI codes read from the byte array at the start position
+     * Change the graphics paint color according to the Teletext codes read from the byte array at the start position
      *
      * @param line
      * @param start
      * @return the new starting point after the ANSI code has been read
      */
     private DecodedTeletextChar decodeTeletextChar(byte[] line, int start, DecodedTeletextChar testDA) {
-        QuickAttribute decodeQA = testDA.qa;
+        QuickAttribute decodeQA = new QuickAttribute();// testDA.qa;
         int ansiSize = 0;
         if (start >= line.length) {
             //testDA.qa = null;
@@ -484,140 +595,152 @@ public class TeletextTerminal extends HBox {
         }
 
         try {
-            // Read the ANSI code
-            boolean mFound = false;
-            StringBuilder ansiCode = new StringBuilder();
-            for (int i = start; i < line.length; i++) {
-                ansiCode.append((char) line[i]);
-                if (line[i] == 'm') {
-                    mFound = true;
-                    ansiSize += i - start;
+            int code = line[start] & 0xFF;
+            //LOG.debug("CODE:" + code);
+            switch (code) {
+//                case 10:
+//                    // Moves cursor one line forward. If it is at the last line of the screen, moves it to the first line unless Data Syntax 3 scroll mode is active.
+//                    break;
+//                case 11:
+//                    // Moves cursor one line backward. If it is at the first line of the screen, moves it to the last line unless Data Syntax 3 scroll mode is active.
+//                    break;
+//                case 12:
+//                    // Resets entire display to spaces with default display attributes and returns the cursor to its initial position.
+//                    decodeQA.bold = false;
+//                    decodeQA.underLine = false;
+//                    decodeQA.color = Color.WHITE;
+//                    decodeQA.bgcolor = null;
+//                    charXPos = 0;
+//                    charYPos = 0;
+//                    break;
+//                case 30:
+//                    // Return cursor to initial position
+//                    charXPos = 0;
+//                    charYPos = 0;
+//                    break;
+                case 129:
+                    // Alphanumeric red
+                    decodeQA.color = Color.RED;
                     break;
-                }
+                case 130:
+                    // Alphanumeric green
+                    decodeQA.color = Color.GREEN;
+                    break;
+                case 131:
+                    // Alphanumeric yellow
+                    decodeQA.color = Color.YELLOW;
+                    break;
+                case 132:
+                    // Alphanumeric blue
+                    decodeQA.color = Color.BLUE;
+                    break;
+                case 133:
+                    // Alphanumeric magenta
+                    decodeQA.color = Color.MAGENTA;
+                    break;
+                case 134:
+                    // Alphanumeric cyan
+                    decodeQA.color = Color.CYAN;
+                    break;
+                case 135:
+                    // Alphanumeric white
+                    decodeQA.color = Color.WHITE;
+                    break;
+                case 136:
+                    // Flash (not supported yet)
+                    break;
+                case 137:
+                    // Steady (not supported yet)
+                    break;
+                case 140:
+                    // Normal Height
+                    break;
+                case 141:
+                    // Double Height
+                    break;
+                case 144:
+                    // Black graphics (not in older spec)
+                case 145:
+                    // Graphics Red
+                    decodeQA.color = Color.RED;
+                    decodeQA.graphics = true;
+                    break;
+                case 146:
+                    // Graphics Green
+                    decodeQA.color = Color.GREEN;
+                    decodeQA.graphics = true;
+                    break;
+                case 147:
+                    // Graphics Yellow
+                    decodeQA.color = Color.YELLOW;
+                    decodeQA.graphics = true;
+                    break;
+                case 148:
+                    // Graphics Blue
+                    decodeQA.color = Color.BLUE;
+                    decodeQA.graphics = true;
+                    break;
+                case 149:
+                    // Graphics Magenta
+                    decodeQA.color = Color.MAGENTA;
+                    decodeQA.graphics = true;
+                    break;
+                case 150:
+                    // Graphics Cyan
+                    decodeQA.color = Color.CYAN;
+                    decodeQA.graphics = true;
+                    break;
+                case 151:
+                    // Graphics White
+                    decodeQA.color = Color.WHITE;
+                    decodeQA.graphics = true;
+                    break;
+                case 152:
+                    // Conceal
+                    break;
+                case 153:
+                    // Contiguous Graphics
+                    break;
+                case 154:
+                    // Separated Graphics
+                    break;
+                case 156:
+                    // Black Background
+                    decodeQA.bgcolor = Color.BLACK;
+                    break;
+                case 157:
+                    // New Background
+                    break;
+                case 158:
+                    // Hold Graphics
+                    break;
+                case 159:
+                    // Release Graphics
+                    break;
+                // 160 and above are block graphics characters
+                default:
+                    LOG.warn("Unknown Teletext/SAA5050 character code: " + code);
+                    break;
             }
 
-            if (!mFound) {
-                //testDA.qa = null;
-                testDA.size = 0;
-                return testDA;
-            }
-
-            // Now we have the ANSI code, we can decode it.
-
-
-            String ansiC = ansiCode.toString();
-            String[] codes = ansiC.split(";");
-
-            if (!ansiC.contains(";")) {
-                codes = new String[]{ansiC};
-            }
-            for (String code : codes) {
-                code = code.replace("[", "").replace("\u001B", "").replace("m", "");
-                switch (code) {
-                    case "0":
-                        // Normal
-                        decodeQA.bold = false;
-                        decodeQA.underLine = false;
-                        decodeQA.color = Color.WHITE;
-                        decodeQA.bgcolor = null;
-                        break;
-                    case "1":
-                        // Bold
-                        decodeQA.bold = true;
-                        break;
-                    case "2":
-                        // Faint
-                        break;
-                    case "3":
-                        // Italic
-                        break;
-                    case "4":
-                        // Underline
-                        decodeQA.underLine = true;
-                        break;
-                    case "5":
-                        // Slow Blink
-                        break;
-                    case "6":
-                        // Rapid Blink
-                        break;
-                    case "7":
-                        // Reverse Video
-                        break;
-                    case "8":
-                        // Conceal
-                        break;
-                    case "9":
-                        // Crossed out
-                        break;
-                    case "30":
-                        decodeQA.color = Color.BLACK;
-                        break;
-                    case "31":
-                        decodeQA.color = Color.RED;
-                        break;
-                    case "32":
-                        decodeQA.color = Color.GREEN.brighter();
-                        break;
-                    case "33":
-                        decodeQA.color = Color.YELLOW;
-                        break;
-                    case "34":
-                        decodeQA.color = Color.BLUE;
-                        break;
-                    case "35":
-                        decodeQA.color = Color.MAGENTA;
-                        break;
-                    case "36":
-                        decodeQA.color = Color.CYAN;
-                        break;
-                    case "37":
-                        decodeQA.color = Color.WHITE;
-                        break;
-                    case "40":
-                        decodeQA.color = Color.BLACK;
-                        break;
-                    case "41":
-                        // Background
-                        decodeQA.bgcolor = Color.RED;
-                        break;
-                    case "42":
-                        decodeQA.bgcolor = Color.GREEN;
-                        break;
-                    case "43":
-                        decodeQA.bgcolor = Color.YELLOW;
-                        break;
-                    case "44":
-                        decodeQA.bgcolor = Color.BLUE;
-                        break;
-                    case "45":
-                        decodeQA.bgcolor = Color.MAGENTA;
-                        break;
-                    case "46":
-                        decodeQA.bgcolor = Color.CYAN;
-                        break;
-                    default:
-                        LOG.warn("Unknown ANSI code: " + code);
-                        break;
-                }
-            }
 
         } catch (Exception e) {
-            LOG.error("Error parsing ANSI code:" + Tools.byteArrayToReadableASCIIString(line), e);
+            LOG.error("Error parsing Teletext code:" + Tools.byteArrayToReadableASCIIString(line), e);
         }
 
-        testDA.size = ansiSize;
+        testDA.size = 0;
         testDA.qa = decodeQA;
         return testDA;
     }
 
 
     /**
-     * Storing state information about the current ansi attributes in use.
+     * Storing state information about the current teletext attributes in use.
      */
     public final class QuickAttribute {
         public Color color;
         public Color bgcolor;
+        public boolean graphics;
         public boolean underLine;
         public boolean bold;
 
@@ -628,6 +751,7 @@ public class TeletextTerminal extends HBox {
             QuickAttribute qa = new QuickAttribute();
             qa.color = color;
             qa.bgcolor = bgcolor;
+            qa.graphics = graphics;
             qa.underLine = underLine;
             qa.bold = bold;
             return qa;
@@ -641,7 +765,7 @@ public class TeletextTerminal extends HBox {
 
         public DecodedTeletextChar(QuickAttribute qa, int size) {
             this.qa = qa;
-            this.size = size;
+            this.size = 0;//size;
         }
 
         public DecodedTeletextChar() {
@@ -685,7 +809,8 @@ public class TeletextTerminal extends HBox {
         if (i < 0) {
             return null;
         }
-        byte[] line = ANSI.stripAnsiCodes(new String(buffer.get(i))).getBytes();
+
+        byte[] line = highToSpace(buffer.get(i));
         //LOG.debug("Clicked Line: " + Tools.byteArrayToReadableASCIIString(line));
 
         // Now get the starting character position of the clicked line.
@@ -704,6 +829,18 @@ public class TeletextTerminal extends HBox {
 
 
         return new BufferPosition(i, position);
+    }
+
+    public byte[] highToSpace(byte[] line) {
+        byte[] newLine = new byte[line.length];
+        for (int i = 0; i < line.length; i++) {
+            if ((line[i] & 0xFF) >= 128) {
+                newLine[i] = 32;
+            } else {
+                newLine[i] = line[i];
+            }
+        }
+        return line;
     }
 
 
@@ -742,4 +879,9 @@ public class TeletextTerminal extends HBox {
             }
         }
     }
+
+    public String getName() {
+        return "Teletext";
+    }
+
 }

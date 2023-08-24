@@ -20,7 +20,7 @@ import org.prowl.kisset.eventbus.SingleThreadBus;
 import org.prowl.kisset.eventbus.events.ConfigurationChangedEvent;
 import org.prowl.kisset.eventbus.events.HeardNodeEvent;
 import org.prowl.kisset.eventbus.events.InvalidFrameEvent;
-import org.prowl.kisset.gui.g0term.ANSITerminal;
+import org.prowl.kisset.gui.terminals.ANSITerminal;
 import org.prowl.kisset.io.Interface;
 import org.prowl.kisset.util.ANSI;
 import org.prowl.kisset.util.PacketTools;

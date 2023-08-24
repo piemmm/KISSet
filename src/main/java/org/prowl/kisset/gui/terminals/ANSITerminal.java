@@ -1,8 +1,9 @@
-package org.prowl.kisset.gui.g0term;
+package org.prowl.kisset.gui.terminals;
 
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
+import javafx.scene.Node;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.ScrollBar;
@@ -30,9 +31,9 @@ import java.util.Objects;
  * <p>
  * This aims to be memory and cpu efficient by only drawing the visible part of the terminal.
  */
-public class ANSITerminal extends HBox {
+public class ANSITerminal extends HBox implements Terminal {
 
-    private static final Log LOG = LogFactory.getLog("Terminal");
+    private static final Log LOG = LogFactory.getLog("ANSITerminal");
 
     private static final int maxLines = 1000;
     private final List<byte[]> buffer = new ArrayList<>();
@@ -243,6 +244,10 @@ public class ANSITerminal extends HBox {
             }
         });
 
+    }
+
+    public Node getNode() {
+        return this;
     }
 
     private void updateCurrentLine() {
@@ -739,5 +744,9 @@ public class ANSITerminal extends HBox {
                 return Integer.compare(arrayIndex, that.arrayIndex);
             }
         }
+    }
+
+    public String getName() {
+        return "ANSI";
     }
 }

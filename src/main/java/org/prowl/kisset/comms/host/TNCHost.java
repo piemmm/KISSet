@@ -12,6 +12,9 @@ import org.prowl.kisset.comms.host.parser.commands.ChangeInterface;
 import org.prowl.kisset.config.Conf;
 import org.prowl.kisset.eventbus.SingleThreadBus;
 import org.prowl.kisset.eventbus.events.HeardNodeEvent;
+import org.prowl.kisset.gui.terminals.ANSITerminal;
+import org.prowl.kisset.gui.terminals.Terminal;
+import org.prowl.kisset.gui.terminals.TerminalHost;
 import org.prowl.kisset.io.Interface;
 import org.prowl.kisset.io.StreamState;
 import org.prowl.kisset.util.ANSI;
@@ -32,6 +35,9 @@ public class TNCHost {
     // The command parser
     private final CommandParser parser;
 
+    // The controller for this terminal (the host class)
+    private TerminalHost host;
+
     // Terminal window input stream
     private final InputStream in;
     // Terminal window output stream
@@ -46,9 +52,10 @@ public class TNCHost {
      * @param in  The input stream for the terminal window.
      * @param out The output stream for the terminal window.
      */
-    public TNCHost(InputStream in, OutputStream out) {
+    public TNCHost(TerminalHost host, InputStream in, OutputStream out) {
         this.in = in;
         this.out = out;
+        this.host = host;
         this.parser = new CommandParser(this);
 
         // Get monitor state
@@ -56,6 +63,14 @@ public class TNCHost {
 
         SingleThreadBus.INSTANCE.register(this);
         start();
+    }
+
+    public Terminal getTerminalType() {
+        return host.getTerminal();
+    }
+
+    public void setTerminalType(Terminal terminal) {
+        host.setTerminal(terminal);
     }
 
     public void setMode(Mode mode, boolean sendPrompt) {
@@ -118,8 +133,14 @@ public class TNCHost {
     public void send(String data) throws IOException {
         data = data.replaceAll("[^\\x04-\\xFF]", "?");
 
+
         // Colourise
         data = ANSI.convertTokensToANSIColours(data);
+
+        // If we're not using an ANSI terminal, then strip our hard colour codes.
+        if (!(getTerminalType() instanceof ANSITerminal)) {
+            data = ANSI.stripAnsiCodes(data);
+        }
 
         out.write(data.getBytes());
     }

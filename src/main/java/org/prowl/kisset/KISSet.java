@@ -36,6 +36,8 @@ import java.awt.*;
 import java.awt.desktop.AppReopenedEvent;
 import java.awt.desktop.AppReopenedListener;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.*;
@@ -234,11 +236,44 @@ public class KISSet extends Application {
             initDX();
             initFBB();
             initAPRS();
+            //testConnectionTerminal();
         } catch (Throwable e) {
             LOG.error(e.getMessage(), e);
             System.exit(1);
         }
     }
+
+//    public void testConnectionTerminal() {
+//        try {
+//            Stage terminalStage = new Stage();
+//            FXMLLoader fxmlLoader = new FXMLLoader(KISSet.class.getResource("fx/TerminalController.fxml"));
+//            Parent root = fxmlLoader.load();
+//            TerminalController controller = fxmlLoader.getController();
+//            Scene scene = new Scene(root, 700, 580);
+//            terminalStage.setTitle("Connection test");
+//            terminalStage.setScene(scene);
+//            terminalStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+//                @Override
+//                public void handle(WindowEvent t) {
+//                    SingleThreadBus.INSTANCE.unregister(controller);
+//                    terminalStage.close();
+//                }
+//            });
+//            terminalStage.setOpacity(1 - (configuration.getConfig(Conf.monitorTransparency, Conf.monitorTransparency.intDefault()) / 100.0));
+//            // This is an unfortunate hack for layout issues.
+//            terminalStage.show();
+//            controller.setup();
+//
+////
+////            Socket s = new Socket(InetAddress.getByName("glasstty.com"), 6502);
+////            controller.setConnection(s.getInputStream(), s.getOutputStream());
+////            controller.start();
+//
+//
+//        } catch (Throwable e) {
+//            LOG.error(e.getMessage(), e);
+//        }
+//    }
 
     public void createServices() {
         // Create services
@@ -384,7 +419,7 @@ public class KISSet extends Application {
                 FXMLLoader fxmlLoader = new FXMLLoader(KISSet.class.getResource("fx/APRSController.fxml"));
                 Parent root = fxmlLoader.load();
                 APRSController controller = fxmlLoader.getController();
-                Scene scene = new Scene(root, 800, 280);
+                Scene scene = new Scene(root, 640, 640);
                 aprsStage.setTitle("APRS Map Viewer");
                 aprsStage.setScene(scene);
                 aprsStage.setOnCloseRequest(new EventHandler<WindowEvent>() {

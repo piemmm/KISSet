@@ -14,7 +14,7 @@ import org.prowl.kisset.config.Conf;
 import org.prowl.kisset.eventbus.SingleThreadBus;
 import org.prowl.kisset.eventbus.events.ConfigurationChangedEvent;
 import org.prowl.kisset.eventbus.events.DXSpotEvent;
-import org.prowl.kisset.gui.g0term.ANSITerminal;
+import org.prowl.kisset.gui.terminals.ANSITerminal;
 import org.prowl.kisset.objects.dxcluster.DXSpot;
 import org.prowl.kisset.util.Tools;
 

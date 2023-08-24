@@ -1,9 +1,9 @@
-package org.prowl.kisset.gui.g0term;
+package org.prowl.kisset.gui.terminals;
 
+import javafx.scene.Node;
 import javafx.scene.text.Font;
 
 public interface Terminal {
-
 
     void append(int i);
 
@@ -14,4 +14,9 @@ public interface Terminal {
     boolean hasSelectedArea();
 
     void setFont(Font f);
+
+    Node getNode();
+
+    String getName();
+
 }

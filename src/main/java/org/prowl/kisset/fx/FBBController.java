@@ -17,7 +17,7 @@ import org.prowl.kisset.config.Conf;
 import org.prowl.kisset.core.Node;
 import org.prowl.kisset.eventbus.SingleThreadBus;
 import org.prowl.kisset.eventbus.events.ConfigurationChangedEvent;
-import org.prowl.kisset.gui.g0term.ANSITerminal;
+import org.prowl.kisset.gui.terminals.ANSITerminal;
 import org.prowl.kisset.util.Tools;
 
 import java.io.IOException;
