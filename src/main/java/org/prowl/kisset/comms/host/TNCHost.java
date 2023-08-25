@@ -205,10 +205,7 @@ public class TNCHost {
             // Compare the array from our buffer to our search array
             String toCompareAgainst = new String(lastLine.getBytes());
             String searchArray = new String(entry.getKey().getBytes());
-            LOG.debug("COMPARE:" + toCompareAgainst + " TO " + searchArray);
             if (toCompareAgainst.contains(searchArray)) {
-                LOG.debug("Comp match");
-
                 try {
                     // Only switch if needed
                     Class<Terminal> terminalClass = entry.getValue();
