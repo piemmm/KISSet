@@ -86,7 +86,7 @@ jobs:
           APP_EMAIL: ${{ secrets.APP_EMAIL }}
           APP_PASS: ${{ secrets.APP_PASS }}
         if: ${{ env.APP_EMAIL != null && matrix.os == 'macos-latest' }}
-        uses: devbotsxyz/xcode-notarize@v1
+        uses: GuillaumeFalourd/xcode-notarize@v1
         with:
           product-path: ${{ env.DMG_PATH }}
           primary-bundle-id: ${{ env.PRIMARY_BUNDLE_ID }}
@@ -97,7 +97,7 @@ jobs:
           APP_EMAIL: ${{ secrets.APP_EMAIL }}
           APP_PASS: ${{ secrets.APP_PASS }}
         if: ${{ env.APP_EMAIL != null && matrix.os == 'macos-latest' }}
-        uses: devbotsxyz/xcode-staple@v1
+        uses: GuillaumeFalourd/xcode-notarize@v1
         with:
           product-path: ${{ env.DMG_PATH }}
       - name: Update Automatic Release
