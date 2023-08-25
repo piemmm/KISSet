@@ -14,13 +14,22 @@ public final class LoopingCircularBuffer {
 
     private static final Log LOG = LogFactory.getLog("LoopingCircularBuffer");
 
-    private final byte[] buffer;
-    private int head = 1;
-    private int tail = 0;
-    private int filled = 0;
+    private byte[] buffer;
+    private int head;
+    private int tail;
+    private int filled;
+    private int size;
 
     public LoopingCircularBuffer(int size) {
+        this.size = size;
+       clear();
+    }
+
+    public void clear() {
         buffer = new byte[size];
+        head = 1;
+        tail = 0;
+        filled = 0;
     }
 
     /**

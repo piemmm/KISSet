@@ -43,6 +43,8 @@ import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 public class KISSetController implements TerminalHost {
 
@@ -66,6 +68,7 @@ public class KISSetController implements TerminalHost {
     private Label statusText;
     @FXML
     private ChoiceBox terminalTypeBox;
+
 
     Terminal terminal = new ANSITerminal(); // The default terminal type.
     private LoopingCircularBuffer dataBuffer = new LoopingCircularBuffer(10240);
@@ -289,12 +292,17 @@ public class KISSetController implements TerminalHost {
     public void setTerminal(Terminal terminal) {
         this.terminal = terminal;
 
+        // Pre populate the terminal with our data 'frame' buffer
         byte[] data = dataBuffer.getBytes();
         for (byte b: data) {
             terminal.append(b & 0xFF);
         }
 
         Platform.runLater(() -> {
+
+            terminalTypeBox.getSelectionModel().select(terminal.getClass());
+
+
             configureTerminal();
         });
 

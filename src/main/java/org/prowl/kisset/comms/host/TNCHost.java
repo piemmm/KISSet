@@ -12,19 +12,21 @@ import org.prowl.kisset.comms.host.parser.commands.ChangeInterface;
 import org.prowl.kisset.config.Conf;
 import org.prowl.kisset.eventbus.SingleThreadBus;
 import org.prowl.kisset.eventbus.events.HeardNodeEvent;
-import org.prowl.kisset.gui.terminals.ANSITerminal;
-import org.prowl.kisset.gui.terminals.PlainTextTerminal;
+import org.prowl.kisset.gui.terminals.TeletextTerminal;
 import org.prowl.kisset.gui.terminals.Terminal;
 import org.prowl.kisset.gui.terminals.TerminalHost;
 import org.prowl.kisset.io.Interface;
 import org.prowl.kisset.io.Stream;
 import org.prowl.kisset.io.StreamState;
 import org.prowl.kisset.util.ANSI;
+import org.prowl.kisset.util.LoopingCircularBuffer;
 import org.prowl.kisset.util.PacketTools;
 import org.prowl.kisset.util.Tools;
 
 import java.io.*;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Each TNC host window is represented by an instance of this class.
@@ -47,6 +49,20 @@ public class TNCHost {
 
     // True if the TNC monitor mode is enabled
     private boolean monitorEnabled;
+
+    /**
+     * List of strings to look for and their counterpart terminal types that can best display them
+     * we use this as a hacky way to automatically switch to the best terminal type for the data given
+     */
+    private static final Map<String, Class> terminalTypes = new HashMap<>();
+
+    static {
+        // TELSTAR
+        terminalTypes.put(new String(new byte[]{0x11, 0x0c,0x1b, 'B', 'T', 0x1b, 'A', 'E', 0x1b, 'F', 'L', 0x1b, 'D', 'S', 0x1b, 'G', 'T', 0x1b, 'E', 'A', 0x1b, 'C', 'R'}), TeletextTerminal.class);
+    }
+
+    private LoopingCircularBuffer lastLine = new LoopingCircularBuffer(256);
+
 
     /**
      * Create a new TNC host.
@@ -164,16 +180,59 @@ public class TNCHost {
 //            data = ANSI.stripAnsiCodes(data);
 //        }
 
-        out.write(data.getBytes());
+        byte[] bytes = data.getBytes();
+        for (byte b : bytes) {
+           addByteToLastLine(b);
+        }
+        out.write(bytes);
     }
+
+    public void addByteToLastLine(byte b) {
+        if (b == 10 || b == 13) {
+            checkForTerminalSwitch();
+            lastLine.clear();
+        } else {
+            lastLine.put(b);
+        }
+    }
+    // Check to see if we need to switch terminal types automatically.
+    public void checkForTerminalSwitch() {
+
+
+        // Iterate through the entry set, match the bytes, if there's a match, switch to the terminal type
+        for (Map.Entry<String, Class> entry : terminalTypes.entrySet()) {
+
+            // Compare the array from our buffer to our search array
+            String toCompareAgainst = new String(lastLine.getBytes());
+            String searchArray = new String(entry.getKey().getBytes());
+            LOG.debug("COMPARE:" + toCompareAgainst + " TO " + searchArray);
+            if (toCompareAgainst.contains(searchArray)) {
+                LOG.debug("Comp match");
+
+                try {
+                    // Only switch if needed
+                    Class<Terminal> terminalClass = entry.getValue();
+                    if (!host.getTerminal().getClass().equals(terminalClass)) {
+                        host.setTerminal(terminalClass.getConstructor().newInstance());
+                    }
+                    lastLine.clear();
+                } catch (Exception e) {
+                    LOG.error(e.getMessage(), e);
+                }
+            }
+        }
+    }
+
 
     /**
      * Direct write to the output stream with no processing - handy for terminal emulation.
+     *
      * @param data
      * @throws IOException
      */
     public void writeDirect(int data) throws IOException {
-       out.write(data);
+        addByteToLastLine((byte) data);
+        out.write(data);
     }
 
     /**
