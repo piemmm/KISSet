@@ -318,7 +318,7 @@ public class TeletextTerminal extends HBox implements Terminal {
             inEscape = false;
             b = 128 + (b % 32);
         }
-        LOG.debug("Append:" + b + "(" + Integer.toString(b, 16) + ")"+(ob & 0xFF)+": " + (char) b + "   charX:" + charXPos+"   charY:"+charYPos);
+      //  LOG.debug("Append:" + b + "(" + Integer.toString(b, 16) + ")"+(ob & 0xFF)+": " + (char) b + "   charX:" + charXPos+"   charY:"+charYPos);
         // Not implemented yet
         if (inPosition == 2) {
             // xpos
@@ -794,7 +794,7 @@ public class TeletextTerminal extends HBox implements Terminal {
                     break;
                 // 160 and above are block graphics characters
                 default:
-                    LOG.warn("Unknown Teletext/SAA5050 character code: " + code);
+                    //LOG.warn("Unknown Teletext/SAA5050 character code: " + code);
                     break;
             }
 

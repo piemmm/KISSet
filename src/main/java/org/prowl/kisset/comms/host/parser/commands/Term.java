@@ -4,6 +4,8 @@ import org.prowl.kisset.KISSet;
 import org.prowl.kisset.annotations.TNCCommand;
 import org.prowl.kisset.comms.host.parser.Mode;
 import org.prowl.kisset.gui.terminals.ANSITerminal;
+import org.prowl.kisset.gui.terminals.DebugTerminal;
+import org.prowl.kisset.gui.terminals.PlainTextTerminal;
 import org.prowl.kisset.gui.terminals.TeletextTerminal;
 import org.prowl.kisset.util.ANSI;
 
@@ -45,13 +47,12 @@ public class Term extends Command {
             case "ansi":
                 tncHost.setTerminalType(new ANSITerminal());
                 break;
-//            case "plain":
-//            case "ascii":
-//                tncHost.setTerminalType(new ASCIITerminal());
-//                break;
-//            case "debug":
-//                tncHost.setTerminalType(new DebugTerminal());
-//                break;
+            case "plain":
+                tncHost.setTerminalType(new PlainTextTerminal());
+                break;
+            case "debug":
+                tncHost.setTerminalType(new DebugTerminal());
+                break;
 //            case "auto":
 //                tncHost.setTerminalType(new AutoTerminal());
 //                break;

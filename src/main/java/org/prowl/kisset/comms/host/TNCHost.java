@@ -13,6 +13,7 @@ import org.prowl.kisset.config.Conf;
 import org.prowl.kisset.eventbus.SingleThreadBus;
 import org.prowl.kisset.eventbus.events.HeardNodeEvent;
 import org.prowl.kisset.gui.terminals.ANSITerminal;
+import org.prowl.kisset.gui.terminals.PlainTextTerminal;
 import org.prowl.kisset.gui.terminals.Terminal;
 import org.prowl.kisset.gui.terminals.TerminalHost;
 import org.prowl.kisset.io.Interface;
@@ -158,10 +159,10 @@ public class TNCHost {
         // Colourise
         data = ANSI.convertTokensToANSIColours(data);
 
-        // If we're not using an ANSI terminal, then strip our hard colour codes.
-        if (!(getTerminalType() instanceof ANSITerminal)) {
-            data = ANSI.stripAnsiCodes(data);
-        }
+//        // If we're not using an ANSI terminal, then strip our hard colour codes.
+//        if (getTerminalType() instanceof PlainTextTerminal) {
+//            data = ANSI.stripAnsiCodes(data);
+//        }
 
         out.write(data.getBytes());
     }

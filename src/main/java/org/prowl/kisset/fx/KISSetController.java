@@ -32,10 +32,8 @@ import org.prowl.kisset.comms.host.parser.Mode;
 import org.prowl.kisset.config.Conf;
 import org.prowl.kisset.eventbus.SingleThreadBus;
 import org.prowl.kisset.eventbus.events.ConfigurationChangedEvent;
-import org.prowl.kisset.gui.terminals.ANSITerminal;
-import org.prowl.kisset.gui.terminals.TeletextTerminal;
-import org.prowl.kisset.gui.terminals.Terminal;
-import org.prowl.kisset.gui.terminals.TerminalHost;
+import org.prowl.kisset.gui.terminals.*;
+import org.prowl.kisset.util.LoopingCircularBuffer;
 import org.prowl.kisset.util.Tools;
 
 import java.awt.*;
@@ -52,7 +50,7 @@ public class KISSetController implements TerminalHost {
 
     private static final KeyCombination CTRL_C = new KeyCodeCombination(KeyCode.C, KeyCombination.CONTROL_DOWN);
 
-    public static final Class[] TERMINALS = new Class[]{ANSITerminal.class, TeletextTerminal.class};
+    public static final Class[] TERMINALS = new Class[]{ANSITerminal.class, TeletextTerminal.class, PlainTextTerminal.class, DebugTerminal.class};
 
     @FXML
     TextField textEntry;
@@ -70,10 +68,12 @@ public class KISSetController implements TerminalHost {
     private ChoiceBox terminalTypeBox;
 
     Terminal terminal = new ANSITerminal(); // The default terminal type.
+    private LoopingCircularBuffer dataBuffer = new LoopingCircularBuffer(10240);
     // TerminalCanvas canvas;
     private PipedInputStream inpis;
     private PipedOutputStream outpos;
     private TNCHost tncHost;
+
 
     @FXML
     protected void onQuitAction() {
@@ -270,7 +270,10 @@ public class KISSetController implements TerminalHost {
         Tools.runOnThread(() -> {
             try {
                 while (true) {
-                    terminal.append(inpis.read());
+                    int b = inpis.read();
+                    dataBuffer.put((byte)b);
+                    terminal.append(b);
+
                 }
             } catch (Exception e) {
                 LOG.debug(e.getMessage(), e);
@@ -285,6 +288,11 @@ public class KISSetController implements TerminalHost {
      */
     public void setTerminal(Terminal terminal) {
         this.terminal = terminal;
+
+        byte[] data = dataBuffer.getBytes();
+        for (byte b: data) {
+            terminal.append(b & 0xFF);
+        }
 
         Platform.runLater(() -> {
             configureTerminal();
