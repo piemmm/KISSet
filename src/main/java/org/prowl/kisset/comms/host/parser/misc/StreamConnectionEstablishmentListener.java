@@ -73,7 +73,7 @@ public class StreamConnectionEstablishmentListener implements ConnectionEstablis
                                 // response to our 'enable these extensions' command
                                 if (stream.getExtensionState() == ExtensionState.NEGOTIATING) {
                                     LOG.debug("Response string: " + responseString + "(response)");
-                                    // Look for and respond to the [OARC <capabilities>] response containing stuff the server enabled.
+                                    // Look for and respond to the [EXTN <capabilities>] response containing stuff the server enabled.
                                     if (responseString.toString().matches("\\[EXTN [a-zA-Z0-9]+\\]")) {
                                         LOG.debug("Response string: " + responseString + "(matches)");
 
@@ -87,7 +87,7 @@ public class StreamConnectionEstablishmentListener implements ConnectionEstablis
                                     }
                                 }
 
-                                // Get the first line from our connected station - this will contain [OARC <capabilities>] if it supports it
+                                // Get the first line from our connected station - this will contain [EXTN <capabilities>] if it supports it
                                 if (stream.getExtensionState() == ExtensionState.NONE) {
                                     checkRemoteStationCapabilities(responseString.toString());
                                     stream.setExtensionState(ExtensionState.NEGOTIATING);
@@ -169,7 +169,7 @@ public class StreamConnectionEstablishmentListener implements ConnectionEstablis
     /**
      * If the first line matches a known format then we can enable more capabilities in the client such as compression
      * (which is also enabled serverside)
-     * The format of the line we look for is: [OARC-<capabilities as [a-zA-Z0-9]>] as a regexp
+     * The format of the line we look for is: [EXTN-<capabilities as [a-zA-Z0-9]>] as a regexp
      *
      * @param firstLine
      */
