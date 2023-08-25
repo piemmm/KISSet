@@ -48,7 +48,7 @@ public enum Conf {
 
     // APRS settings
     aprsDecoingOverKISSEnabled(true),
-    connectToAPRSIServer(true),
+    connectToAPRSIServer(false),
     aprsIServerHostname("aprs-cache.g0tai.net:14580"),
 
     // MQTT settings

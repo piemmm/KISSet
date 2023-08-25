@@ -1,5 +1,6 @@
 package org.prowl.kisset.protocols.aprs;
 
+import com.google.common.eventbus.Subscribe;
 import net.ab0oo.aprs.parser.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -8,6 +9,7 @@ import org.prowl.kisset.config.Conf;
 import org.prowl.kisset.config.Config;
 import org.prowl.kisset.eventbus.SingleThreadBus;
 import org.prowl.kisset.eventbus.events.APRSPacketEvent;
+import org.prowl.kisset.eventbus.events.ConfigurationChangedEvent;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -29,13 +31,14 @@ public enum APRSISClient {
 
     private static final Log LOG = LogFactory.getLog("APRSISClient");
 
-    public static final String SERVER = "rotate.aprs.net";
-    public static final int PORT = 14580; // 10152 full feed, 14580 filtered feed
+    public String server = "rotate.aprs.net";
+    public int port = 14580; // 10152 full feed, 14580 filtered feed
 
     private Config config;
     private Timer timer;
 
     private boolean running = false;
+    private int rangeKM = 200;
 
     // testing
     double lat = 52.0542919;
@@ -50,6 +53,7 @@ public enum APRSISClient {
                 connect();
             }
         }, 10000, 60000);
+        SingleThreadBus.INSTANCE.register(this);
     }
 
     public void stop() {
@@ -64,9 +68,26 @@ public enum APRSISClient {
             return;
         }
 
+        String serverPort = config.getConfig(Conf.aprsIServerHostname, Conf.aprsIServerHostname.stringDefault());
+
+        // Get the server and port from server:port format (port may not be present)
+        if (serverPort.contains(":")) {
+            String[] parts = serverPort.split(":");
+            server = parts[0];
+            if (parts.length > 1) {
+                try {
+                    port = Integer.parseInt(parts[1]);
+                } catch (NumberFormatException e) {
+                    LOG.error("Invalid port number in APRS-IS server config: " + serverPort);
+                }
+            }
+        } else {
+            server = serverPort;
+            port = 14580;
+        }
 
         try {
-            Socket s = new Socket(InetAddress.getByName(SERVER), PORT);
+            Socket s = new Socket(InetAddress.getByName(server), port);
             try {
                 s.setSoTimeout(60000);
             } catch (Throwable e) {
@@ -78,7 +99,7 @@ public enum APRSISClient {
             InputStream in = s.getInputStream();
             OutputStream out = s.getOutputStream();
 
-            out.write(("user APRSPR-TS pass -1 filter r/" + lat + "/" + lon + "/100\n").getBytes());
+            out.write(("user APRSPR-TS pass -1 filter r/" + lat + "/" + lon + "/"+rangeKM+"\n").getBytes());
             out.flush();
 
             BufferedReader reader = new BufferedReader(new InputStreamReader(in), 32768);
@@ -91,10 +112,22 @@ public enum APRSISClient {
                 }
             }
 
+            try {
+                s.close();
+            } catch (Throwable e) {
+            }
+
         } catch (Throwable e) {
             e.printStackTrace();
         }
     }
+
+
+    @Subscribe
+    public void onConfigurationChanged(ConfigurationChangedEvent e) {
+        running = false; // Force reconnection
+    }
+
 
     public void parsePacket(String packet, long time) {
 
