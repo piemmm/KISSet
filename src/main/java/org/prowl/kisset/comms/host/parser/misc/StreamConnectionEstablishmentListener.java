@@ -2,7 +2,6 @@ package org.prowl.kisset.comms.host.parser.misc;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.prowl.kisset.Messages;
 import org.prowl.kisset.ax25.ConnState;
 import org.prowl.kisset.ax25.ConnectionEstablishmentListener;
 import org.prowl.kisset.comms.host.parser.CommandParser;
@@ -11,8 +10,8 @@ import org.prowl.kisset.comms.host.parser.Mode;
 import org.prowl.kisset.io.Stream;
 import org.prowl.kisset.io.StreamState;
 import org.prowl.kisset.util.Tools;
-import org.prowl.kisset.util.compression.block.CompressedBlockInputStream;
-import org.prowl.kisset.util.compression.block.CompressedBlockOutputStream;
+import org.prowl.kisset.util.compression.dictblock.CompressedBlockInputStream;
+import org.prowl.kisset.util.compression.dictblock.CompressedBlockOutputStream;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,9 +25,7 @@ public class StreamConnectionEstablishmentListener implements ConnectionEstablis
     private CommandParser commandParser;
 
     private Stream stream;
-//
-//    private InputStream in;
-//    private OutputStream out;
+
 
     public StreamConnectionEstablishmentListener(CommandParser commandParser, Stream stream) {
         this.commandParser = commandParser;
@@ -49,7 +46,6 @@ public class StreamConnectionEstablishmentListener implements ConnectionEstablis
             // Now setup the streams so we talk to the station instead of the command parser
             stream.setIOStreams(conn.getInputStream(), conn.getOutputStream());
 
-            InputStream in = stream.getInputStream();
             OutputStream out = stream.getOutputStream();
 
             // Create a thread to read from the station and send to the client
@@ -60,9 +56,9 @@ public class StreamConnectionEstablishmentListener implements ConnectionEstablis
                 try {
                     StringBuffer responseString = new StringBuffer();
                     while (true) {
-
+                        InputStream in = stream.getInputStream();
                         if (in.available() > 0) {
-                            int b = in.read() & 0xFF;
+                            int b = in.read();
                             if (b == -1) {
                                 break;
                             }
@@ -83,7 +79,7 @@ public class StreamConnectionEstablishmentListener implements ConnectionEstablis
                                     } else {
                                         // First line was not a match, so we can assume no extensions are enabled.
                                         LOG.debug("Response string: " + responseString + "(no match)");
-                                        stream.setExtensionState(ExtensionState.NOT_SUPPORTED);
+                                        //stream.setExtensionState(ExtensionState.NOT_SUPPORTED);
                                     }
                                 }
 
@@ -96,7 +92,7 @@ public class StreamConnectionEstablishmentListener implements ConnectionEstablis
 
 
                                 // Send a newline to the terminal screen on our computer
-                            //    commandParser.writeToTerminal("\r");
+                                //    commandParser.writeToTerminal("\r");
                                 responseString.delete(0, responseString.length());
                             }
 
@@ -158,7 +154,7 @@ public class StreamConnectionEstablishmentListener implements ConnectionEstablis
         try {
             stream.setStreamState(StreamState.DISCONNECTED);
             commandParser.writeToTerminal("*** Lost connection: " + reason + CR);
-            commandParser.setModeIfCurrentStream(Mode.CMD, stream,true);
+            commandParser.setModeIfCurrentStream(Mode.CMD, stream, true);
             commandParser.updateStatus();
         } catch (IOException e) {
             LOG.error("Error writing to client:" + e.getMessage(), e);
@@ -219,8 +215,8 @@ public class StreamConnectionEstablishmentListener implements ConnectionEstablis
             // The client should provide some form of interactivity when downloading blocks
             // of compressed data.  calling flush() on the stream will cause the block to be sent
             // at it's current size immediately.
-            CompressedBlockOutputStream out = new CompressedBlockOutputStream(stream.getOutputStream(), 1024);
-            CompressedBlockInputStream in = new CompressedBlockInputStream(stream.getInputStream());
+            CompressedBlockOutputStream out = new org.prowl.kisset.util.compression.dictblock.CompressedBlockOutputStream(stream.getOutputStream(), 1024);
+            CompressedBlockInputStream in = new org.prowl.kisset.util.compression.dictblock.CompressedBlockInputStream(stream.getInputStream());
             stream.setIOStreams(in, out);
             commandParser.setDivertStream(out);
 

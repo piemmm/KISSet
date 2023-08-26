@@ -33,10 +33,11 @@ import org.prowl.kisset.statistics.Statistics;
 import org.prowl.kisset.util.Tools;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileSystemView;
 import java.awt.*;
 import java.awt.desktop.AppReopenedEvent;
 import java.awt.desktop.AppReopenedListener;
-import java.io.IOException;
+import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;

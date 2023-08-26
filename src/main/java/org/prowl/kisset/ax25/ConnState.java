@@ -67,22 +67,23 @@ public class ConnState implements AX25FrameSource, Closeable {
      * Modulo index of last received frame. Only used for sessions to or from this station.
      * AX.25 spec section 4.2.2.4.
      */
-    int vr = 0;
+    int modReceivedFrameIndex = 0;
     /**
      * Modulo index of last transmitted frame. Only used for sessions to or from this station.
      * AX.25 spec section 4.2.2.2,
      */
-    int vs = 0;
+    int modSentFrameIndex = 0;
     /**
      * Modulo index of last acknowledged frame. Only used for sessions to or from this station.
      * AX.25 spec section 4.2.2.6.
      */
-    int va = 0;
+    int modAcknowledgedFrameIndex = 0;
+
     volatile boolean localRcvBlocked = false;
     volatile boolean xmtToRemoteBlocked = false;
     /**
      * Window of I-frames being sent from this station to the other end of the connection. Only used
-     * for sessions to or from this station. {@link #vs} and {@link #va} are indexes into this array.
+     * for sessions to or from this station. {@link #modSentFrameIndex} and {@link #modAcknowledgedFrameIndex} are indexes into this array.
      */
     AX25Frame[] transmitWindow = null;
     AX25Stack stack;
@@ -111,9 +112,9 @@ public class ConnState implements AX25FrameSource, Closeable {
      */
     void reset() {
         synchronized (MONITOR) {
-            vr = 0;
-            vs = 0;
-            va = 0;
+            modReceivedFrameIndex = 0;
+            modSentFrameIndex = 0;
+            modAcknowledgedFrameIndex = 0;
             localRcvBlocked = false;
             xmtToRemoteBlocked = false;
             if (transmitWindow != null) {
@@ -224,7 +225,7 @@ public class ConnState implements AX25FrameSource, Closeable {
      * @return String connection state text
      */
     public String getStateOfConn() {
-        return String.valueOf(connType) + ',' + transition + ",vr=" + vr + ",vs=" + vs + ",va=" + va
+        return String.valueOf(connType) + ',' + transition + ",vr=" + modReceivedFrameIndex + ",vs=" + modSentFrameIndex + ",va=" + modAcknowledgedFrameIndex
                 + (localRcvBlocked ? ",rcvBlock" : "") + (xmtToRemoteBlocked ? ",xmtBlock" : "");
     }
 

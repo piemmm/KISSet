@@ -995,7 +995,52 @@ public class AX25Frame implements Serializable, AX25FrameSource, Comparable<AX25
      */
     @Override
     public String toString() {
-        return "AX25Frame[" + dest + '<' + sender + (digipeaters != null ? "," + Arrays.toString(digipeaters) : "") + ",ctl=" + Integer.toHexString(ctl & 0xFF) + ",pid=" + Integer.toHexString(pid & 0xFF) + (body != null ? ",#=" + body.length : ",empty-body") + ']';
+        StringBuilder sb = new StringBuilder();
+        sb.append("AX25Frame[");
+        if (sender != null) {
+            sb.append(sender);
+        }
+        sb.append('>');
+        if (dest != null) {
+            sb.append(dest);
+        }
+
+        if (digipeaters != null) {
+            sb.append(',');
+            sb.append(Arrays.toString(digipeaters));
+        }
+        sb.append(",ctl=");
+        sb.append(Integer.toHexString(ctl & 0xFF));
+        if (mod128) {
+            sb.append(',');
+            sb.append(Integer.toHexString(ctl2 & 0xFF));
+        }
+        sb.append(",pid=");
+        sb.append(Integer.toHexString(pid & 0xFF));
+
+        // If S or I frame then add the NR
+        if ((ctl & 0x01) == FRAMETYPE_I || (ctl & MASK_FRAMETYPE) == FRAMETYPE_S) {
+            sb.append(",NR=");
+            sb.append(getNR());
+        }
+
+        // And NS for I frames
+        if ((ctl & 0x01) == FRAMETYPE_I) {
+            sb.append(",NS=");
+            sb.append(getNS());
+        }
+
+        if (body != null) {
+            sb.append(",#=");
+            sb.append(body.length);
+        } else {
+            sb.append(",empty-body");
+        }
+        sb.append(']');
+        return sb.toString();
+
+
+       // return "AX25Frame[" + dest + '<' + sender + (digipeaters != null ? "," + Arrays.toString(digipeaters) : "") + ",ctl=" + Integer.toHexString(ctl & 0xFF) + ",pid=" + Integer.toHexString(pid & 0xFF) + (body != null ? ",#=" + body.length : ",empty-body") + ']';
     }
 
     /**

@@ -187,7 +187,7 @@ class AX25OutputStream extends OutputStream {
 
                 // A more sensible way to count the number of frames in the transmit window
                 // keeping to the N(R)-1 rule
-                int nextVS = connState.vs;
+                int nextVS = connState.modSentFrameIndex;
                 int counter = 60000;
                 while (counter + 2 >= (f.mod128 ? 128 : 8)) {
                     counter = 0;
@@ -204,13 +204,13 @@ class AX25OutputStream extends OutputStream {
 
                 connState.transmitWindow[nextVS] = f;
 
-                if (nextVS == connState.vs) {
-                    connState.vs = (connState.vs + 1) % (f.mod128 ? 128 : 8);
+                if (nextVS == connState.modSentFrameIndex) {
+                    connState.modSentFrameIndex = (connState.modSentFrameIndex + 1) % (f.mod128 ? 128 : 8);
                 }
                 if (!connState.xmtToRemoteBlocked) {
                     if (connState.connector != null) {
                         f.setNS(nextVS);
-                        f.setNR(connState.vr);
+                        f.setNR(connState.modReceivedFrameIndex);
                         LOG.debug("sending I frame " + f.sender + "->" + f.dest + " NS=" + f.getNS() + " NR=" + f.getNR() + " #=" + f.body.length);
                         //connState.stack.getTransmitting().queue(f);
                         connState.connector.sendFrame(f);

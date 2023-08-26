@@ -512,9 +512,9 @@ public class BasicTransmittingConnector extends Connector implements Transmittin
             sabmFrame.dest = new AX25Callsign(to);
             sabmFrame.setCmd(true);
             ConnState state = stack.getConnState(sabmFrame.sender, sabmFrame.dest, true);
-            LOG.debug("State:" + state.transition);
+            //LOG.debug("State:" + state.transition);
 
-            LOG.debug("Transmitter.openConnection(" + sabmFrame.dest + ',' + sabmFrame.sender + ',' + Arrays.toString(state.via) + "): sending SABM U-frame");
+            //LOG.debug("Transmitter.openConnection(" + sabmFrame.dest + ',' + sabmFrame.sender + ',' + Arrays.toString(state.via) + "): sending SABM U-frame");
             state.connType = ConnState.ConnType.MOD8;
             state.transition = ConnState.ConnTransition.LINK_UP;
             //sabmFrame.digipeaters = state.via;

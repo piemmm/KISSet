@@ -22,6 +22,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.prowl.kisset.ax25.util.FastBlockingQueue;
 import org.prowl.kisset.ax25.util.ReschedulableTimer;
+import org.prowl.kisset.util.Tools;
 
 import java.io.*;
 import java.net.ConnectException;
@@ -759,15 +760,15 @@ public class AX25Stack implements FrameListener, Runnable {
                 if (toMe) {
                     LOG.debug(debugTag + " rcvd: " + frame.getFrameTypeString() +
                             (frame.getP() ? " P " : ' ') + frame.sender + "->" + frame.dest + " NS=" + frame.getNS() +
-                            " NR=" + frame.getNR() + " #=" + frame.body.length + " VR=" + state.vr);
+                            " NR=" + frame.getNR() + " #=" + frame.body.length + " VR=" + state.modReceivedFrameIndex +" body:"+ Tools.byteArrayToHexString(frame.body));
                     // check frame number against flow control
                     int ns = frame.getNS();
 
-                    if (ns == state.vr) {
+                    if (ns == state.modReceivedFrameIndex) {
                         if (state.localRcvBlocked) {
                             transmitRNR(connector, frame.dest, frame.sender, reverseDigipeaters(frame.digipeaters), state, false);
                         } else {
-                            state.vr = (state.vr + 1) % (state.getConnType() == ConnState.ConnType.MOD128 ? 128 : 8);
+                            state.modReceivedFrameIndex = (state.modReceivedFrameIndex + 1) % (state.getConnType() == ConnState.ConnType.MOD128 ? 128 : 8);
                             //TODO: wait until we have enough processed to be worth wasting airtime on an RR packet
                             transmitRR(connector, frame.dest, frame.sender, reverseDigipeaters(frame.digipeaters), state, false);
                             msgReported = processIBody(frame, false, connector, System.currentTimeMillis());
@@ -777,21 +778,21 @@ public class AX25Stack implements FrameListener, Runnable {
                             }
                         }
                     } else {
-                        //TODO: delay a bit until we can send a SREJ in case it's only a one-packet drop
+                        //TODO: delay a bit until we can send a SREJ in case it's only a one-packet drop, and also to debounce sending this multiple times
                         transmitREJ(connector, frame.dest, frame.sender, reverseDigipeaters(frame.digipeaters), state, false);
                     }
                     // update received state for other end
                     int nr = frame.getNR();
                     boolean ackFrames = false;
-                    while (state.va != nr) {
+                    while (state.modAcknowledgedFrameIndex != nr) {
                         if (state.transmitWindow != null) {
-                            if (state.transmitWindow[state.va] != null) {
-                                state.transmitWindow[state.va] = null;
+                            if (state.transmitWindow[state.modAcknowledgedFrameIndex] != null) {
+                                state.transmitWindow[state.modAcknowledgedFrameIndex] = null;
                                 ackFrames = true; //TODO: did we ack the frame we are currently sending?
 
                             }
                         }
-                        state.va = (state.va + 1) % (state.getConnType() == ConnState.ConnType.MOD128 ? 128 : 8);
+                        state.modAcknowledgedFrameIndex = (state.modAcknowledgedFrameIndex + 1) % (state.getConnType() == ConnState.ConnType.MOD128 ? 128 : 8);
                     }
 
                     if (ackFrames) {
@@ -817,6 +818,8 @@ public class AX25Stack implements FrameListener, Runnable {
             if (state != null && state.isOpen()) {
                 ConnState.ConnType connType;
                 if (((connType = state.getConnType()) == ConnState.ConnType.MOD128 || connType == ConnState.ConnType.MOD8)) {
+                    int nr;
+                    boolean ackFrames;
                     switch (frame.getSType()) {
 
                         // Receive Ready
@@ -836,39 +839,41 @@ public class AX25Stack implements FrameListener, Runnable {
                                 }
                             }
                             // update received state for other end
-                            int nr = frame.getNR();
-                            boolean ackFrames = false;
-                            while (state.va != nr) {
+                            nr = frame.getNR();
+                            ackFrames = false;
+                            while (state.modAcknowledgedFrameIndex != nr) {
                                 if (state.transmitWindow != null) {
-                                    if (state.transmitWindow[state.va] != null) {
-                                        state.transmitWindow[state.va] = null;
+                                    if (state.transmitWindow[state.modAcknowledgedFrameIndex] != null) {
+                                        state.transmitWindow[state.modAcknowledgedFrameIndex] = null;
                                         ackFrames = true; //TODO: did we ack the frame we are currently sending?
                                     }
                                 }
-                                state.va = (state.va + 1) % (state.getConnType() == ConnState.ConnType.MOD128 ? 128 : 8);
+                                state.modAcknowledgedFrameIndex = (state.modAcknowledgedFrameIndex + 1) % (state.getConnType() == ConnState.ConnType.MOD128 ? 128 : 8);
                             }
 
-                            // Must resend frames if we the acked frame counter is not the same as we have sent.
-                            ackFrames = ackFrames | (state.va != state.vs);
+
+                            // Spec says we just update our ack count - on need to actually resend anything here.
+                            //  ackFrames = ackFrames | (state.modAcknowledgedFrameIndex != state.modSentFrameIndex);
                             if (ackFrames) {
                                 state.clearResendableFrame();
-                                AX25Frame f;
-                                if (state.transmitWindow != null && (f = state.transmitWindow[state.va]) != null) {                                        // send the next frame
-                                    if (state.connector != null) {
-                                        try {
-                                            state.connector.sendFrame(f);
-                                        } catch (IOException e) {
-                                            LOG.error(e.getMessage(), e);
-                                        }
-                                    } else {
-                                        transmitting.queue(f);
-                                    }
-                                    // Once it's been successfully queued(as the queue may block), we can set the resendable frame timer off!
-                                    state.setResendableFrame(f, state.getNumTransmitsBeforeDecay());
-
-                                    LOG.debug(debugTag + " sending I frame " + f.sender + "->" + f.dest + " NS=" + f.getNS() + " NR=" + f.getNR() + " #=" + f.body.length);
-                                }
                             }
+//                                AX25Frame f;
+//                                if (state.transmitWindow != null && (f = state.transmitWindow[state.modAcknowledgedFrameIndex]) != null) {                                        // send the next frame
+//                                    if (state.connector != null) {
+//                                        try {
+//                                            state.connector.sendFrame(f);
+//                                        } catch (IOException e) {
+//                                            LOG.error(e.getMessage(), e);
+//                                        }
+//                                    } else {
+//                                        transmitting.queue(f);
+//                                    }
+//                                    // Once it's been successfully queued(as the queue may block), we can set the resendable frame timer off!
+//                                    state.setResendableFrame(f, state.getNumTransmitsBeforeDecay());
+//
+//                                    LOG.debug(debugTag + " sending I frame " + f.sender + "->" + f.dest + " NS=" + f.getNS() + " NR=" + f.getNR() + " #=" + f.body.length);
+//                                }
+//                            }
                             //TODO: note that this might not include all frames we have sent, if so, requeue T1 timer
                             break;
 
@@ -892,14 +897,14 @@ public class AX25Stack implements FrameListener, Runnable {
                             // update received state for other end
                             nr = frame.getNR();
                             ackFrames = false;
-                            while (state.va != nr) {
+                            while (state.modAcknowledgedFrameIndex != nr) {
                                 if (state.transmitWindow != null) {
-                                    if (state.transmitWindow[state.va] != null) {
-                                        state.transmitWindow[state.va] = null;
+                                    if (state.transmitWindow[state.modAcknowledgedFrameIndex] != null) {
+                                        state.transmitWindow[state.modAcknowledgedFrameIndex] = null;
                                         ackFrames = true; //TODO: did we ack the frame we are currently sending?
                                     }
                                 }
-                                state.va = (state.va + 1) % (state.getConnType() == ConnState.ConnType.MOD128 ? 128 : 8);
+                                state.modAcknowledgedFrameIndex = (state.modAcknowledgedFrameIndex + 1) % (state.getConnType() == ConnState.ConnType.MOD128 ? 128 : 8);
                             }
                             if (ackFrames) {
                                 state.clearResendableFrame();
@@ -925,11 +930,11 @@ public class AX25Stack implements FrameListener, Runnable {
 
                         {
 
-                            LOG.debug(debugTag + " 1:  state.va=" + state.va + "  nr=" + frame.getNR());
+                            LOG.debug(debugTag + " 1:  state.va=" + state.modAcknowledgedFrameIndex + "  nr=" + frame.getNR());
 
                             int newVA = frame.getNR();
                             state.xmtToRemoteBlocked = false;
-                            int nextVA = state.va;
+                            int nextVA = state.modAcknowledgedFrameIndex;
                             // mark off the frames that were acknowledged
                             while (nextVA != newVA) {
 
@@ -939,7 +944,7 @@ public class AX25Stack implements FrameListener, Runnable {
                                     LOG.debug(debugTag + " 2:markingOff:" + state.transmitWindow[nextVA]);
                                     state.transmitWindow[nextVA] = null;
                                 }
-                                state.va = nextVA;
+                                state.modAcknowledgedFrameIndex = nextVA;
                                 nextVA = (nextVA + 1) % (connType == ConnState.ConnType.MOD128 ? 128 : 8);
                             }
 
@@ -948,7 +953,7 @@ public class AX25Stack implements FrameListener, Runnable {
                                 do {
                                     AX25Frame f = state.transmitWindow[nextVA];
                                     if (f != null) {
-                                        f.setNR(state.vr);
+                                        f.setNR(state.modReceivedFrameIndex);
                                         f.setNS(nextVA);
                                         if (state.connector != null) {
                                             try {
@@ -967,8 +972,8 @@ public class AX25Stack implements FrameListener, Runnable {
                                         break; // ran out of frames to resend
                                     }
                                     nextVA = (nextVA + 1) % (connType == ConnState.ConnType.MOD128 ? 128 : 8);
-                                } while (nextVA != state.vs);
-                                state.vs = nextVA;
+                                } while (nextVA != state.modSentFrameIndex);
+                                state.modSentFrameIndex = nextVA;
                             }
                         }
                         break;
@@ -984,19 +989,19 @@ public class AX25Stack implements FrameListener, Runnable {
                                 } else {
                                     newVA = (frame.getNR() - 1 + 8) % 8;
                                 }
-                                int nextVA = (state.va + 1) % (connType == ConnState.ConnType.MOD128 ? 128 : 8);
+                                int nextVA = (state.modAcknowledgedFrameIndex + 1) % (connType == ConnState.ConnType.MOD128 ? 128 : 8);
                                 while (nextVA != newVA) {
                                     if (state.transmitWindow != null) {
-                                        state.transmitWindow[state.va] = null;
+                                        state.transmitWindow[state.modAcknowledgedFrameIndex] = null;
                                     }
-                                    state.va = nextVA;
-                                    nextVA = (state.va + 1) % (connType == ConnState.ConnType.MOD128 ? 128 : 8);
+                                    state.modAcknowledgedFrameIndex = nextVA;
+                                    nextVA = (state.modAcknowledgedFrameIndex + 1) % (connType == ConnState.ConnType.MOD128 ? 128 : 8);
                                 }
                             }
                             if (state.transmitWindow != null) {
                                 AX25Frame f;
                                 if ((f = state.transmitWindow[frame.getNR()]) != null) {
-                                    f.setNR(state.vr);
+                                    f.setNR(state.modReceivedFrameIndex);
                                     f.setNS(frame.getNR());
                                     if (state.connector != null) {
                                         try {
@@ -1224,15 +1229,15 @@ public class AX25Stack implements FrameListener, Runnable {
         resp.digipeaters = digipeaters;
         resp.mod128 = state.getConnType() == ConnState.ConnType.MOD128;
         if (!resp.mod128) {
-            resp.ctl = (byte) (AX25Frame.FRAMETYPE_S | AX25Frame.STYPE_RR | (poll ? AX25Frame.MASK_U_P : 0) | ((state.vr & 0x07) << 5));
+            resp.ctl = (byte) (AX25Frame.FRAMETYPE_S | AX25Frame.STYPE_RR | (poll ? AX25Frame.MASK_U_P : 0) | ((state.modReceivedFrameIndex & 0x07) << 5));
         } else {
             resp.ctl = (byte) (AX25Frame.FRAMETYPE_S | AX25Frame.STYPE_RR);
-            resp.ctl2 = (byte) (((state.vr & 0x7F) << 1) | (poll ? AX25Frame.MASK_U_P128 : 0));
+            resp.ctl2 = (byte) (((state.modReceivedFrameIndex & 0x7F) << 1) | (poll ? AX25Frame.MASK_U_P128 : 0));
         }
         resp.body = new byte[0];
         try {
             ((TransmittingConnector) connector).sendFrame(resp);
-            LOG.debug(debugTag + "sending S RR" + (poll ? " P" : "") + " NR=" + state.vr + " to " + resp.dest);
+            LOG.debug(debugTag + "sending S RR" + (poll ? " P" : "") + " NR=" + state.modReceivedFrameIndex + " to " + resp.dest);
         } catch (Exception e) {
             LOG.error("unable to send RR frame to " + remote, e);
         }
@@ -1271,15 +1276,15 @@ public class AX25Stack implements FrameListener, Runnable {
         resp.digipeaters = digipeaters;
         resp.mod128 = state.getConnType() == ConnState.ConnType.MOD128;
         if (!resp.mod128) {
-            resp.ctl = (byte) (AX25Frame.FRAMETYPE_S | AX25Frame.STYPE_RNR | (poll ? AX25Frame.MASK_U_P : 0) | ((state.vr & 0x07) << 5));
+            resp.ctl = (byte) (AX25Frame.FRAMETYPE_S | AX25Frame.STYPE_RNR | (poll ? AX25Frame.MASK_U_P : 0) | ((state.modReceivedFrameIndex & 0x07) << 5));
         } else {
             resp.ctl = (byte) (AX25Frame.FRAMETYPE_S | AX25Frame.STYPE_RNR);
-            resp.ctl2 = (byte) (((state.vr & 0x7F) << 1) | (poll ? AX25Frame.MASK_U_P128 : 0));
+            resp.ctl2 = (byte) (((state.modReceivedFrameIndex & 0x7F) << 1) | (poll ? AX25Frame.MASK_U_P128 : 0));
         }
         resp.body = new byte[0];
         try {
             ((TransmittingConnector) connector).sendFrame(resp);
-            LOG.debug(debugTag + "sending S RNR" + (poll ? " P" : "") + " NR=" + state.vr + " to " + resp.dest);
+            LOG.debug(debugTag + "sending S RNR" + (poll ? " P" : "") + " NR=" + state.modReceivedFrameIndex + " to " + resp.dest);
         } catch (Exception e) {
             LOG.error("unable to send RR frame to " + remote, e);
         }
@@ -1302,15 +1307,15 @@ public class AX25Stack implements FrameListener, Runnable {
         resp.digipeaters = digipeaters;
         resp.mod128 = state.getConnType() == ConnState.ConnType.MOD128;
         if (!resp.mod128) {
-            resp.ctl = (byte) (AX25Frame.FRAMETYPE_S | AX25Frame.STYPE_REJ | (poll ? AX25Frame.MASK_U_P : 0) | ((state.vr & 0x07) << 5));
+            resp.ctl = (byte) (AX25Frame.FRAMETYPE_S | AX25Frame.STYPE_REJ | (poll ? AX25Frame.MASK_U_P : 0) | ((state.modReceivedFrameIndex & 0x07) << 5));
         } else {
             resp.ctl = (byte) (AX25Frame.FRAMETYPE_S | AX25Frame.STYPE_REJ);
-            resp.ctl2 = (byte) (((state.vr & 0x7F) << 1) | (poll ? AX25Frame.MASK_U_P128 : 0));
+            resp.ctl2 = (byte) (((state.modReceivedFrameIndex & 0x7F) << 1) | (poll ? AX25Frame.MASK_U_P128 : 0));
         }
         resp.body = new byte[0];
         try {
             ((TransmittingConnector) connector).sendFrame(resp);
-            LOG.debug(debugTag + "sending S REJ" + (poll ? " P" : "") + " NR=" + state.vr + " to " + resp.dest);
+            LOG.debug(debugTag + "sending S REJ" + (poll ? " P" : "") + " NR=" + state.modReceivedFrameIndex + " to " + resp.dest);
         } catch (IOException e) {
             LOG.error("unable to send REJ frame to " + remote, e);
         }
@@ -1333,15 +1338,15 @@ public class AX25Stack implements FrameListener, Runnable {
         resp.digipeaters = digipeaters;
         resp.mod128 = state.getConnType() == ConnState.ConnType.MOD128;
         if (!resp.mod128) {
-            resp.ctl = (byte) (AX25Frame.FRAMETYPE_S | AX25Frame.STYPE_SREJ | (poll ? AX25Frame.MASK_U_P : 0) | ((state.vr & 0x07) << 5));
+            resp.ctl = (byte) (AX25Frame.FRAMETYPE_S | AX25Frame.STYPE_SREJ | (poll ? AX25Frame.MASK_U_P : 0) | ((state.modReceivedFrameIndex & 0x07) << 5));
         } else {
             resp.ctl = (byte) (AX25Frame.FRAMETYPE_S | AX25Frame.STYPE_SREJ);
-            resp.ctl2 = (byte) (((state.vr & 0x7F) << 1) | (poll ? AX25Frame.MASK_U_P128 : 0));
+            resp.ctl2 = (byte) (((state.modReceivedFrameIndex & 0x7F) << 1) | (poll ? AX25Frame.MASK_U_P128 : 0));
         }
         resp.body = new byte[0];
         try {
             ((TransmittingConnector) connector).sendFrame(resp);
-            LOG.debug(debugTag + "sending S SREJ" + (poll ? " P" : "") + " NR=" + state.vr + " to " + resp.dest);
+            LOG.debug(debugTag + "sending S SREJ" + (poll ? " P" : "") + " NR=" + state.modReceivedFrameIndex + " to " + resp.dest);
         } catch (IOException e) {
             LOG.error("unable to send SREJ frame to " + remote, e);
         }

@@ -10,9 +10,9 @@ public class Stream {
 
     private StreamState streamState;
 
-    private InputStream in;
+    private volatile InputStream in;
 
-    private OutputStream out;
+    private volatile OutputStream out;
 
     private ExtensionState extensionState = ExtensionState.NONE;
 
