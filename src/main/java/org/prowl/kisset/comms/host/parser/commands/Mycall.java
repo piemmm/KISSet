@@ -23,6 +23,14 @@ public class Mycall extends Command {
         if (data.length == 1) {
             writeToTerminal("*** MYcall is " + KISSet.INSTANCE.getMyCall() + CR);
         } else {
+
+            // Cant set mycall to mypcall check if PMS service is enabled
+            String mypcall = KISSet.INSTANCE.getMyCallNoSSID()+KISSet.INSTANCE.getConfig().getConfig(Conf.pmsSSID,Conf.pmsSSID.stringDefault());
+            if (mypcall.equalsIgnoreCase(data[1])) {
+                writeToTerminal("*** MYcall cannot be set to PMS mycall " + mypcall + CR);
+                return true;
+            }
+
             String call = data[1].toUpperCase();
             KISSet.INSTANCE.setMyCall(call);
             writeToTerminal("*** MYcall set to " + KISSet.INSTANCE.getMyCall() + CR);
