@@ -1,7 +1,5 @@
 package org.prowl.ax25.util;
 
-import org.prowl.distribbs.utils.ANSI;
-
 public class AX25Tools {
 
 
@@ -27,9 +25,9 @@ public class AX25Tools {
         StringBuilder sb = new StringBuilder();
         for (byte b : data) {
             if (b < 0x20 || b > 0xFA) {
-                sb.append(ANSI.YELLOW + "<");
+                sb.append("<");
                 sb.append(String.format("%02X", b));
-                sb.append(">" + ANSI.NORMAL);
+                sb.append(">");
             } else {
                 sb.append((char) b);
             }
