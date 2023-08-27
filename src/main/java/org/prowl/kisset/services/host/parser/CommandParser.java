@@ -26,7 +26,7 @@ public class CommandParser {
     public static final String CR = "\r\n";
     private static final Log LOG = LogFactory.getLog("CommandParser");
     // Commands that are available
-    private static final Set<Class<?>> ALL_COMMANDS = new Reflections("org.prowl.kisset.comms.host.parser.commands").getTypesAnnotatedWith(TNCCommand.class);
+    private static final Set<Class<?>> ALL_COMMANDS = new Reflections("org.prowl.kisset.services.host.parser.commands").getTypesAnnotatedWith(TNCCommand.class);
 
     // Command classes that help keep this class cleaner
     private final List<Command> commands = new ArrayList<>();

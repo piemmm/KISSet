@@ -26,7 +26,7 @@ public class CommandParser {
     public static final String CR = "\r";
     private static final Log LOG = LogFactory.getLog("CommandParser");
     // Commands that are available
-    private static final Set<Class<?>> ALL_COMMANDS = new Reflections("org.prowl.kisset.comms.remote.pms.parser.commands").getTypesAnnotatedWith(PMSCommand.class);
+    private static final Set<Class<?>> ALL_COMMANDS = new Reflections("org.prowl.kisset.services.remote.pms.parser.commands").getTypesAnnotatedWith(PMSCommand.class);
 
     // Command classes that help keep this class cleaner
     private final List<Command> commands = new ArrayList<>();
