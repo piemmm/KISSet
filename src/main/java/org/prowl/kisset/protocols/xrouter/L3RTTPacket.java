@@ -89,7 +89,7 @@ public class L3RTTPacket {
         try {
             String senderNodeCall = PacketTools.getData(buffer, 7, true);
             String l3rttCall = PacketTools.getData(buffer, 7, true); // Always L3RTT-0
-        } catch (ParseException e) {
+        } catch (Throwable e) {
             return false;
         }
         int ttl = buffer.get() & 0xFF;

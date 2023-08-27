@@ -10,8 +10,8 @@ import org.prowl.kisset.comms.host.parser.Mode;
 import org.prowl.kisset.io.Stream;
 import org.prowl.kisset.io.StreamState;
 import org.prowl.kisset.util.Tools;
-import org.prowl.kisset.util.compression.dictblock.CompressedBlockInputStream;
-import org.prowl.kisset.util.compression.dictblock.CompressedBlockOutputStream;
+import org.prowl.kisset.util.compression.deflate.DeflateOutputStream;
+import org.prowl.kisset.util.compression.deflate.InflateInputStream;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -215,8 +215,8 @@ public class StreamConnectionEstablishmentListener implements ConnectionEstablis
             // The client should provide some form of interactivity when downloading blocks
             // of compressed data.  calling flush() on the stream will cause the block to be sent
             // at it's current size immediately.
-            CompressedBlockOutputStream out = new org.prowl.kisset.util.compression.dictblock.CompressedBlockOutputStream(stream.getOutputStream(), 1024);
-            CompressedBlockInputStream in = new org.prowl.kisset.util.compression.dictblock.CompressedBlockInputStream(stream.getInputStream());
+            DeflateOutputStream out = new DeflateOutputStream(stream.getOutputStream());
+            InflateInputStream in =new InflateInputStream(stream.getInputStream());
             stream.setIOStreams(in, out);
             commandParser.setDivertStream(out);
 

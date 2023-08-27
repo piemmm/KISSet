@@ -262,6 +262,15 @@ public class ConnState implements AX25FrameSource, Closeable {
                             } catch (Exception e) {
                                 LOG.error("unable to send SABM frame to " + frame.dest, e);
                             }
+                            // This shouldn't be here it should just be RR/RNR to be sent
+//                        } else if (frame.getFrameType() ==  AX25Frame.FRAMETYPE_I) {
+//                                // I frames
+//                                // Just resend the bloody thing
+//                            try {
+//                                connector.sendFrame(frame);
+//                            } catch(IOException e){
+//                                LOG.error("unable to send I frame to " + frame.dest, e);
+//                            }
                         } else {
                             // RNR / RR frames
                             if (localRcvBlocked) {
@@ -302,6 +311,7 @@ public class ConnState implements AX25FrameSource, Closeable {
             retriesRemaining = 0;
         }
     }
+
 
     /**
      * Get one or more AX25Frames of the data to transmit. Note this should only

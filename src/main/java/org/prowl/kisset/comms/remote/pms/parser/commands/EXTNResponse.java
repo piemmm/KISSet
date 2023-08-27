@@ -5,10 +5,12 @@ import org.apache.commons.logging.LogFactory;
 import org.prowl.kisset.annotations.PMSCommand;
 import org.prowl.kisset.comms.remote.pms.parser.Mode;
 import org.prowl.kisset.util.Tools;
-import org.prowl.kisset.util.compression.block.CompressedBlockInputStream;
-import org.prowl.kisset.util.compression.block.CompressedBlockOutputStream;
+import org.prowl.kisset.util.compression.deflate.DeflateOutputStream;
+import org.prowl.kisset.util.compression.deflate.InflateInputStream;
 
 import java.io.IOException;
+import java.util.zip.DeflaterInputStream;
+import java.util.zip.InflaterOutputStream;
 
 @PMSCommand
 public class EXTNResponse extends Command {
@@ -37,33 +39,9 @@ public class EXTNResponse extends Command {
 
                 // Compression requires is to wrap the input and output streams in a GZIP stream
                 LOG.debug("Compression enabled");
-                client.setOutputStream(new CompressedBlockOutputStream(client.getOutputStream(), 1024));
-                client.useNewInputStream(new CompressedBlockInputStream(client.getInputStream()));
+                client.setOutputStream(new DeflateOutputStream(client.getOutputStream()));
+                client.useNewInputStream(new InflateInputStream(client.getInputStream()));
 
-                //     client.useNewInputStream(new BufferedInputStream(client.getInputStream()));
-                //     client.setOutputStream(new BufferedOutputStream(client.getOutputStream()));
-
-                // client.useNewInputStream(new GZIPInputStream(client.getInputStream()));
-                //    client.setOutputStream(new GZIPOutputStream(client.getOutputStream(), true));
-
-                // client.useNewInputStream(new XORInputStream(client.getInputStream(),"abcd"));
-                //  client.setOutputStream(new XOROutputStream(client.getOutputStream(),"abcd"));
-//
-//                Deflater deflater = new Deflater(Deflater.HUFFMAN_ONLY, true);
-//                deflater.setStrategy(Deflater.SYNC_FLUSH);
-//                 client.useNewInputStream(new DeflaterInputStream(client.getInputStream()));
-//                  client.setOutputStream(new DeflaterOutputStream(client.getOutputStream(),deflater, true));
-
-                //       client.useNewInputStream(new DeflateCompressorInputStream(client.getInputStream()));
-                //         client.setOutputStream(new DeflateCompressorOutputStream(client.getOutputStream()));
-
-
-//                client.getOutputStream().write("Test\r".getBytes());
-//                client.getOutputStream().flush();
-
-
-                //    client.useNewInputStream(new GZIPInputStream(client.getInputStream()));
-                //    client.setOutputStream(new GZIPOutputStream(client.getOutputStream()));
                 Tools.delay(200);
 
             }
