@@ -16,7 +16,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.text.Font;
-import javafx.scene.text.FontSmoothingType;
 import javafx.scene.text.Text;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -24,8 +23,6 @@ import org.apache.commons.logging.LogFactory;
 import org.prowl.kisset.KISSet;
 import org.prowl.kisset.util.Tools;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -34,7 +31,7 @@ import java.util.Objects;
  * Java FX component that emulates a terminal that understands SAA5050 teletext codes.
  * <p>
  * This aims to be memory and cpu efficient by only drawing the visible part of the terminal.
- *
+ * <p>
  * This is still a bit of an in-progress mess and will be tidied in due course
  */
 public class TeletextTerminal extends HBox implements Terminal {
@@ -87,9 +84,8 @@ public class TeletextTerminal extends HBox implements Terminal {
         super();
 
 
-
         //font = Font.font("Monospaced", 12);
-       // recalculateFontMetrics();
+        // recalculateFontMetrics();
         //getChildren().add(vScrollBar);
         getChildren().add(canvas);
         setPadding(new Insets(0, 0, 0, 0));
@@ -216,12 +212,12 @@ public class TeletextTerminal extends HBox implements Terminal {
     }
 
     public void setFont(Font font) {
-       //this.font = Font.loadFont(KISSet.class.getResource("/fonts/galax/MODE7GX3.TTF").toExternalForm(), 44);
-        this.font = Font.loadFont(KISSet.class.getResourceAsStream("/fonts/bedstead/bedstead.otf"), font.getSize()+4);
+        //this.font = Font.loadFont(KISSet.class.getResource("/fonts/galax/MODE7GX3.TTF").toExternalForm(), 44);
+        this.font = Font.loadFont(KISSet.class.getResourceAsStream("/fonts/bedstead/bedstead.otf"), font.getSize() + 4);
 
 
-        LOG.debug("FONT NAME:"+this.font );
-      //  this.font = Font.loadFont(getClass().getResourceAsStream("/fonts/bedstead/bedstead.otf"), 55);//font.getSize());
+        LOG.debug("FONT NAME:" + this.font);
+        //  this.font = Font.loadFont(getClass().getResourceAsStream("/fonts/bedstead/bedstead.otf"), 55);//font.getSize());
 
 
         recalculateFontMetrics();
@@ -231,7 +227,6 @@ public class TeletextTerminal extends HBox implements Terminal {
     public Node getNode() {
         return this;
     }
-
 
 
     private void makeNewLine() {
@@ -296,7 +291,8 @@ public class TeletextTerminal extends HBox implements Terminal {
     }
 
     private boolean inEscape = false;
-    private int inPosition =0;
+    private int inPosition = 0;
+
     public void clearScreen() {
         for (int i = 0; i < buffer.size(); i++) {
             byte[] line = buffer.get(i);
@@ -313,12 +309,11 @@ public class TeletextTerminal extends HBox implements Terminal {
         int b = ob & 0xFF;
 
 
-
         if (inEscape) {
             inEscape = false;
             b = 128 + (b % 32);
         }
-      //  LOG.debug("Append:" + b + "(" + Integer.toString(b, 16) + ")"+(ob & 0xFF)+": " + (char) b + "   charX:" + charXPos+"   charY:"+charYPos);
+        //  LOG.debug("Append:" + b + "(" + Integer.toString(b, 16) + ")"+(ob & 0xFF)+": " + (char) b + "   charX:" + charXPos+"   charY:"+charYPos);
         // Not implemented yet
         if (inPosition == 2) {
             // xpos
@@ -329,8 +324,6 @@ public class TeletextTerminal extends HBox implements Terminal {
             inPosition--;
             return;
         }
-
-
 
 
         // Store the byte in the buffer.
@@ -447,7 +440,7 @@ public class TeletextTerminal extends HBox implements Terminal {
     /**
      * Draws the terminal buffer to the canvas.
      */
-    private synchronized void draw() {
+    private void draw() {
         GraphicsContext g = canvas.getGraphicsContext2D();
         g.setFont(font);
 
@@ -471,58 +464,60 @@ public class TeletextTerminal extends HBox implements Terminal {
 
         int scrollOffset = (int) vScrollBar.getMax() - (int) vScrollBar.getValue();
         //  for (int i = (buffer.size() - 1) - scrollOffset; i >= 0; i--) {
-        for (int i = 0; i < buffer.size(); i++) {
+        synchronized (buffer) {
 
-            // Don't bother drawing offscreen stuff.
-            if (y < 0) {
-                break;
-            }
+            for (int i = 0; i < buffer.size(); i++) {
 
-            byte[] line = buffer.get(i);
-
-            //QuickAttribute a = attributesInUse.get(Math.max(0, i - 2));
-            // g.setFill(a.color);
-            underline = false;
-            bold = false;
-            background = Color.BLACK;
-            graphics = false;
-            lining = false;
-            g.setFill(Color.WHITE);
-
-            x = 0;
-
-            y += charHeight;
-            y = y - extraLine;
-            extraLine = 0;
-
-
-            decodeQA.color = Color.WHITE;
-            decodeQA.bgcolor = Color.BLACK;
-            decodeQA.lining = false;
-            decodeQA.graphics = false;
-            decodeQA.bold = false;
-            int skippedAnsi = 0;
-            for (int j = 0; j < line.length; j++) {
-                boolean inGraphicsChar = false;
-                // If the character is an ansi code, then we need to handle it.
-                if ((line[j] & 0xFF) >= 128) {
-                    DecodedTeletextChar da = decodeTeletextChar(line, j, decodeDA);
-                    skippedAnsi += da.size + 1;
-                    j += da.size;
-                    if (da.qa != null) {
-                        g.setFill(da.qa.color);
-                        bold = da.qa.bold;
-                        underline = da.qa.underLine;
-                        background = da.qa.bgcolor;
-                        graphics = da.qa.graphics;
-                        lining = da.qa.lining;
-                        if (graphics) {
-                            inGraphicsChar = true;
-                        }
-                    }
-
+                // Don't bother drawing offscreen stuff.
+                if (y < 0) {
+                    break;
                 }
-                //} else {
+
+                byte[] line = buffer.get(i);
+
+                //QuickAttribute a = attributesInUse.get(Math.max(0, i - 2));
+                // g.setFill(a.color);
+                underline = false;
+                bold = false;
+                background = Color.BLACK;
+                graphics = false;
+                lining = false;
+                g.setFill(Color.WHITE);
+
+                x = 0;
+
+                y += charHeight;
+                y = y - extraLine;
+                extraLine = 0;
+
+
+                decodeQA.color = Color.WHITE;
+                decodeQA.bgcolor = Color.BLACK;
+                decodeQA.lining = false;
+                decodeQA.graphics = false;
+                decodeQA.bold = false;
+                int skippedAnsi = 0;
+                for (int j = 0; j < line.length; j++) {
+                    boolean inGraphicsChar = false;
+                    // If the character is an ansi code, then we need to handle it.
+                    if ((line[j] & 0xFF) >= 128) {
+                        DecodedTeletextChar da = decodeTeletextChar(line, j, decodeDA);
+                        skippedAnsi += da.size + 1;
+                        j += da.size;
+                        if (da.qa != null) {
+                            g.setFill(da.qa.color);
+                            bold = da.qa.bold;
+                            underline = da.qa.underLine;
+                            background = da.qa.bgcolor;
+                            graphics = da.qa.graphics;
+                            lining = da.qa.lining;
+                            if (graphics) {
+                                inGraphicsChar = true;
+                            }
+                        }
+
+                    }
+                    //} else {
 
 //                    // Now draw the byte array with line wrapping
 //                    if (x + charWidth >= width) {
@@ -531,84 +526,84 @@ public class TeletextTerminal extends HBox implements Terminal {
 //                        x = 0;
 //                    }
 
-                if (startSelect != null && endSelect != null) {
-                    BufferPosition select1 = startSelect;
-                    BufferPosition select2 = endSelect;
-                    if (select2.compareTo(select1) > 0) {
-                        BufferPosition tmp = select1;
-                        select1 = select2;
-                        select2 = tmp;
-                    }
-
-                    if (select1.arrayIndex == select2.arrayIndex) {
-                        if (select1.arrayIndex == i && select1.characterIndex + skippedAnsi == j) {
-                            Effect inverseEffect = new Blend(BlendMode.HARD_LIGHT);
-                            g.applyEffect(inverseEffect);
-                            inverse = true;
+                    if (startSelect != null && endSelect != null) {
+                        BufferPosition select1 = startSelect;
+                        BufferPosition select2 = endSelect;
+                        if (select2.compareTo(select1) > 0) {
+                            BufferPosition tmp = select1;
+                            select1 = select2;
+                            select2 = tmp;
                         }
-                        if (select2.arrayIndex == i && select2.characterIndex + skippedAnsi == j) {
-                            inverse = false;
-                        }
-                    } else {
-                        if (select1.arrayIndex == i && j == 0) {
-                            Effect inverseEffect = new Blend(BlendMode.HARD_LIGHT);
-                            g.applyEffect(inverseEffect);
-                            inverse = true;
-                        }
-                        if (select2.arrayIndex == i && j == line.length - 1) {
-                            inverse = false;
-                        }
-                    }
-                }
 
-                if (inverse) {
-                    Paint currentFill = g.getFill();
-                    g.setFill(Color.color(0.5, 0.5, 0.5, 0.5));
-                    g.fillRect(x, y - charHeight+(charHeight-baseline), charWidth , charHeight );
-                    g.setFill(currentFill);
-                } else {
-                    g.setEffect(null);
-                }
-
-
-                // If background is set, then we need to draw a rectangle first.
-                if (background != null) {
-                    Paint currentFill = g.getFill();
-                    g.setFill(background);
-                    g.fillRect(x, y - charHeight+(charHeight-baseline), charWidth , charHeight );
-                    g.setFill(currentFill);
-                }
-
-                // Only draw if it's low byte
-                if ((line[j] & 0xFF) < 0x7F || graphics) {
-                    int b = (line[j] & 0xFF);
-                    if (graphics &&  !(b >=64 && b<=95)) {
-                        if (!inGraphicsChar) {
-                            // EE00 & EDE0
-                            int set = 0xEDE0;
-                            if (lining) {
-                                set = 0xEE00;
+                        if (select1.arrayIndex == select2.arrayIndex) {
+                            if (select1.arrayIndex == i && select1.characterIndex + skippedAnsi == j) {
+                                Effect inverseEffect = new Blend(BlendMode.HARD_LIGHT);
+                                g.applyEffect(inverseEffect);
+                                inverse = true;
                             }
-                            g.fillText(""+(char)(b+set), x, y);
-                            //drawSixel(g, b - 32, x, y);
+                            if (select2.arrayIndex == i && select2.characterIndex + skippedAnsi == j) {
+                                inverse = false;
+                            }
+                        } else {
+                            if (select1.arrayIndex == i && j == 0) {
+                                Effect inverseEffect = new Blend(BlendMode.HARD_LIGHT);
+                                g.applyEffect(inverseEffect);
+                                inverse = true;
+                            }
+                            if (select2.arrayIndex == i && j == line.length - 1) {
+                                inverse = false;
+                            }
                         }
+                    }
+
+                    if (inverse) {
+                        Paint currentFill = g.getFill();
+                        g.setFill(Color.color(0.5, 0.5, 0.5, 0.5));
+                        g.fillRect(x, y - charHeight + (charHeight - baseline), charWidth, charHeight);
+                        g.setFill(currentFill);
                     } else {
-                        g.fillText(String.valueOf((char) b), x, y);
+                        g.setEffect(null);
                     }
-                    if (bold) {
-                        g.fillText(String.valueOf((char) b), x + 1, y);
+
+
+                    // If background is set, then we need to draw a rectangle first.
+                    if (background != null) {
+                        Paint currentFill = g.getFill();
+                        g.setFill(background);
+                        g.fillRect(x, y - charHeight + (charHeight - baseline), charWidth, charHeight);
+                        g.setFill(currentFill);
                     }
+
+                    // Only draw if it's low byte
+                    if ((line[j] & 0xFF) < 0x7F || graphics) {
+                        int b = (line[j] & 0xFF);
+                        if (graphics && !(b >= 64 && b <= 95)) {
+                            if (!inGraphicsChar) {
+                                // EE00 & EDE0
+                                int set = 0xEDE0;
+                                if (lining) {
+                                    set = 0xEE00;
+                                }
+                                g.fillText("" + (char) (b + set), x, y);
+                                //drawSixel(g, b - 32, x, y);
+                            }
+                        } else {
+                            g.fillText(String.valueOf((char) b), x, y);
+                        }
+                        if (bold) {
+                            g.fillText(String.valueOf((char) b), x + 1, y);
+                        }
+                        //}
+                        if (underline) {
+                            g.strokeLine(x, y + charHeight - baseline, x + charWidth, y + charHeight - baseline);
+                        }
+                    }
+                    x += charWidth;
+
+
                     //}
-                    if (underline) {
-                        g.strokeLine(x, y + charHeight - baseline, x + charWidth, y + charHeight - baseline);
-                    }
                 }
-                x += charWidth;
-
-
-                //}
             }
-
         }
     }
 
@@ -656,7 +651,7 @@ public class TeletextTerminal extends HBox implements Terminal {
 //                    break;
                 case 128:
                     // Black foreground alphabetic
-                   // decodeQA.color = Color.BLACK;
+                    // decodeQA.color = Color.BLACK;
                     decodeQA.graphics = false;
                     break;
                 case 129:
@@ -706,9 +701,9 @@ public class TeletextTerminal extends HBox implements Terminal {
                 case 137:
                     // Steady (not supported yet)
                     break;
-                    case 138:
-                        // Normal size / end box
-                        break;
+                case 138:
+                    // Normal size / end box
+                    break;
                 case 139:
                     // size control/medium/start box
                     break;
@@ -964,7 +959,7 @@ public class TeletextTerminal extends HBox implements Terminal {
 
     /**
      * Draw a 'sixel'. A sixel is a character composed of 6 blocks (sixels) arranged in a 2x3 grid.
-     *
+     * <p>
      * Each 'sixel' is the binary representation of the sixelCode passed in from 0 to 63. The sixel is drawn from top left
      * to bottom right, with the top left being the least significant bit.
      *
@@ -980,7 +975,7 @@ public class TeletextTerminal extends HBox implements Terminal {
         double blockHeight = charHeight / 3d;
 
         double blockX = x;
-        double blockY = y-(charHeight-blockHeight);
+        double blockY = y - (charHeight - blockHeight);
 
         // Draw the 6 blocks
         for (int i = 0; i < 6; i++) {
