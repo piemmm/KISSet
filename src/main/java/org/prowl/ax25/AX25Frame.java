@@ -1040,7 +1040,7 @@ public class AX25Frame implements Serializable, AX25FrameSource, Comparable<AX25
         return sb.toString();
 
 
-       // return "AX25Frame[" + dest + '<' + sender + (digipeaters != null ? "," + Arrays.toString(digipeaters) : "") + ",ctl=" + Integer.toHexString(ctl & 0xFF) + ",pid=" + Integer.toHexString(pid & 0xFF) + (body != null ? ",#=" + body.length : ",empty-body") + ']';
+        // return "AX25Frame[" + dest + '<' + sender + (digipeaters != null ? "," + Arrays.toString(digipeaters) : "") + ",ctl=" + Integer.toHexString(ctl & 0xFF) + ",pid=" + Integer.toHexString(pid & 0xFF) + (body != null ? ",#=" + body.length : ",empty-body") + ']';
     }
 
     /**

@@ -3,9 +3,9 @@ package org.prowl.kisset.services.remote.pms.parser.commands;
 import org.apache.commons.lang.StringUtils;
 import org.prowl.kisset.KISSet;
 import org.prowl.kisset.annotations.PMSCommand;
-import org.prowl.kisset.services.remote.pms.parser.Mode;
 import org.prowl.kisset.objects.Storage;
 import org.prowl.kisset.objects.messages.Message;
+import org.prowl.kisset.services.remote.pms.parser.Mode;
 import org.prowl.kisset.util.ANSI;
 
 import java.io.IOException;

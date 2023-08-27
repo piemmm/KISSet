@@ -2,8 +2,8 @@ package org.prowl.kisset.io;
 
 public class InterfaceStatus {
 
-    private State state;
-    private String message;
+    private final State state;
+    private final String message;
 
     public InterfaceStatus(State state, String message) {
         this.state = state;
@@ -21,6 +21,6 @@ public class InterfaceStatus {
     public enum State {
         OK,
         WARN,
-        ERROR;
+        ERROR
     }
 }

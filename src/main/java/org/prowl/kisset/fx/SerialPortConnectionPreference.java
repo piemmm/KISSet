@@ -3,13 +3,9 @@ package org.prowl.kisset.fx;
 import com.fazecast.jSerialComm.SerialPort;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
-import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.TextField;
 import javafx.scene.control.cell.ComboBoxListCell;
 import org.apache.commons.configuration.HierarchicalConfiguration;
-import org.prowl.kisset.config.BeaconType;
-import org.prowl.kisset.config.Conf;
 import org.prowl.kisset.io.KISSviaSerial;
 
 import java.util.Arrays;

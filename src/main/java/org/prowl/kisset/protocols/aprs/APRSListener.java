@@ -33,11 +33,11 @@ public enum APRSListener {
         try {
             String aprsString = frame.sender.toString() + ">" + frame.dest.toString() + ":" + frame.getAsciiFrame();
             APRSPacket packet = Parser.parse(aprsString);
-           // if (packet.getType() != APRSTypes.UNSPECIFIED) {
-                // APRS packet reserialize the body
-                //KISSet.INSTANCE.getStorage().addRecentAPRSPacket(aprsPacket);
-                SingleThreadBus.INSTANCE.post(new APRSPacketEvent(packet));
-           // }
+            // if (packet.getType() != APRSTypes.UNSPECIFIED) {
+            // APRS packet reserialize the body
+            //KISSet.INSTANCE.getStorage().addRecentAPRSPacket(aprsPacket);
+            SingleThreadBus.INSTANCE.post(new APRSPacketEvent(packet));
+            // }
         } catch (Throwable e) {
             // Ignore - probably not aprs. or unable to parse MICe
         }

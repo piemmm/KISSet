@@ -4,11 +4,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.prowl.ax25.ConnState;
 import org.prowl.ax25.ConnectionEstablishmentListener;
+import org.prowl.kisset.io.Stream;
+import org.prowl.kisset.io.StreamState;
 import org.prowl.kisset.services.host.parser.CommandParser;
 import org.prowl.kisset.services.host.parser.ExtensionState;
 import org.prowl.kisset.services.host.parser.Mode;
-import org.prowl.kisset.io.Stream;
-import org.prowl.kisset.io.StreamState;
 import org.prowl.kisset.util.Tools;
 import org.prowl.kisset.util.compression.deflate.DeflateOutputStream;
 import org.prowl.kisset.util.compression.deflate.InflateInputStream;
@@ -18,13 +18,11 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 public class StreamConnectionEstablishmentListener implements ConnectionEstablishmentListener {
-    private static final Log LOG = LogFactory.getLog("StreamConnectionEstablishmentListener");
-
     public static final String CR = CommandParser.CR;
+    private static final Log LOG = LogFactory.getLog("StreamConnectionEstablishmentListener");
+    private final CommandParser commandParser;
 
-    private CommandParser commandParser;
-
-    private Stream stream;
+    private final Stream stream;
 
 
     public StreamConnectionEstablishmentListener(CommandParser commandParser, Stream stream) {
@@ -216,7 +214,7 @@ public class StreamConnectionEstablishmentListener implements ConnectionEstablis
             // of compressed data.  calling flush() on the stream will cause the block to be sent
             // at it's current size immediately.
             DeflateOutputStream out = new DeflateOutputStream(stream.getOutputStream());
-            InflateInputStream in =new InflateInputStream(stream.getInputStream());
+            InflateInputStream in = new InflateInputStream(stream.getInputStream());
             stream.setIOStreams(in, out);
             commandParser.setDivertStream(out);
 

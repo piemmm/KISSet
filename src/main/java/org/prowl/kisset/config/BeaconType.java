@@ -14,20 +14,12 @@ public enum BeaconType {
     INTERVAL120("120 minute intervals", 120),
     INTERVAL240("240 minute intervals", 240);
 
-    private String description;
-    private int interval;
+    private final String description;
+    private final int interval;
 
     BeaconType(String description, int interval) {
         this.description = description;
         this.interval = interval;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public int getInterval() {
-        return interval;
     }
 
     public static BeaconType getBeaconType(int interval) {
@@ -37,6 +29,14 @@ public enum BeaconType {
             }
         }
         return BeaconType.INTERVAL0;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public int getInterval() {
+        return interval;
     }
 
     public String toString() {

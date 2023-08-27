@@ -33,6 +33,7 @@ import java.util.Locale;
 public class PreferencesController {
 
     private static final Log LOG = LogFactory.getLog("PreferencesController");
+    private final List<Interface> interfaces = new ArrayList<>();
     @FXML
     private Button cancelButton;
     @FXML
@@ -57,7 +58,6 @@ public class PreferencesController {
     private Slider monitorTransparency;
     @FXML
     private Slider terminalTransparency;
-
     // PMS
     @FXML
     private CheckBox enablePMSCheckbox;
@@ -65,7 +65,6 @@ public class PreferencesController {
     private ChoiceBox pmsSSIDChoiceBox;
     @FXML
     private TextField pmsGreetingTextField;
-
     // Net/ROM
     @FXML
     private CheckBox enableNetRomCheckbox;
@@ -75,8 +74,6 @@ public class PreferencesController {
     private TextField netromNodeAliasTextField;
     @FXML
     private TextField netromGreetingTextField;
-
-
     // APRS
     @FXML
     private CheckBox enableAPRSDecoderKISS;
@@ -84,7 +81,6 @@ public class PreferencesController {
     private CheckBox connectToAPRSIS;
     @FXML
     private TextField aprsisServerHost;
-
     // MQTT
     @FXML
     private CheckBox enableMQTTCheckbox;
@@ -96,16 +92,13 @@ public class PreferencesController {
     private TextField mqttPassword;
     @FXML
     private TextField mqttTopic;
-
-
-    private final List<Interface> interfaces = new ArrayList<>();
     private Config config;
 
-    private int[] FONT_SIZES = {8, 9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 26, 28, 36, 48, 72};
+    private final int[] FONT_SIZES = {8, 9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 26, 28, 36, 48, 72};
 
-    private int[] NETROM_SSID = {-1, -2, -3, -4, -5, -6, -7};
+    private final int[] NETROM_SSID = {-1, -2, -3, -4, -5, -6, -7};
 
-    private int[] MAILBOX_SSID = {-1, -2, -3, -4, -5, -6, -7};
+    private final int[] MAILBOX_SSID = {-1, -2, -3, -4, -5, -6, -7};
 
 
     @FXML

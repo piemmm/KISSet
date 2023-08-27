@@ -5,10 +5,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.prowl.kisset.KISSet;
 import org.prowl.kisset.annotations.PMSCommand;
-import org.prowl.kisset.services.remote.pms.parser.Mode;
 import org.prowl.kisset.objects.Priority;
 import org.prowl.kisset.objects.Storage;
 import org.prowl.kisset.objects.messages.Message;
+import org.prowl.kisset.services.remote.pms.parser.Mode;
 import org.prowl.kisset.util.Tools;
 
 import java.io.IOException;
@@ -28,7 +28,6 @@ public class SendMessage extends Command {
 
     @Override
     public boolean doCommand(String[] data) throws IOException {
-
 
 
         Mode mode = getMode();
@@ -88,7 +87,7 @@ public class SendMessage extends Command {
                 messageState = null;
                 messageBody = new StringBuilder();
                 buildingMessage = null;
-                write("*** Message saved as "+messageId + CR);
+                write("*** Message saved as " + messageId + CR);
                 setMode(Mode.CMD);
                 flush();
                 return;
@@ -125,10 +124,10 @@ public class SendMessage extends Command {
             if (Tools.isAlphaNumeric(subject)) {
                 buildingMessage.setSubject(subject);
                 messageState = MessageState.GET_MESSAGE;
-                write("Enter the message body, end with a '/ex' or a '.' on a line by itself:"+CR);
+                write("Enter the message body, end with a '/ex' or a '.' on a line by itself:" + CR);
             } else {
                 messageState = MessageState.GET_SUBJECT;
-                write("*** Invalid subject"+CR);
+                write("*** Invalid subject" + CR);
             }
         }
 
@@ -142,7 +141,7 @@ public class SendMessage extends Command {
                 write("Enter the subject of the message: ");
             } else {
                 messageState = null;
-                write("*** Invalid callsign"+CR);
+                write("*** Invalid callsign" + CR);
             }
         }
 
@@ -150,7 +149,7 @@ public class SendMessage extends Command {
             buildingMessage = new Message();
             messageState = MessageState.START;
             messageBody = new StringBuilder();
-            write("*** Abort message creation by typing '/abort' at any time"+CR);
+            write("*** Abort message creation by typing '/abort' at any time" + CR);
             write("Enter the callsign of the station you wish to send the message to: ");
         }
 
@@ -177,5 +176,4 @@ public class SendMessage extends Command {
         SEND_MESSAGE_FAILED
     }
 
-    ;
 }

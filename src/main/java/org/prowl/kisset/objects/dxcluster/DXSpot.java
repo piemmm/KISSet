@@ -2,16 +2,16 @@ package org.prowl.kisset.objects.dxcluster;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.prowl.kisset.protocols.core.Node;
 import org.prowl.kisset.eventbus.SingleThreadBus;
 import org.prowl.kisset.eventbus.events.DXSpotEvent;
+import org.prowl.kisset.protocols.core.Node;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
 /**
  * A DX spot
- *
+ * <p>
  * A DX spot looks like:
  * DX de G4ABC:     14074.0  EA1AHA        FT8   0 dB  1236 Hz
  */
@@ -39,12 +39,12 @@ public class DXSpot {
         dxFrom = dxLine.substring(dxLine.indexOf("DX de ") + 6, dxLine.indexOf(":"));
         frequency = Double.parseDouble(dxLine.substring(dxLine.indexOf(":") + 1, 24).trim());
         dxSpotted = dxLine.substring(25, dxLine.indexOf(" ", 26)).trim();
-        comment = dxLine.substring(dxLine.indexOf(" ", 26)+1).trim();
-        comment = comment.substring(0, comment.length()-5).trim();
+        comment = dxLine.substring(dxLine.indexOf(" ", 26) + 1).trim();
+        comment = comment.substring(0, comment.length() - 5).trim();
         try {
-            spotTime = sdf.parse(dxLine.substring(dxLine.length() - 5, dxLine.length()-1)).getTime();
+            spotTime = sdf.parse(dxLine.substring(dxLine.length() - 5, dxLine.length() - 1)).getTime();
         } catch (ParseException e) {
-            LOG.error(e.getMessage(),e);
+            LOG.error(e.getMessage(), e);
             spotTime = node.getLastHeard();
         }
 

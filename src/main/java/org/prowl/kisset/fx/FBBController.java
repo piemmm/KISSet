@@ -14,10 +14,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.prowl.kisset.KISSet;
 import org.prowl.kisset.config.Conf;
-import org.prowl.kisset.protocols.core.Node;
 import org.prowl.kisset.eventbus.SingleThreadBus;
 import org.prowl.kisset.eventbus.events.ConfigurationChangedEvent;
 import org.prowl.kisset.gui.terminals.ANSITerminal;
+import org.prowl.kisset.protocols.core.Node;
 import org.prowl.kisset.util.Tools;
 
 import java.io.IOException;
@@ -27,15 +27,14 @@ import java.util.ArrayList;
 
 public class FBBController {
 
-    private static final Log LOG = LogFactory.getLog("FBBController");
     public static final String CR = "\r\n";
-
+    private static final Log LOG = LogFactory.getLog("FBBController");
     @FXML
     StackPane stackPane;
     @FXML
     ListView<Node> heardList;
 
-    private ObservableList<Node> heardNodes = FXCollections.observableArrayList(new ArrayList<>());
+    private final ObservableList<Node> heardNodes = FXCollections.observableArrayList(new ArrayList<>());
     private ANSITerminal terminal;
     private PipedInputStream inpis;
     private PipedOutputStream inpos;
@@ -79,7 +78,6 @@ public class FBBController {
         stackPane.getChildren().add(terminal);
 
 
-
     }
 
     public void setup() {
@@ -117,7 +115,7 @@ public class FBBController {
         Platform.runLater(() -> {
             try {
 
-                inpos.write((CR+CR+CR+"FBB Message Monitor - FBB Messages from local BBS' will be seen here" + CR).getBytes());
+                inpos.write((CR + CR + CR + "FBB Message Monitor - FBB Messages from local BBS' will be seen here" + CR).getBytes());
 
                 inpos.flush();
             } catch (IOException e) {

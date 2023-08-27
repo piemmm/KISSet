@@ -28,9 +28,8 @@ import java.util.*;
 
 public class APRSController {
 
-    private static final Log LOG = LogFactory.getLog("APRSController");
     public static final String CR = "\r\n";
-
+    private static final Log LOG = LogFactory.getLog("APRSController");
     @FXML
     MapView mapView;
     @FXML
@@ -92,7 +91,7 @@ public class APRSController {
 
     public class APRSLayer extends MapLayer {
 
-        private Map<String, APRSNode> nodeMap = Collections.synchronizedMap(new HashMap<>());
+        private final Map<String, APRSNode> nodeMap = Collections.synchronizedMap(new HashMap<>());
 
         public APRSLayer() {
             super();

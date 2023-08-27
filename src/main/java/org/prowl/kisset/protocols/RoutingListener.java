@@ -3,8 +3,8 @@ package org.prowl.kisset.protocols;
 import com.google.common.eventbus.Subscribe;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.prowl.kisset.KISSet;
 import org.prowl.ax25.AX25Frame;
+import org.prowl.kisset.KISSet;
 import org.prowl.kisset.eventbus.SingleThreadBus;
 import org.prowl.kisset.eventbus.events.HeardNodeEvent;
 import org.prowl.kisset.protocols.netrom.NetROMRoutingPacket;
@@ -47,8 +47,8 @@ public enum RoutingListener {
                 }
 
             }
-        } catch(Throwable e) {
-            LOG.error(e.getMessage(),e);
+        } catch (Throwable e) {
+            LOG.error(e.getMessage(), e);
         }
     }
 }

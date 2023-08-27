@@ -18,16 +18,16 @@ public class InflateInputStream extends InputStream {
     private static final Log LOG = LogFactory.getLog("InflateInputStream");
 
     // The input stream containing the compressed data
-    private InputStream in;
+    private final InputStream in;
 
     // Buffer of decompressed data
     private ByteBuffer byteBuffer = ByteBuffer.allocate(0);
 
     // The inflater used to decompress the data
-    private Inflater inflater;
+    private final Inflater inflater;
 
     // The dictionary used to decompress the data which is updated after each block
-    private Dictionary dictionary = new Dictionary();
+    private final Dictionary dictionary = new Dictionary();
 
     public InflateInputStream(InputStream in) {
         super();

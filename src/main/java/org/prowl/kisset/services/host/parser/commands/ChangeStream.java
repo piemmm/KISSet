@@ -3,9 +3,9 @@ package org.prowl.kisset.services.host.parser.commands;
 
 import org.apache.commons.lang.StringUtils;
 import org.prowl.kisset.annotations.TNCCommand;
-import org.prowl.kisset.services.host.parser.Mode;
 import org.prowl.kisset.io.Stream;
 import org.prowl.kisset.io.StreamState;
+import org.prowl.kisset.services.host.parser.Mode;
 import org.prowl.kisset.util.ANSI;
 
 import java.io.IOException;
@@ -39,7 +39,7 @@ public class ChangeStream extends Command {
             writeToTerminal(CR + ANSI.BOLD + ANSI.UNDERLINE + "Stream  Status                                      " + ANSI.NORMAL + CR);
             int i = 0;
             for (Stream stream : commandParser.getCurrentInterface().getStreams()) {
-                writeToTerminal(StringUtils.rightPad(Integer.toString(i) + ": ", 8) + StringUtils.rightPad(stream.getStreamState().name(), 30) + CR);
+                writeToTerminal(StringUtils.rightPad(i + ": ", 8) + StringUtils.rightPad(stream.getStreamState().name(), 30) + CR);
                 i++;
             }
             writeToTerminal(CR);
@@ -67,7 +67,7 @@ public class ChangeStream extends Command {
 
             writeToTerminal("*** Stream changed to " + streamNumber);
             tncHost.updateStatus();
-        } catch(NumberFormatException e) {
+        } catch (NumberFormatException e) {
             writeToTerminal("*** Invalid stream number");
             return true;
         }

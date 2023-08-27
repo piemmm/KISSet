@@ -1,8 +1,6 @@
 package org.prowl.kisset.protocols.aprs;
 
 import javafx.geometry.Rectangle2D;
-import javafx.scene.CacheHint;
-import javafx.scene.Node;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -20,14 +18,14 @@ public class SymbolCache {
 
     private static final Log LOG = LogFactory.getLog("SymbolCache");
 
-    private static Image primary = new Image(KISSet.class.getResourceAsStream("img/aprs0.png"));
-    private static Image secondary = new Image(KISSet.class.getResourceAsStream("img/aprs1.png"));
+    private static final Image primary = new Image(KISSet.class.getResourceAsStream("img/aprs0.png"));
+    private static final Image secondary = new Image(KISSet.class.getResourceAsStream("img/aprs1.png"));
 
-    private static Map<Integer, Image> symbolCache = Collections.synchronizedMap(new HashMap<>());
+    private static final Map<Integer, Image> symbolCache = Collections.synchronizedMap(new HashMap<>());
 
     public static Image getSymbol(char table, char code) {
 
-        int key = ((table & 0xFFFF) * 255)+(code & 0xFFFF);
+        int key = ((table & 0xFFFF) * 255) + (code & 0xFFFF);
 
         Image image = symbolCache.get(key);
         if (image != null) {
@@ -46,7 +44,7 @@ public class SymbolCache {
         int iconSize = (int) (tableImage.getWidth() / 16d);
 
         int x = (((int) code) - 33) % 16;
-        int y = (code-33) / 16;
+        int y = (code - 33) / 16;
 
         x = x * iconSize;
         y = y * iconSize;
@@ -57,11 +55,10 @@ public class SymbolCache {
         gc.drawImage(tableImage, x, y, iconSize, iconSize, 0, 0, 32, 32);
         SnapshotParameters params = new SnapshotParameters();
         params.setFill(Color.TRANSPARENT);
-        params.setViewport(new Rectangle2D(0,0,32,32));
+        params.setViewport(new Rectangle2D(0, 0, 32, 32));
         image = canvas.snapshot(params, null);
         symbolCache.put(key, image);
         return image;
-
 
 
     }

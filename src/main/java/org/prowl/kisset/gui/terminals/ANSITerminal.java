@@ -36,40 +36,32 @@ public class ANSITerminal extends HBox implements Terminal {
     private static final Log LOG = LogFactory.getLog("ANSITerminal");
 
     private static final int maxLines = 1000;
-    private final List<byte[]> buffer = new ArrayList<>();
-
     final Clipboard clipboard = Clipboard.getSystemClipboard();
     final ClipboardContent content = new ClipboardContent();
-
+    private final List<byte[]> buffer = new ArrayList<>();
+    private final QuickAttribute decodeQA = new QuickAttribute();
+    private final DecodedAnsi decodeDA = new DecodedAnsi(decodeQA, 0);
     /**
      * Stores the height of this line
      */
     List<Integer> lineWidths = new ArrayList<>();
-
     /**
      * Store color information (in use at the time) so we can iterate backwards in the redraw loop and still use
      * the correct colours at the start of the next line 'down'.
      */
     List<QuickAttribute> attributesInUse = new ArrayList<>();
-
-
     StringBuilder currentLine = new StringBuilder();
-    private volatile Thread redrawThread;
-
-    private final QuickAttribute decodeQA = new QuickAttribute();
-    private final DecodedAnsi decodeDA = new DecodedAnsi(decodeQA, 0);
-
     Canvas canvas = new Canvas();
     ScrollBar vScrollBar = new ScrollBar();
-
-    private BufferPosition startSelect;
-    private BufferPosition endSelect;
-
     Font font;
     boolean firstTime = true;
     double charWidth;
     double charHeight;
     double baseline;
+    boolean lastByteWasCR = false;
+    private volatile Thread redrawThread;
+    private BufferPosition startSelect;
+    private BufferPosition endSelect;
 
     public ANSITerminal() {
         super();
@@ -179,7 +171,7 @@ public class ANSITerminal extends HBox implements Terminal {
                         sb.append("\n");
                     }
                 }
-                LOG.debug("Copied: " + sb.toString());
+                LOG.debug("Copied: " + sb);
                 content.putString(sb.toString());
                 clipboard.setContent(content);
             }
@@ -274,8 +266,6 @@ public class ANSITerminal extends HBox implements Terminal {
         }
         return qa;
     }
-
-    boolean lastByteWasCR = false;
 
     /**
      * Appends the text to the terminal buffer for later drawing.
@@ -624,45 +614,6 @@ public class ANSITerminal extends HBox implements Terminal {
         return testDA;
     }
 
-
-    /**
-     * Storing state information about the current ansi attributes in use.
-     */
-    public final class QuickAttribute {
-        public Color color;
-        public Color bgcolor;
-        public boolean underLine;
-        public boolean bold;
-
-        public QuickAttribute() {
-        }
-
-        public QuickAttribute copy() {
-            QuickAttribute qa = new QuickAttribute();
-            qa.color = color;
-            qa.bgcolor = bgcolor;
-            qa.underLine = underLine;
-            qa.bold = bold;
-            return qa;
-        }
-
-    }
-
-    public class DecodedAnsi {
-        private int size;
-        private QuickAttribute qa;
-
-        public DecodedAnsi(QuickAttribute qa, int size) {
-            this.qa = qa;
-            this.size = size;
-        }
-
-        public DecodedAnsi() {
-        }
-
-
-    }
-
     /**
      * Get the character at the specified x,y position on the screen
      * <p>
@@ -719,6 +670,47 @@ public class ANSITerminal extends HBox implements Terminal {
         return new BufferPosition(i, position);
     }
 
+    public String getName() {
+        return "ANSI";
+    }
+
+    /**
+     * Storing state information about the current ansi attributes in use.
+     */
+    public final class QuickAttribute {
+        public Color color;
+        public Color bgcolor;
+        public boolean underLine;
+        public boolean bold;
+
+        public QuickAttribute() {
+        }
+
+        public QuickAttribute copy() {
+            QuickAttribute qa = new QuickAttribute();
+            qa.color = color;
+            qa.bgcolor = bgcolor;
+            qa.underLine = underLine;
+            qa.bold = bold;
+            return qa;
+        }
+
+    }
+
+    public class DecodedAnsi {
+        private int size;
+        private QuickAttribute qa;
+
+        public DecodedAnsi(QuickAttribute qa, int size) {
+            this.qa = qa;
+            this.size = size;
+        }
+
+        public DecodedAnsi() {
+        }
+
+
+    }
 
     public class BufferPosition implements Comparable {
 
@@ -754,9 +746,5 @@ public class ANSITerminal extends HBox implements Terminal {
                 return Integer.compare(arrayIndex, that.arrayIndex);
             }
         }
-    }
-
-    public String getName() {
-        return "ANSI";
     }
 }

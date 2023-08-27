@@ -6,7 +6,7 @@ import org.apache.commons.logging.LogFactory;
 /**
  * This buffer retains the last X bytes of a stream, and overwrites (and pushes the tail forwards) when the end of the
  * stream is reached.
- *
+ * <p>
  * It is a quick way to provide what happened in the last X bytes of a stream so you can replay that to popupate a terminal
  * when you swap terminals (crude, but useful)
  */
@@ -18,11 +18,11 @@ public final class LoopingCircularBuffer {
     private int head;
     private int tail;
     private int filled;
-    private int size;
+    private final int size;
 
     public LoopingCircularBuffer(int size) {
         this.size = size;
-       clear();
+        clear();
     }
 
     public void clear() {
@@ -34,13 +34,14 @@ public final class LoopingCircularBuffer {
 
     /**
      * Get the current contents of our byte stream
+     *
      * @return
      */
     public byte[] getBytes() {
         byte[] b = new byte[filled];
         int count = 0;
         while (count < filled) {
-            b[count] = buffer[(tail+count) % buffer.length];
+            b[count] = buffer[(tail + count) % buffer.length];
             count++;
         }
         return b;
@@ -59,7 +60,7 @@ public final class LoopingCircularBuffer {
 
         // Grow until we are the same size.
         if (head % buffer.length == tail % buffer.length) {
-           tail = (tail+1) % buffer.length;
+            tail = (tail + 1) % buffer.length;
         }
         if (filled < buffer.length) {
             filled++;

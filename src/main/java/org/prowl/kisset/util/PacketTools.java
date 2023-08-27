@@ -3,10 +3,10 @@ package org.prowl.kisset.util;
 import net.ab0oo.aprs.parser.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.prowl.kisset.KISSet;
 import org.prowl.ax25.AX25Frame;
-import org.prowl.kisset.protocols.core.Node;
+import org.prowl.kisset.KISSet;
 import org.prowl.kisset.eventbus.events.HeardNodeEvent;
+import org.prowl.kisset.protocols.core.Node;
 import org.prowl.kisset.protocols.netrom.NetROMPacket;
 import org.prowl.kisset.protocols.netrom.NetROMRoutingPacket;
 import org.prowl.kisset.protocols.xrouter.INP3RoutingPacket;
@@ -17,14 +17,13 @@ import java.text.ParseException;
 
 public class PacketTools {
 
-    private static final Log LOG = LogFactory.getLog("PacketTools");
     public static final String CR = "\r\n";
-
+    private static final Log LOG = LogFactory.getLog("PacketTools");
 
     /**
      * Get a sequence of 6 or 7 bytes representing a callsign with optional bit shifting
      */
-    public static String getData(ByteBuffer buffer, int length, boolean shift) throws ParseException  {
+    public static String getData(ByteBuffer buffer, int length, boolean shift) throws ParseException {
         byte[] callsign = new byte[length];
         for (int i = 0; i < length; i++) {
             if (shift) {
@@ -297,8 +296,7 @@ public class PacketTools {
                 builder.append(" Object Name: " + objectField.getObjectName() + CR);
             }
 
-            if (info instanceof MessagePacket) {
-                MessagePacket message = (MessagePacket) info;
+            if (info instanceof MessagePacket message) {
                 builder.append(" Target Callsign: " + message.getTargetCallsign() + CR);
                 builder.append("Message Number: " + message.getMessageNumber() + CR);
                 builder.append(" Message: " + message.getMessageBody() + CR);
@@ -310,15 +308,13 @@ public class PacketTools {
 
         DataExtension extension = packet.getAprsInformation().getExtension();
         if (extension != null) {
-            if (extension instanceof PHGExtension) {
-                PHGExtension phg = (PHGExtension) extension;
+            if (extension instanceof PHGExtension phg) {
                 builder.append(" PHG: " + CR);
                 builder.append("  Power: " + phg.getPower() + CR);
                 builder.append("  Height:" + phg.getHeight() + CR);
                 builder.append("  Gain:" + phg.getGain() + CR);
                 builder.append("  Directivity:" + phg.getDirectivity() + CR);
-            } else if (extension instanceof RangeExtension) {
-                RangeExtension range = (RangeExtension) extension;
+            } else if (extension instanceof RangeExtension range) {
                 builder.append(" Range: " + range.getRange() + CR);
 //            } else if (extension instanceof StatusExtension) {
 //                StatusExtension status = (StatusExtension) extension;

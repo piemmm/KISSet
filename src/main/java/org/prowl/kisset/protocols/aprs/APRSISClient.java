@@ -33,19 +33,16 @@ public enum APRSISClient {
 
     public String server = "rotate.aprs.net";
     public int port = 14580; // 10152 full feed, 14580 filtered feed
-
-    private Config config;
-    private Timer timer;
-
-    private boolean running = false;
-    private int rangeKM = 200;
-
     // testing
     double lat = 52.0542919;
     double lon = -0.7594734;
+    private final Config config;
+    private final Timer timer;
+    private boolean running = false;
+    private final int rangeKM = 200;
 
 
-    private APRSISClient() {
+    APRSISClient() {
         config = KISSet.INSTANCE.getConfig();
         timer = new Timer();
         timer.schedule(new TimerTask() {
@@ -99,7 +96,7 @@ public enum APRSISClient {
             InputStream in = s.getInputStream();
             OutputStream out = s.getOutputStream();
 
-            out.write(("user APRSPR-TS pass -1 filter r/" + lat + "/" + lon + "/"+rangeKM+"\n").getBytes());
+            out.write(("user APRSPR-TS pass -1 filter r/" + lat + "/" + lon + "/" + rangeKM + "\n").getBytes());
             out.flush();
 
             BufferedReader reader = new BufferedReader(new InputStreamReader(in), 32768);

@@ -9,7 +9,7 @@ import java.io.IOException;
  * Turn on/off monitoring of packets to the main terminal window instead of the dedicated monitor window
  */
 @TNCCommand
-public class Monitor  extends Command {
+public class Monitor extends Command {
 
     @Override
     public boolean doCommand(String[] data) throws IOException {
@@ -33,7 +33,6 @@ public class Monitor  extends Command {
         }
         return true;
     }
-
 
 
     @Override

@@ -1,10 +1,10 @@
 package org.prowl.kisset.statistics.types;
 
 import com.google.common.eventbus.Subscribe;
-import org.prowl.kisset.protocols.core.Capability;
-import org.prowl.kisset.protocols.core.Node;
 import org.prowl.kisset.eventbus.SingleThreadBus;
 import org.prowl.kisset.eventbus.events.HeardNodeEvent;
+import org.prowl.kisset.protocols.core.Capability;
+import org.prowl.kisset.protocols.core.Node;
 import org.prowl.kisset.util.Tools;
 
 import java.util.ArrayList;

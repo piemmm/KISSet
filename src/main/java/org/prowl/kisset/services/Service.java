@@ -7,7 +7,7 @@ import java.io.OutputStream;
 
 public abstract class Service {
 
-    private String name;
+    private final String name;
 
     public Service(String name) {
         this.name = name;
@@ -26,6 +26,7 @@ public abstract class Service {
 
     /**
      * The callsign we are using for this service (used in the AX25 package so it knows what to respond to)
+     *
      * @return A calsign - might have an SSID, might not - who knows what the user decides!
      */
     public abstract String getCallsign();

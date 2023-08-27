@@ -4,7 +4,7 @@ package org.prowl.kisset.protocols.core;
  * Reference to what services this node is running and when that service was last seen so it can be expired;
  */
 public class Capability {
-    private Node.Service service;
+    private final Node.Service service;
     private long lastSeen;
 
     public Capability(Node.Service service, long lastSeen) {

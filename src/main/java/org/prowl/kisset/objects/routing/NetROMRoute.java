@@ -71,13 +71,14 @@ public class NetROMRoute {
 
     /**
      * Show a human readable version of the routing packet
+     *
      * @return
      */
     public String toString() {
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yy HH:mm:ss");
         StringBuilder builder = new StringBuilder();
         int interfaceNumber = KISSet.INSTANCE.getInterfaceHandler().getInterfaceNumber(anInterface);
-        builder.append(interfaceNumber+": ");
+        builder.append(interfaceNumber + ": ");
         builder.append(sourceCallsign);
         builder.append(" advertises");
         builder.append(" " + destinationNodeCallsign + "/" + destinationNodeMnemonic);
@@ -142,9 +143,6 @@ public class NetROMRoute {
     }
 
     public boolean isExipred() {
-        if (anInterface == null || (System.currentTimeMillis() - lastHeard) > MAX_AGE) {
-            return true;
-        }
-        return false;
+        return anInterface == null || (System.currentTimeMillis() - lastHeard) > MAX_AGE;
     }
 }

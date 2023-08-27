@@ -2,8 +2,8 @@ package org.prowl.kisset.protocols.netrom;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.prowl.kisset.protocols.core.Node;
 import org.prowl.kisset.objects.routing.NetROMRoute;
+import org.prowl.kisset.protocols.core.Node;
 import org.prowl.kisset.util.PacketTools;
 
 import java.nio.ByteBuffer;
@@ -19,11 +19,12 @@ public class NetROMRoutingPacket {
 
     private String sendingNode;
 
-    private List<NetROMRoute> nodesInThisPacket = new ArrayList<>();
+    private final List<NetROMRoute> nodesInThisPacket = new ArrayList<>();
 
     /**
      * Parse a netrom routing pocket. These appear to be loosely based on the ax.25 address spec,
      * though no idea if the HDLC bit is used.
+     *
      * @param node
      */
     public NetROMRoutingPacket(Node node) throws ParseException {
@@ -56,6 +57,7 @@ public class NetROMRoutingPacket {
 
     /**
      * Get the nodes in this packet
+     *
      * @return
      */
     public List<NetROMRoute> getRoutesInThisPacket() {
@@ -74,7 +76,6 @@ public class NetROMRoutingPacket {
         }
         return builder.toString();
     }
-
 
 
 }

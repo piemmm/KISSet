@@ -2,8 +2,8 @@ package org.prowl.kisset.protocols.xrouter;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.prowl.kisset.protocols.core.Node;
 import org.prowl.kisset.objects.routing.INP3Route;
+import org.prowl.kisset.protocols.core.Node;
 import org.prowl.kisset.util.PacketTools;
 import org.prowl.kisset.util.Tools;
 
@@ -19,7 +19,7 @@ public class INP3RoutingPacket {
 
     private static final Log LOG = LogFactory.getLog("INP3RoutingPacket");
 
-    private List<INP3Route> routes = new ArrayList<>();
+    private final List<INP3Route> routes = new ArrayList<>();
 
     private String originCallsign; // The callsign this packet originated from
     private String destinationCallsign; // The advertised node callsign.
@@ -40,18 +40,18 @@ public class INP3RoutingPacket {
 
             do {
                 // Standard RIP inside RIF
-                int length = (buffer.get() & 0xFF)-2;
+                int length = (buffer.get() & 0xFF) - 2;
 
                 // Check the packet hasn't ended.
                 if (length < 0) {
                     // End of packet marker.  We follow spec so still exit.
                     routes.add(inp3Route);
                     if (buffer.remaining() == 0) {
-                       return;
+                        return;
                     }
                     // New packet.  Consume header.
                     consumeHeader(buffer, node);
-                    length = (buffer.get() & 0xFF)-2;
+                    length = (buffer.get() & 0xFF) - 2;
                     if (length < 0) {
                         return;
                     }

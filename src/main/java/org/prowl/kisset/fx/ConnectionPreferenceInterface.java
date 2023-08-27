@@ -21,8 +21,11 @@ public abstract class ConnectionPreferenceInterface {
     private void beaconTextChanged() {
         connectionPreferenceHost.setValidation(validate());
     }
+
     @FXML
-    private void beaconIntervalChanged() { connectionPreferenceHost.setValidation(validate()); }
+    private void beaconIntervalChanged() {
+        connectionPreferenceHost.setValidation(validate());
+    }
 
 
     protected void init(HierarchicalConfiguration configInterfaceNode, PreferencesController controller, ConnectionPreferenceHost host) {

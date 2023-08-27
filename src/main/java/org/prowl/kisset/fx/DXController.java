@@ -24,9 +24,8 @@ import java.io.PipedOutputStream;
 
 public class DXController {
 
-    private static final Log LOG = LogFactory.getLog("DXController");
     public static final String CR = "\r\n";
-
+    private static final Log LOG = LogFactory.getLog("DXController");
     @FXML
     StackPane stackPane;
 
@@ -135,7 +134,7 @@ public class DXController {
     public void dxHeard(DXSpotEvent event) {
         DXSpot spot = event.getDxSpot();
 
-        write(spot.getLine()+CR);
+        write(spot.getLine() + CR);
     }
 
 }

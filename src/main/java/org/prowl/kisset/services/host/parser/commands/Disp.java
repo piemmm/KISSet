@@ -22,7 +22,7 @@ public class Disp extends Command {
         // Show a list of the settings available (this loosely mirrors the command help as well)
 
         writeToTerminal("MYcall: " + KISSet.INSTANCE.getMyCall() + CR);
-        writeToTerminal("MONitor: " + (tncHost.isMonitorEnabled() ? "ON":"OFF") + CR);
+        writeToTerminal("MONitor: " + (tncHost.isMonitorEnabled() ? "ON" : "OFF") + CR);
 
         return true;
     }

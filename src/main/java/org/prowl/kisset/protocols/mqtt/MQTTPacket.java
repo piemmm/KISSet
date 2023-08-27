@@ -13,9 +13,9 @@ public class MQTTPacket implements Callable<Void> {
     private static final Log LOG = LogFactory.getLog("MQTTPacket");
 
 
-    private IMqttClient client;
-    private String topic;
-    private Node node;
+    private final IMqttClient client;
+    private final String topic;
+    private final Node node;
 
     public MQTTPacket(IMqttClient client, Node node, String topic) {
         this.client = client;
@@ -31,7 +31,7 @@ public class MQTTPacket implements Callable<Void> {
         MqttMessage msg = readPacket();
         msg.setQos(0);
         msg.setRetained(true);
-        client.publish(topic,msg);
+        client.publish(topic, msg);
         return null;
 
     }

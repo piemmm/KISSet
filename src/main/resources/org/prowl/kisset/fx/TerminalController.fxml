@@ -1,24 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.Menu?>
-<?import javafx.scene.control.MenuBar?>
-<?import javafx.scene.control.MenuItem?>
-<?import javafx.scene.control.SeparatorMenuItem?>
 <?import javafx.scene.control.TextField?>
-<?import javafx.scene.layout.BorderPane?>
-<?import javafx.scene.layout.StackPane?>
-<?import javafx.scene.layout.VBox?>
-
-<VBox fx:id="parentPanel" prefHeight="480.0" prefWidth="710.0" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.prowl.kisset.fx.TerminalController">
+<?import javafx.scene.layout.*?>
+<VBox xmlns:fx="http://javafx.com/fxml/1" fx:id="parentPanel" prefHeight="480.0" prefWidth="710.0"
+      xmlns="http://javafx.com/javafx/20.0.1" fx:controller="org.prowl.kisset.fx.TerminalController">
     <children>
         <BorderPane VBox.vgrow="ALWAYS">
 
             <bottom>
-                <TextField fx:id="textEntry" onAction="#onTextEnteredAction" onKeyPressed="#onKeyPressed" promptText="Enter commands here" BorderPane.alignment="CENTER" />
+                <TextField fx:id="textEntry" onAction="#onTextEnteredAction" onKeyPressed="#onKeyPressed"
+                           promptText="Enter commands here" BorderPane.alignment="CENTER"/>
             </bottom>
             <center>
 
-                    <StackPane fx:id="stackPane" prefHeight="1200" prefWidth="700" BorderPane.alignment="CENTER" />
+                <StackPane fx:id="stackPane" prefHeight="1200" prefWidth="700" BorderPane.alignment="CENTER"/>
 
             </center>
         </BorderPane>

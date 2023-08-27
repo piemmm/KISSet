@@ -36,11 +36,9 @@ public class PlainTextTerminal extends HBox implements Terminal {
     private static final Log LOG = LogFactory.getLog("PlainTextTerminal");
 
     private static final int maxLines = 1000;
-    private final List<byte[]> buffer = new ArrayList<>();
-
     final Clipboard clipboard = Clipboard.getSystemClipboard();
     final ClipboardContent content = new ClipboardContent();
-
+    private final List<byte[]> buffer = new ArrayList<>();
     /**
      * Stores the height of this line
      */
@@ -48,19 +46,17 @@ public class PlainTextTerminal extends HBox implements Terminal {
 
 
     StringBuilder currentLine = new StringBuilder();
-    private volatile Thread redrawThread;
-
     Canvas canvas = new Canvas();
     ScrollBar vScrollBar = new ScrollBar();
-
-    private BufferPosition startSelect;
-    private BufferPosition endSelect;
-
     Font font;
     boolean firstTime = true;
     double charWidth;
     double charHeight;
     double baseline;
+    boolean lastByteWasCR = false;
+    private volatile Thread redrawThread;
+    private BufferPosition startSelect;
+    private BufferPosition endSelect;
 
     public PlainTextTerminal() {
         super();
@@ -170,7 +166,7 @@ public class PlainTextTerminal extends HBox implements Terminal {
                         sb.append("\n");
                     }
                 }
-                LOG.debug("Copied: " + sb.toString());
+                LOG.debug("Copied: " + sb);
                 content.putString(sb.toString());
                 clipboard.setContent(content);
             }
@@ -188,7 +184,6 @@ public class PlainTextTerminal extends HBox implements Terminal {
         recalculateFontMetrics();
         queueRedraw();
     }
-
 
     private void makeNewLine() {
         synchronized (buffer) {
@@ -235,9 +230,6 @@ public class PlainTextTerminal extends HBox implements Terminal {
             lineWidths.set(lineWidths.size() - 1, ANSI.stripAnsiCodes(str).length());
         }
     }
-
-
-    boolean lastByteWasCR = false;
 
     /**
      * Appends the text to the terminal buffer for later drawing.
@@ -476,6 +468,9 @@ public class PlainTextTerminal extends HBox implements Terminal {
         return new BufferPosition(i, position);
     }
 
+    public String getName() {
+        return "ANSI";
+    }
 
     public class BufferPosition implements Comparable {
 
@@ -511,9 +506,5 @@ public class PlainTextTerminal extends HBox implements Terminal {
                 return Integer.compare(arrayIndex, that.arrayIndex);
             }
         }
-    }
-
-    public String getName() {
-        return "ANSI";
     }
 }

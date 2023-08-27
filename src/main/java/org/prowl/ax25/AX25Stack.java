@@ -20,7 +20,6 @@ package org.prowl.ax25;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.prowl.ax25.util.AX25Tools;
 import org.prowl.ax25.util.FastBlockingQueue;
 import org.prowl.ax25.util.ReschedulableTimer;
 
@@ -244,6 +243,10 @@ public class AX25Stack implements FrameListener, Runnable {
         }
     }
 
+    ConnectionRequestListener getConnectionRequestListener() {
+        return connectionRequestListener;
+    }
+
     /**
      * Set the handler for inbound connection requests.
      *
@@ -254,10 +257,6 @@ public class AX25Stack implements FrameListener, Runnable {
             LOG.warn(debugTag + "connectionRequestListener being changed behind original one's back, was " + connectionRequestListener + ", now " + l);
         }
         connectionRequestListener = l;
-    }
-
-    ConnectionRequestListener getConnectionRequestListener() {
-        return connectionRequestListener;
     }
 
     /**
@@ -759,7 +758,7 @@ public class AX25Stack implements FrameListener, Runnable {
             }
             if (state != null && state.isOpen()) {
                 if (toMe) {
-                    LOG.debug("rx: state.NR="+state.modReceivedFrameIndex+"  "+ frame);
+                    LOG.debug("rx: state.NR=" + state.modReceivedFrameIndex + "  " + frame);
                     // check frame number against flow control
                     int ns = frame.getNS();
 
@@ -776,9 +775,9 @@ public class AX25Stack implements FrameListener, Runnable {
                                 state.in.add(frame);
                             }
                         }
-                    //} else {
+                        //} else {
                         //TODO: delay a bit until we can send a SREJ in case it's only a one-packet drop, and also to debounce sending this multiple times
-                    //    transmitREJ(connector, frame.dest, frame.sender, reverseDigipeaters(frame.digipeaters), state, false);
+                        //    transmitREJ(connector, frame.dest, frame.sender, reverseDigipeaters(frame.digipeaters), state, false);
                     }
                     // update received state for other end
                     int nr = frame.getNR();

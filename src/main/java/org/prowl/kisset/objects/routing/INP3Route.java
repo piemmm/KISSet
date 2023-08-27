@@ -12,7 +12,7 @@ import java.util.List;
  */
 public class INP3Route {
 
-    private static final long MAX_AGE = 1000l * 60l * 60l * 2; // 2 hours for we drop the route as a hard limit.
+    private static final long MAX_AGE = 1000L * 60L * 60L * 2; // 2 hours for we drop the route as a hard limit.
     private String sourceCallsign;
     private Interface anInterface;
 
@@ -86,6 +86,60 @@ public class INP3Route {
         return null;
     }
 
+    public String toString() {
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yy HH:mm:ss");
+        StringBuilder builder = new StringBuilder();
+        int interfaceNumber = KISSet.INSTANCE.getInterfaceHandler().getInterfaceNumber(anInterface);
+        builder.append(interfaceNumber + ": ");
+        builder.append(sourceCallsign);
+        builder.append(" advertises");
+        builder.append(" " + destinationNodeCallsign);
+        if (hasAlias()) {
+            builder.append("/" + getAlias());
+        }
+        builder.append(" hops ");
+        builder.append(hops);
+        builder.append(", trip time ");
+        builder.append(tripTime);
+        builder.append(", heard at " + sdf.format(lastHeard));
+        return builder.toString();
+    }
+
+    /**
+     * Represents the option type in an INP3 option
+     */
+    public enum INP3OptionType {
+        ALIAS(0),
+        IP(1),
+        APRS_POSITION(0x10), // 4 byes lat, 4 bytes lon, in degrees * 6000
+        NODETYPE(0x11),
+        TIMESTAMP(0x12), // 4 bytes, secs since 1970, inserted by originator, must *never* be changed
+        TCP_SERVICE(0x13), // tcp service number for telnet via amprnet, 2 bytes in network byte order
+        TZOFFSET(0x14), // Timezone offset from GMT
+        MAIDENHEAD(0x15), // Maidenhead locator. String, no null terminator
+        QTH(0x16), // QTH locator, String, no null terminator
+        SOFTWARE_VERSION(0x17);
+
+        private final int value;
+
+        INP3OptionType(int value) {
+            this.value = value;
+        }
+
+        public static INP3OptionType fromValue(int value) {
+            for (INP3OptionType type : INP3OptionType.values()) {
+                if (type.getValue() == value) {
+                    return type;
+                }
+            }
+            return null;
+        }
+
+        public int getValue() {
+            return value;
+        }
+    }
+
     /**
      * A packet can contain a list of these options
      */
@@ -109,59 +163,5 @@ public class INP3Route {
             this.type = type;
             this.data = data;
         }
-    }
-
-    /**
-     * Represents the option type in an INP3 option
-     */
-    public enum INP3OptionType {
-        ALIAS(0),
-        IP(1),
-        APRS_POSITION(0x10), // 4 byes lat, 4 bytes lon, in degrees * 6000
-        NODETYPE(0x11),
-        TIMESTAMP(0x12), // 4 bytes, secs since 1970, inserted by originator, must *never* be changed
-        TCP_SERVICE(0x13), // tcp service number for telnet via amprnet, 2 bytes in network byte order
-        TZOFFSET(0x14), // Timezone offset from GMT
-        MAIDENHEAD(0x15), // Maidenhead locator. String, no null terminator
-        QTH(0x16), // QTH locator, String, no null terminator
-        SOFTWARE_VERSION(0x17);
-
-        private int value;
-
-        private INP3OptionType(int value) {
-            this.value = value;
-        }
-
-        public int getValue() {
-            return value;
-        }
-
-        public static INP3OptionType fromValue(int value) {
-            for (INP3OptionType type : INP3OptionType.values()) {
-                if (type.getValue() == value) {
-                    return type;
-                }
-            }
-            return null;
-        }
-    }
-
-    public String toString() {
-        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yy HH:mm:ss");
-        StringBuilder builder = new StringBuilder();
-        int interfaceNumber = KISSet.INSTANCE.getInterfaceHandler().getInterfaceNumber(anInterface);
-        builder.append(interfaceNumber + ": ");
-        builder.append(sourceCallsign);
-        builder.append(" advertises");
-        builder.append(" " + destinationNodeCallsign);
-        if (hasAlias()) {
-            builder.append("/" + getAlias());
-        }
-        builder.append(" hops ");
-        builder.append(hops);
-        builder.append(", trip time ");
-        builder.append(tripTime);
-        builder.append(", heard at " + sdf.format(lastHeard));
-        return builder.toString();
     }
 }

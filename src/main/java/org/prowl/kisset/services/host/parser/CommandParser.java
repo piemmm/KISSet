@@ -5,10 +5,10 @@ import org.apache.commons.logging.LogFactory;
 import org.prowl.kisset.KISSet;
 import org.prowl.kisset.Messages;
 import org.prowl.kisset.annotations.TNCCommand;
-import org.prowl.kisset.services.host.TNCHost;
-import org.prowl.kisset.services.host.parser.commands.Command;
 import org.prowl.kisset.io.Interface;
 import org.prowl.kisset.io.Stream;
+import org.prowl.kisset.services.host.TNCHost;
+import org.prowl.kisset.services.host.parser.commands.Command;
 import org.prowl.kisset.util.ANSI;
 import org.reflections.Reflections;
 
@@ -264,12 +264,11 @@ public class CommandParser {
         return mode;
     }
 
-    public void setCurrentInterface(Interface currentInterface) {
-        this.currentInterface = currentInterface;
-    }
-
-
     public Interface getCurrentInterface() {
         return currentInterface;
+    }
+
+    public void setCurrentInterface(Interface currentInterface) {
+        this.currentInterface = currentInterface;
     }
 }

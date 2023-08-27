@@ -10,7 +10,7 @@ public enum SingleThreadBus {
 
     INSTANCE;
 
-    private EventBus eventBus = new EventBus();
+    private final EventBus eventBus = new EventBus();
 
     public final void post(final BaseEvent event) {
         eventBus.post(event);

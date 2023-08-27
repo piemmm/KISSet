@@ -48,7 +48,6 @@ public class Message extends Packetable {
 
     public void setFrom(String from) {
         this.from = from.toUpperCase(Locale.ENGLISH);
-        ;
     }
 
     public String getGroup() {
@@ -58,7 +57,6 @@ public class Message extends Packetable {
     // This is the group, or the to: field of the message
     public void setGroup(String group) {
         this.group = group.toUpperCase(Locale.ENGLISH);
-        ;
     }
 
     public long getDate() {

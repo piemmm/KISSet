@@ -1,8 +1,8 @@
 package org.prowl.kisset.services.host.parser.commands;
 
 import org.prowl.kisset.annotations.TNCCommand;
-import org.prowl.kisset.services.host.parser.Mode;
 import org.prowl.kisset.io.StreamState;
+import org.prowl.kisset.services.host.parser.Mode;
 
 import java.io.IOException;
 

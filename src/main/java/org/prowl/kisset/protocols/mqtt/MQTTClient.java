@@ -27,19 +27,19 @@ public class MQTTClient {
 
     private boolean running = false;
 
-    private String topic;
-    private String broker;
-    private String username;
-    private String password;
+    private final String topic;
+    private final String broker;
+    private final String username;
+    private final String password;
     private IMqttClient publisher;
-    private Config config;
+    private final Config config;
 
     public MQTTClient() {
         // Get configuration
         config = KISSet.INSTANCE.getConfig();
 
         broker = config.getConfig(Conf.mqttBrokerHostname, Conf.mqttBrokerHostname.stringDefault());
-        username =config.getConfig(Conf.mqttBrokerUsername, Conf.mqttBrokerUsername.stringDefault());
+        username = config.getConfig(Conf.mqttBrokerUsername, Conf.mqttBrokerUsername.stringDefault());
         password = config.getConfig(Conf.mqttBrokerPassword, Conf.mqttBrokerPassword.stringDefault());
         topic = config.getConfig(Conf.mqttBrokerTopic, Conf.mqttBrokerTopic.stringDefault());
     }

@@ -18,7 +18,7 @@ public class Stream {
 
     private String remoteCall;
 
-    private Interface anInterface;
+    private final Interface anInterface;
 
     public Stream(Interface anInterface) {
         this.anInterface = anInterface;

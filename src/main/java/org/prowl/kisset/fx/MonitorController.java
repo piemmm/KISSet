@@ -33,15 +33,14 @@ import java.util.ArrayList;
 
 public class MonitorController {
 
-    private static final Log LOG = LogFactory.getLog("MonitorController");
     public static final String CR = "\r\n";
-
+    private static final Log LOG = LogFactory.getLog("MonitorController");
     @FXML
     StackPane stackPane;
     @FXML
     ListView<Node> heardList;
 
-    private ObservableList<Node> heardNodes = FXCollections.observableArrayList(new ArrayList<>());
+    private final ObservableList<Node> heardNodes = FXCollections.observableArrayList(new ArrayList<>());
     private ANSITerminal terminal;
     private PipedInputStream inpis;
     private PipedOutputStream inpos;

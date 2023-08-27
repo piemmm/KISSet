@@ -15,8 +15,6 @@ import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.prowl.kisset.services.Service;
-import org.prowl.kisset.services.remote.pms.PMSService;
 import org.prowl.kisset.config.Conf;
 import org.prowl.kisset.config.Config;
 import org.prowl.kisset.eventbus.SingleThreadBus;
@@ -29,13 +27,15 @@ import org.prowl.kisset.protocols.aprs.APRSISClient;
 import org.prowl.kisset.protocols.aprs.APRSListener;
 import org.prowl.kisset.protocols.dxcluster.DXListener;
 import org.prowl.kisset.protocols.mqtt.MQTTClient;
+import org.prowl.kisset.services.Service;
+import org.prowl.kisset.services.remote.pms.PMSService;
 import org.prowl.kisset.statistics.Statistics;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.desktop.AppReopenedEvent;
 import java.awt.desktop.AppReopenedListener;
-import java.io.*;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.*;
@@ -45,6 +45,7 @@ public class KISSet extends Application {
     private static final Log LOG = LogFactory.getLog("KISSet");
     public static KISSet INSTANCE;
     public String myCall = "";
+    protected List<Service> serviceList = Collections.synchronizedList(new ArrayList<>());
     private Config configuration;
     private InterfaceHandler interfaceHandler;
     private Statistics statistics;
@@ -53,8 +54,6 @@ public class KISSet extends Application {
     private Stage fbbStage;
     private Stage aprsStage;
     private Storage storage;
-    protected List<Service> serviceList = Collections.synchronizedList(new ArrayList<>());
-
 
     public static void main(String[] args) {
         launch();
@@ -234,7 +233,7 @@ public class KISSet extends Application {
             initDX();
             initFBB();
             initAPRS();
-          //  testConnectionTerminal();
+            //  testConnectionTerminal();
         } catch (Throwable e) {
             LOG.error(e.getMessage(), e);
             System.exit(1);
@@ -530,7 +529,5 @@ public class KISSet extends Application {
     public List<Service> getServices() {
         return serviceList;
     }
-
-    ;
 
 }

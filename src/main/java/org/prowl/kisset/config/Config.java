@@ -1,6 +1,5 @@
 package org.prowl.kisset.config;
 
-import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.SubnodeConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
@@ -8,7 +7,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.io.File;
-import java.io.IOException;
 
 public class Config {
 
@@ -50,10 +48,10 @@ public class Config {
             configuration.load(configFile);
         } catch (Throwable e) {
 
-                e.printStackTrace();
-                System.err.println("Search path: " + new File("").getAbsolutePath());
-                System.err.println("Unable to load production config file, exiting:" + e.getMessage());
-                System.exit(1);
+            e.printStackTrace();
+            System.err.println("Search path: " + new File("").getAbsolutePath());
+            System.err.println("Unable to load production config file, exiting:" + e.getMessage());
+            System.exit(1);
 
         }
     }
@@ -81,7 +79,7 @@ public class Config {
 
     public void saveConfig() {
         File configFile = getConfigFile();
-        LOG.info("Saving configuration to: " +configFile);
+        LOG.info("Saving configuration to: " + configFile);
         try {
             configuration.save(configFile);
         } catch (Throwable e) {
@@ -92,10 +90,10 @@ public class Config {
     private void makeDefaultConfig() {
         LOG.info("Making new default configuration");
         try {
-             configuration = new XMLConfiguration(Config.class.getResource("config-default.xml"));
+            configuration = new XMLConfiguration(Config.class.getResource("config-default.xml"));
             saveConfig();
-        } catch(ConfigurationException e) {
-            LOG.error(e.getMessage(),e);
+        } catch (ConfigurationException e) {
+            LOG.error(e.getMessage(), e);
         }
     }
 

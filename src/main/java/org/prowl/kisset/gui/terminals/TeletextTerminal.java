@@ -36,47 +36,37 @@ import java.util.Objects;
  */
 public class TeletextTerminal extends HBox implements Terminal {
 
-    int charXPos = 0;
-    int charYPos = 0;
-
     private static final Log LOG = LogFactory.getLog("TeletextTerminal");
-
     private static final int maxLines = 25;
-    private final List<byte[]> buffer = new ArrayList<>();
-
     final Clipboard clipboard = Clipboard.getSystemClipboard();
     final ClipboardContent content = new ClipboardContent();
-
+    private final List<byte[]> buffer = new ArrayList<>();
+    private final QuickAttribute decodeQA = new QuickAttribute();
+    private final DecodedTeletextChar decodeDA = new DecodedTeletextChar(decodeQA, 0);
+    int charXPos = 0;
+    int charYPos = 0;
     /**
      * Stores the height of this line
      */
     List<Integer> lineWidths = new ArrayList<>();
-
     /**
      * Store color information (in use at the time) so we can iterate backwards in the redraw loop and still use
      * the correct colours at the start of the next line 'down'.
      */
     List<QuickAttribute> attributesInUse = new ArrayList<>();
-
-
     StringBuilder currentLine = new StringBuilder();
-    private volatile Thread redrawThread;
-
-    private final QuickAttribute decodeQA = new QuickAttribute();
-    private final DecodedTeletextChar decodeDA = new DecodedTeletextChar(decodeQA, 0);
-
     Canvas canvas = new Canvas();
-
     ScrollBar vScrollBar = new ScrollBar();
-
-    private BufferPosition startSelect;
-    private BufferPosition endSelect;
-
     Font font;
     boolean firstTime = true;
     double charWidth;
     double charHeight;
     double baseline;
+    private volatile Thread redrawThread;
+    private BufferPosition startSelect;
+    private BufferPosition endSelect;
+    private boolean inEscape = false;
+    private int inPosition = 0;
 
     public TeletextTerminal() {
 
@@ -198,7 +188,7 @@ public class TeletextTerminal extends HBox implements Terminal {
                         sb.append("\n");
                     }
                 }
-                LOG.debug("Copied: " + sb.toString());
+                LOG.debug("Copied: " + sb);
                 content.putString(sb.toString());
                 clipboard.setContent(content);
             }
@@ -227,7 +217,6 @@ public class TeletextTerminal extends HBox implements Terminal {
     public Node getNode() {
         return this;
     }
-
 
     private void makeNewLine() {
         synchronized (buffer) {
@@ -289,9 +278,6 @@ public class TeletextTerminal extends HBox implements Terminal {
         }
         return qa;
     }
-
-    private boolean inEscape = false;
-    private int inPosition = 0;
 
     public void clearScreen() {
         for (int i = 0; i < buffer.size(); i++) {
@@ -803,49 +789,6 @@ public class TeletextTerminal extends HBox implements Terminal {
         return testDA;
     }
 
-
-    /**
-     * Storing state information about the current teletext attributes in use.
-     */
-    public final class QuickAttribute {
-        public Color color;
-        public Color bgcolor = Color.BLACK;
-        public boolean graphics;
-        public boolean underLine;
-        public boolean bold;
-        public boolean lining;
-
-        public QuickAttribute() {
-        }
-
-        public QuickAttribute copy() {
-            QuickAttribute qa = new QuickAttribute();
-            qa.color = color;
-            qa.bgcolor = bgcolor;
-            qa.graphics = graphics;
-            qa.underLine = underLine;
-            qa.bold = bold;
-            qa.lining = lining;
-            return qa;
-        }
-
-    }
-
-    public class DecodedTeletextChar {
-        private int size;
-        private QuickAttribute qa;
-
-        public DecodedTeletextChar(QuickAttribute qa, int size) {
-            this.qa = qa;
-            this.size = 0;//size;
-        }
-
-        public DecodedTeletextChar() {
-        }
-
-
-    }
-
     /**
      * Get the character at the specified x,y position on the screen
      * <p>
@@ -915,6 +858,84 @@ public class TeletextTerminal extends HBox implements Terminal {
         return line;
     }
 
+    public String getName() {
+        return "Teletext";
+    }
+
+    /**
+     * Draw a 'sixel'. A sixel is a character composed of 6 blocks (sixels) arranged in a 2x3 grid.
+     * <p>
+     * Each 'sixel' is the binary representation of the sixelCode passed in from 0 to 63. The sixel is drawn from top left
+     * to bottom right, with the top left being the least significant bit.
+     *
+     * @param sixelCode The numeric sixel code already subtracted by 160 from it's character code so we end up with 0-63
+     */
+    private void drawSixel(GraphicsContext g, int sixelCode, double x, double y) {
+        boolean[] bits = new boolean[6];
+        for (int i = 0; i < 6; i++) {
+            bits[i] = ((sixelCode >> i) & 0x01) == 1;
+        }
+
+        double blockWidth = charWidth / 2d;
+        double blockHeight = charHeight / 3d;
+
+        double blockX = x;
+        double blockY = y - (charHeight - blockHeight);
+
+        // Draw the 6 blocks
+        for (int i = 0; i < 6; i++) {
+            if (bits[i]) {
+                g.fillRect(blockX, blockY, blockWidth, blockHeight);
+            }
+            blockX += blockWidth;
+            if (i % 2 == 1) {
+                blockX = x;
+                blockY += blockHeight;
+            }
+        }
+    }
+
+    /**
+     * Storing state information about the current teletext attributes in use.
+     */
+    public final class QuickAttribute {
+        public Color color;
+        public Color bgcolor = Color.BLACK;
+        public boolean graphics;
+        public boolean underLine;
+        public boolean bold;
+        public boolean lining;
+
+        public QuickAttribute() {
+        }
+
+        public QuickAttribute copy() {
+            QuickAttribute qa = new QuickAttribute();
+            qa.color = color;
+            qa.bgcolor = bgcolor;
+            qa.graphics = graphics;
+            qa.underLine = underLine;
+            qa.bold = bold;
+            qa.lining = lining;
+            return qa;
+        }
+
+    }
+
+    public class DecodedTeletextChar {
+        private int size;
+        private QuickAttribute qa;
+
+        public DecodedTeletextChar(QuickAttribute qa, int size) {
+            this.qa = qa;
+            this.size = 0;//size;
+        }
+
+        public DecodedTeletextChar() {
+        }
+
+
+    }
 
     public class BufferPosition implements Comparable {
 
@@ -948,44 +969,6 @@ public class TeletextTerminal extends HBox implements Terminal {
                 return Integer.compare(that.characterIndex, characterIndex);
             } else {
                 return Integer.compare(arrayIndex, that.arrayIndex);
-            }
-        }
-    }
-
-    public String getName() {
-        return "Teletext";
-    }
-
-
-    /**
-     * Draw a 'sixel'. A sixel is a character composed of 6 blocks (sixels) arranged in a 2x3 grid.
-     * <p>
-     * Each 'sixel' is the binary representation of the sixelCode passed in from 0 to 63. The sixel is drawn from top left
-     * to bottom right, with the top left being the least significant bit.
-     *
-     * @param sixelCode The numeric sixel code already subtracted by 160 from it's character code so we end up with 0-63
-     */
-    private void drawSixel(GraphicsContext g, int sixelCode, double x, double y) {
-        boolean[] bits = new boolean[6];
-        for (int i = 0; i < 6; i++) {
-            bits[i] = ((sixelCode >> i) & 0x01) == 1;
-        }
-
-        double blockWidth = charWidth / 2d;
-        double blockHeight = charHeight / 3d;
-
-        double blockX = x;
-        double blockY = y - (charHeight - blockHeight);
-
-        // Draw the 6 blocks
-        for (int i = 0; i < 6; i++) {
-            if (bits[i]) {
-                g.fillRect(blockX, blockY, blockWidth, blockHeight);
-            }
-            blockX += blockWidth;
-            if (i % 2 == 1) {
-                blockX = x;
-                blockY += blockHeight;
             }
         }
     }

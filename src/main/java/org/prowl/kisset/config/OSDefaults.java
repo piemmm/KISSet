@@ -12,8 +12,7 @@ public class OSDefaults {
     public static final String getDefaultPlatformFont() {
 
         List<String> fontFamilies = Font.getFamilies();
-        List<String> fontNames    = Font.getFontNames();
-
+        List<String> fontNames = Font.getFontNames();
 
 
         String font = "Monospace";

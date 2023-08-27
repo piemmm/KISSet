@@ -3,8 +3,8 @@ package org.prowl.kisset.services.remote.pms;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.prowl.kisset.services.Service;
 import org.prowl.kisset.objects.user.User;
+import org.prowl.kisset.services.Service;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -20,7 +20,7 @@ public class PMSService extends Service {
 
     private HierarchicalConfiguration config;
 
-    private String callsign;
+    private final String callsign;
 
     public PMSService(String name, String callsign) {
         super(name);

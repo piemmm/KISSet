@@ -31,7 +31,7 @@ public class Mode {
     // Sending a public/bulletin message mode
     public static final Mode SENDING_PUBLIC_MESSAGE = new Mode("SENDING_PUBLIC_MESSAGE");
 
-    private String mode;
+    private final String mode;
 
     /**
      * Creates a mode object which plugins can also create

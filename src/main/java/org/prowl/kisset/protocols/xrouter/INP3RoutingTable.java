@@ -14,6 +14,7 @@ public enum INP3RoutingTable {
 
     /**
      * Add a node to the routing table, replacing any existing node with the same callsign
+     *
      * @param node
      */
     public void addRoute(INP3Route node) {
@@ -21,21 +22,22 @@ public enum INP3RoutingTable {
         // Remove any existing node with the same callsign
         for (INP3Route existingNode : nodes) {
             if (existingNode.getDestinationNodeCallsign().equals(node.getDestinationNodeCallsign())
-             && existingNode.getSourceCallsign().equals(node.getSourceCallsign())) {
+                    && existingNode.getSourceCallsign().equals(node.getSourceCallsign())) {
                 nodes.remove(existingNode);
                 break;
             }
         }
 
-        nodes.add(0,node);
+        nodes.add(0, node);
     }
 
     /**
      * Add a list of nodes to the routing table, replacing any existing nodes with the same callsign
+     *
      * @param nodes
      */
     public void addRoutes(List<INP3Route> nodes) {
-        for (INP3Route n: nodes) {
+        for (INP3Route n : nodes) {
             addRoute(n);
         }
     }

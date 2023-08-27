@@ -1,25 +1,24 @@
 package org.prowl.kisset.services.host.parser.commands;
 
 import org.prowl.kisset.annotations.TNCCommand;
-import org.prowl.kisset.services.host.parser.Mode;
 import org.prowl.kisset.gui.terminals.ANSITerminal;
 import org.prowl.kisset.gui.terminals.DebugTerminal;
 import org.prowl.kisset.gui.terminals.PlainTextTerminal;
 import org.prowl.kisset.gui.terminals.TeletextTerminal;
+import org.prowl.kisset.services.host.parser.Mode;
 
 import java.io.IOException;
 
 /**
  * Sets the terminal type to whatever terminal type is chosen by the user
- *
+ * <p>
  * eg:  TERM <terminal type>
- *      TERM teletext - for teletext/prestel/SAA5050 compatibility
- *
- *      TERM ansi - this is the default terminal type
- *      TERM plain/ascii - for plain text, strips any nonprintable characters
- *      TERM debug - useful for debugging the terminal by showing control characters
- *      TERM auto - for automatically switching to the best terminal type for things like telstar/prestel/etc
- *
+ * TERM teletext - for teletext/prestel/SAA5050 compatibility
+ * <p>
+ * TERM ansi - this is the default terminal type
+ * TERM plain/ascii - for plain text, strips any nonprintable characters
+ * TERM debug - useful for debugging the terminal by showing control characters
+ * TERM auto - for automatically switching to the best terminal type for things like telstar/prestel/etc
  */
 @TNCCommand
 public class Term extends Command {

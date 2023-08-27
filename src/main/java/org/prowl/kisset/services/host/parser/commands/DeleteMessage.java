@@ -2,8 +2,8 @@ package org.prowl.kisset.services.host.parser.commands;
 
 import org.prowl.kisset.KISSet;
 import org.prowl.kisset.annotations.TNCCommand;
-import org.prowl.kisset.services.host.parser.Mode;
 import org.prowl.kisset.objects.messages.Message;
+import org.prowl.kisset.services.host.parser.Mode;
 
 import java.io.IOException;
 
@@ -16,7 +16,7 @@ public class DeleteMessage extends Command {
     @Override
     public boolean doCommand(String[] data) throws IOException {
         Mode mode = getMode();
-        if (!mode.equals(Mode.CMD) ) {
+        if (!mode.equals(Mode.CMD)) {
             return false;
         }
 
@@ -35,7 +35,7 @@ public class DeleteMessage extends Command {
                 writeToTerminal("*** Message deleted" + CR);
                 return true;
             }
-        } catch(NumberFormatException e) {
+        } catch (NumberFormatException e) {
             writeToTerminal("*** Invalid message number" + CR);
             return true;
         }

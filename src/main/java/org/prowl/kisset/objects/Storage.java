@@ -1,15 +1,12 @@
 package org.prowl.kisset.objects;
 
-import com.gluonhq.attach.storage.StorageService;
-import com.gluonhq.attach.util.Services;
-//import com.gluonhq.attach.util.impl.ServiceFactory;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.prowl.kisset.protocols.netrom.NetROMRoutingTable;
 import org.prowl.kisset.objects.messages.Message;
 import org.prowl.kisset.objects.routing.NetROMRoute;
+import org.prowl.kisset.protocols.netrom.NetROMRoutingTable;
 
 import java.io.*;
 import java.util.*;
@@ -33,7 +30,7 @@ public class Storage {
     private static final Cache<Long, Message> messageIdToMsg = CacheBuilder.newBuilder().maximumSize(100).expireAfterAccess(1, TimeUnit.DAYS).build();
     private static final Cache<File, Message> messageFileToMsg = CacheBuilder.newBuilder().maximumSize(100).expireAfterAccess(1, TimeUnit.DAYS).build();
     private static long highestMessageIdSeen = -1;
-    private File locationDir = getStorageDir();
+    private final File locationDir = getStorageDir();
 
     public Storage() {
 
@@ -82,6 +79,21 @@ public class Storage {
 
     }
 
+    public static void write(DataOutputStream dout, long i) throws IOException {
+        dout.writeLong(i);
+    }
+
+    public static void write(DataOutputStream dout, int i) throws IOException {
+        dout.writeInt(i);
+    }
+
+    public static void write(DataOutputStream dout, String s) throws IOException {
+        // String.length measures UTF units, which is no good to use, so we will use the
+        // byte array size
+        byte[] b = s.getBytes();
+        dout.writeInt(b.length);
+        dout.write(b);
+    }
 
     /**
      * Store a news message
@@ -129,7 +141,6 @@ public class Storage {
         return getNewsMessageFile(empty);
     }
 
-
     /**
      * Convenience method for if a message exists already
      * <p>
@@ -169,7 +180,6 @@ public class Storage {
             throw new IOException("Unable to persist file: " + file.getAbsolutePath());
         }
     }
-
 
     /**
      * Get a list of news group messages going back as far as date X.
@@ -269,7 +279,6 @@ public class Storage {
         return listMessages(null);
     }
 
-
     /**
      * Retrieve a news message
      * <p>
@@ -302,7 +311,6 @@ public class Storage {
         return message;
     }
 
-
     /**
      * Load a data file
      *
@@ -325,7 +333,6 @@ public class Storage {
         return file;
 
     }
-
 
     /**
      * Get a list of messages in message id order.
@@ -389,23 +396,6 @@ public class Storage {
         highestMessageIdSeen = ++highest;
         return highest;
     }
-
-    public static void write(DataOutputStream dout, long i) throws IOException {
-        dout.writeLong(i);
-    }
-
-    public static void write(DataOutputStream dout, int i) throws IOException {
-        dout.writeInt(i);
-    }
-
-    public static void write(DataOutputStream dout, String s) throws IOException {
-        // String.length measures UTF units, which is no good to use, so we will use the
-        // byte array size
-        byte[] b = s.getBytes();
-        dout.writeInt(b.length);
-        dout.write(b);
-    }
-
 
     public File getRouteFile() {
         File routeFile = new File(locationDir.getAbsolutePath() + File.separator + NETROM + File.separator + "routes.dat");

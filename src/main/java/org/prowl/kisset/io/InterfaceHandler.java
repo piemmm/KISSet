@@ -52,13 +52,13 @@ public class InterfaceHandler {
 
     /**
      * Set a list of services to listen for connections to.
-     *
+     * <p>
      * The interface needs a list of callsigns+ssids to listen for if it is going to accept connections.
      *
      * @param services The services we have that are listening for connections to.
      */
     public void setServices(List<Service> services) {
-       this.services = services;
+        this.services = services;
     }
 
     public void start() {
@@ -104,6 +104,7 @@ public class InterfaceHandler {
 
     /**
      * Get the interface that services the requested radio port by uuid
+     *
      * @param uuid the uuid of the interface
      * @return the interface, or null if the interface does not exist
      */

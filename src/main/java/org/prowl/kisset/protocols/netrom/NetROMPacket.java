@@ -22,26 +22,26 @@ public class NetROMPacket {
 
     //private static String body = "FF4D4E4B4E4F448E846E9A9C96644D4E4B4348548E846E9A9C9662FF8E846E9A9C96604D4E4B4242538E846E9A9C9662FF9A609C86AE40664352455343489A609C86AE4060BF8E846E9EAA96604F554B4E4F448E846E9EAA9660C08E846E9EAA96644F554B4348548E846E9EAA9660BF8E846E9EAA96664F554B4445568E846E9EAA9660BF9A846E9C98846042555A5A52449A846E9C988460C09A846E9C98846242555A4242539A846E9C988460969A846E9C98846442555A4348549A846E9C988460BF9A846E9C98846642555A5757439A846E9C988460BF";
 
-    private String originCallsign;
-    private String destinationCallsign;
+    private final String originCallsign;
+    private final String destinationCallsign;
 
     // Contents of the Net/ROM network and transport header
-    private int ttl;
-    private int circuitIndex;
-    private int circuitId;
-    private int txSequenceNumber;
-    private int rxSequenceNumber;
-    private int opCodeAndFlags; // see below
+    private final int ttl;
+    private final int circuitIndex;
+    private final int circuitId;
+    private final int txSequenceNumber;
+    private final int rxSequenceNumber;
+    private final int opCodeAndFlags; // see below
 
     // Contents of the opCodeAndFlags field
-    private boolean chokeFlag;
-    private boolean nakFlag;
-    private boolean moreFollowsFlag;
-    private boolean reserved;
-    private int opCode;
+    private final boolean chokeFlag;
+    private final boolean nakFlag;
+    private final boolean moreFollowsFlag;
+    private final boolean reserved;
+    private final int opCode;
 
-    private byte[] body;
-    private byte[] raw;
+    private final byte[] body;
+    private final byte[] raw;
 
     /**
      * Decode a Net/ROM broadcast packet from an AX.25 frame
@@ -189,6 +189,7 @@ public class NetROMPacket {
 
     /**
      * For lack of documentation, this is apparently what a keepalive packet looks like.
+     *
      * @return
      */
     public boolean isKeepAlivePacket() {

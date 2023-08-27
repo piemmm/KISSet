@@ -36,7 +36,7 @@ public enum DXListener {
 
             byte[] body = event.getNode().getFrame().getBody();
             String data = new String(body);
-            LOG.debug("DATA:"+data);
+            LOG.debug("DATA:" + data);
             if (data.startsWith("DX de")) {
                 // It's a DX spot
                 DXSpot dxSpot = new DXSpot(event.getNode());
@@ -45,9 +45,8 @@ public enum DXListener {
             }
 
 
-
-        } catch(Throwable e) {
-            LOG.error(e.getMessage(),e);
+        } catch (Throwable e) {
+            LOG.error(e.getMessage(), e);
         }
     }
 }

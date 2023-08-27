@@ -32,7 +32,7 @@ public class DebugTerminal extends ANSITerminal {
             if (b < 32 || b > 128) {
                 currentLine.append(ANSI.YELLOW);
                 currentLine.append('<');
-                currentLine.append(Integer.toString(b,16));
+                currentLine.append(Integer.toString(b, 16));
                 currentLine.append('>');
                 currentLine.append(ANSI.NORMAL);
             } else {

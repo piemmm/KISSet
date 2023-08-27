@@ -5,7 +5,7 @@ import net.ab0oo.aprs.parser.APRSPacket;
 
 public class APRSPacketEvent extends BaseEvent {
 
-    private APRSPacket aprsPacket;
+    private final APRSPacket aprsPacket;
 
     public APRSPacketEvent(APRSPacket aprsPacket) {
         this.aprsPacket = aprsPacket;

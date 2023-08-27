@@ -5,11 +5,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.prowl.kisset.KISSet;
 import org.prowl.kisset.annotations.TNCCommand;
-import org.prowl.kisset.services.host.parser.Mode;
-import org.prowl.kisset.services.host.parser.misc.StreamConnectionEstablishmentListener;
 import org.prowl.kisset.io.Interface;
 import org.prowl.kisset.io.Stream;
 import org.prowl.kisset.io.StreamState;
+import org.prowl.kisset.services.host.parser.Mode;
+import org.prowl.kisset.services.host.parser.misc.StreamConnectionEstablishmentListener;
 
 import java.io.IOException;
 

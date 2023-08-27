@@ -5,8 +5,8 @@ import org.prowl.kisset.statistics.types.UnHeard;
 
 public class Statistics {
 
-    private MHeard mHeard;
-    private UnHeard unHeard;
+    private final MHeard mHeard;
+    private final UnHeard unHeard;
 
     public Statistics() {
 

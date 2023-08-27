@@ -4,9 +4,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.prowl.kisset.KISSet;
 import org.prowl.kisset.Messages;
+import org.prowl.kisset.objects.user.User;
 import org.prowl.kisset.services.ClientHandler;
 import org.prowl.kisset.services.remote.pms.parser.CommandParser;
-import org.prowl.kisset.objects.user.User;
 import org.prowl.kisset.util.ANSI;
 
 import java.io.BufferedReader;
@@ -22,8 +22,8 @@ public class PMSClientHandler implements ClientHandler {
 
     private InputStream in;
     private OutputStream out;
-    private User user;
-    private CommandParser parser;
+    private final User user;
+    private final CommandParser parser;
     private boolean colourEnabled = true;
     private BufferedReader bin;
 

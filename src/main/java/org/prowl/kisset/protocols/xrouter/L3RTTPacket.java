@@ -18,21 +18,21 @@ public class L3RTTPacket {
     private static final Log LOG = LogFactory.getLog("L3RTTPacket");
 
 
-    private String l3src;
-    private String l3dst;
+    private final String l3src;
+    private final String l3dst;
     private int l3ttl;
 
     // Text field
-    private String fid;
-    private int ts;
-    private int srtt;
-    private int rtt;
-    private int pid;
-    private String alias;
-    private String id;
-    private String version;
-    private String maxt;
-    private String flags;
+    private final String fid;
+    private final int ts;
+    private final int srtt;
+    private final int rtt;
+    private final int pid;
+    private final String alias;
+    private final String id;
+    private final String version;
+    private final String maxt;
+    private final String flags;
 
     /**
      * Decode an INP3 L3RTT packet including the callsign from the body of the packet
@@ -180,35 +180,34 @@ public class L3RTTPacket {
     }
 
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("L3RTT:\r\n");
-        sb.append(" l3src=");
-        sb.append(l3src);
-        sb.append("\r\n l3dst=");
-        sb.append(l3dst);
-        sb.append("\r\n l3ttl=");
-        sb.append(l3ttl);
-        sb.append("\r\n fid=");
-        sb.append(fid);
-        sb.append("\r\n ts=");
-        sb.append(ts);
-        sb.append("\r\n srtt=");
-        sb.append(srtt);
-        sb.append("\r\n rtt=");
-        sb.append(rtt);
-        sb.append("\r\n pid=");
-        sb.append(pid);
-        sb.append("\r\n alias=");
-        sb.append(alias);
-        sb.append("\r\n id=");
-        sb.append(id);
-        sb.append("\r\n version=");
-        sb.append(version);
-        sb.append("\r\n maxt=");
-        sb.append(maxt);
-        sb.append("\r\n flags=");
-        sb.append(flags);
-        return sb.toString();
+        String sb = "L3RTT:\r\n" +
+                " l3src=" +
+                l3src +
+                "\r\n l3dst=" +
+                l3dst +
+                "\r\n l3ttl=" +
+                l3ttl +
+                "\r\n fid=" +
+                fid +
+                "\r\n ts=" +
+                ts +
+                "\r\n srtt=" +
+                srtt +
+                "\r\n rtt=" +
+                rtt +
+                "\r\n pid=" +
+                pid +
+                "\r\n alias=" +
+                alias +
+                "\r\n id=" +
+                id +
+                "\r\n version=" +
+                version +
+                "\r\n maxt=" +
+                maxt +
+                "\r\n flags=" +
+                flags;
+        return sb;
     }
 
 }

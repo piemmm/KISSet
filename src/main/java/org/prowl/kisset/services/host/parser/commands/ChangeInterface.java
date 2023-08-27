@@ -3,10 +3,10 @@ package org.prowl.kisset.services.host.parser.commands;
 import org.apache.commons.lang.StringUtils;
 import org.prowl.kisset.KISSet;
 import org.prowl.kisset.annotations.TNCCommand;
-import org.prowl.kisset.services.host.parser.Mode;
 import org.prowl.kisset.io.Interface;
 import org.prowl.kisset.io.InterfaceStatus;
 import org.prowl.kisset.io.StreamState;
+import org.prowl.kisset.services.host.parser.Mode;
 import org.prowl.kisset.util.ANSI;
 
 import java.io.IOException;
@@ -90,9 +90,9 @@ public class ChangeInterface extends Command {
             } else {
                 statusCol = ANSI.WHITE;
             }
-            writeToTerminal(StringUtils.rightPad(Integer.toString(i) + ": ", 4) + statusCol + StringUtils.rightPad(interfaceStatus.getState().name(), 6) + ANSI.NORMAL + anInterface.toString() + CR);
+            writeToTerminal(StringUtils.rightPad(i + ": ", 4) + statusCol + StringUtils.rightPad(interfaceStatus.getState().name(), 6) + ANSI.NORMAL + anInterface + CR);
             if (interfaceStatus.getMessage() != null) {
-                writeToTerminal("      "+statusCol + "\\-" +interfaceStatus.getMessage() + ANSI.NORMAL + CR);
+                writeToTerminal("      " + statusCol + "\\-" + interfaceStatus.getMessage() + ANSI.NORMAL + CR);
             }
             i++;
         }

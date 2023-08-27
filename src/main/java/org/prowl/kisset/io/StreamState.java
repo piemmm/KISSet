@@ -16,7 +16,7 @@ public enum StreamState {
     CONNECTING,
 
     // In a connected state, but we are requesting a graceful disconnect
-    DISCONNECTING;
+    DISCONNECTING
 
 
 }

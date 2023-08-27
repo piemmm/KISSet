@@ -6,10 +6,10 @@ import org.apache.commons.logging.LogFactory;
 import org.prowl.ax25.*;
 import org.prowl.kisset.KISSet;
 import org.prowl.kisset.annotations.InterfaceDriver;
-import org.prowl.kisset.services.Service;
-import org.prowl.kisset.protocols.core.Node;
 import org.prowl.kisset.eventbus.SingleThreadBus;
 import org.prowl.kisset.eventbus.events.HeardNodeEvent;
+import org.prowl.kisset.protocols.core.Node;
+import org.prowl.kisset.services.Service;
 import org.prowl.kisset.util.Tools;
 
 import java.io.*;

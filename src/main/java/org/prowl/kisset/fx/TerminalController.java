@@ -21,7 +21,7 @@ import java.io.OutputStream;
 
 /**
  * A Basic terminal controller window
- *
+ * <p>
  * We can use this in later versions to do multiple window stuff or farm connections off to other windows.
  */
 public class TerminalController {
@@ -118,13 +118,14 @@ public class TerminalController {
                     terminal.append(in.read());
                 }
             } catch (Exception e) {
-               LOG.error(e.getMessage(),e);
+                LOG.error(e.getMessage(), e);
             }
         });
     }
 
     /**
      * Streams to use for the terminal
+     *
      * @param in
      * @param out
      */

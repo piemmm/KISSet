@@ -27,7 +27,7 @@ public class EXTNResponse extends Command {
             }
 
             // Now send the response once we have our accepted list.
-            write(CR + "[EXTN " + acceptedExtensions.toString() + "]" + CR);
+            write(CR + "[EXTN " + acceptedExtensions + "]" + CR);
             client.flush();
 
 

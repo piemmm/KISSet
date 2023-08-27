@@ -22,7 +22,7 @@ public class Node {
     /**
      * The node callsign
      */
-    private String callsign;
+    private final String callsign;
 
     /**
      * The time it was last heard
@@ -32,7 +32,7 @@ public class Node {
     /**
      * Destination alias/callsign/ui/etc
      */
-    private String destination;
+    private final String destination;
 
     /**
      * A list of capabilities this node has been seen to advertise or use
@@ -42,7 +42,7 @@ public class Node {
     /**
      * A list of callsigns that have been seen to be able to converse with this node
      */
-    private List<Node> canReach = new ArrayList<>();
+    private final List<Node> canReach = new ArrayList<>();
 
     /**
      * Actual frame received - may be null if not applicable
@@ -194,11 +194,8 @@ public class Node {
         } else if (!callsign.equals(other.callsign))
             return false;
         if (anInterface == null) {
-            if (other.anInterface != null)
-                return false;
-        } else if (!anInterface.equals(other.anInterface))
-            return false;
-        return true;
+            return other.anInterface == null;
+        } else return anInterface.equals(other.anInterface);
     }
 
     /**
@@ -215,7 +212,7 @@ public class Node {
         VJ_IP("VJ-TCP/IP"),
 
         IP("TCP/IP"); // TCP/IP
-        private String name;
+        private final String name;
 
         Service(String name) {
             this.name = name;

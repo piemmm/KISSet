@@ -14,28 +14,21 @@ import java.util.zip.Deflater;
 public class DeflateOutputStream extends OutputStream {
 
     /**
-     * A logger for this class
-      */
-    private static final Log LOG = LogFactory.getLog("DeflateOutputStream");
-
-    /**
      * The maximum size of a block of data - lower values mean
      * less compressibility, but more interactive states.
-     *
+     * <p>
      * Higher values mean you can compress large data blocks more effectively,
      * but this means that the dictionary is not updated as often, and also the
      * clients interactivity will also suffer.
-     *
+     * <p>
      * Around 1k seems to be a good compromise between the two with the best compression
      * and good interactivity (and dictionary updates)
      */
     public static final int MAX_BLOCK_SIZE = 1024;
-
     /**
-     * The output stream to write the compressed data to
+     * A logger for this class
      */
-    private OutputStream out;
-
+    private static final Log LOG = LogFactory.getLog("DeflateOutputStream");
     /**
      * The deflater used to compress the data
      */
@@ -44,15 +37,20 @@ public class DeflateOutputStream extends OutputStream {
      * The dictionary used to compress the data which is updated after each block
      */
     private final Dictionary dictionary;
-
+    /**
+     * The output stream to write the compressed data to
+     */
+    private final OutputStream out;
     /**
      * This is our compressed data output
+     *
      * @param out
      */
-    private ByteArrayOutputStream dataToCompress = new ByteArrayOutputStream();
+    private final ByteArrayOutputStream dataToCompress = new ByteArrayOutputStream();
 
     /**
      * Create a new deflate output stream
+     *
      * @param out the output stream to write compressed data to
      */
     public DeflateOutputStream(OutputStream out) {
@@ -70,7 +68,8 @@ public class DeflateOutputStream extends OutputStream {
 
     /**
      * Compress the supplied data
-     * @param b   the {@code byte}.
+     *
+     * @param b the {@code byte}.
      * @throws IOException
      */
     @Override
@@ -97,6 +96,7 @@ public class DeflateOutputStream extends OutputStream {
 
     /**
      * Causes the current buffer to be compressed and sent to the output stream
+     *
      * @throws IOException
      */
     @Override
@@ -109,7 +109,7 @@ public class DeflateOutputStream extends OutputStream {
 
         // Compress the data in our buffer
         byte[] toCompress = dataToCompress.toByteArray();
-        deflater.setInput(toCompress,0, toCompress.length);
+        deflater.setInput(toCompress, 0, toCompress.length);
         deflater.finish();
 
         deflater.setDictionary(dictionary.getDictionary());
@@ -118,7 +118,7 @@ public class DeflateOutputStream extends OutputStream {
 
         // Now we check that the data actually compressed - if it didn't then we just send the data uncompressed
         if (bytesCompressed == 0 || bytesCompressed > dataToCompress.size()) {
-            LOG.debug("Data did not compress("+bytesCompressed+">"+dataToCompress.size()+"), sending uncompressed");
+            LOG.debug("Data did not compress(" + bytesCompressed + ">" + dataToCompress.size() + "), sending uncompressed");
             sendUncompressed(out);
         } else {
             sendCompressed(out, bytesCompressed, output);
@@ -139,7 +139,7 @@ public class DeflateOutputStream extends OutputStream {
         // Status byte
         out.write(0x01); // 0x01 = uncompressed
         // Write the size of the uncompressed data
-        out.write((dataToCompress.size() >>  8) & 0xFF);
+        out.write((dataToCompress.size() >> 8) & 0xFF);
         out.write(dataToCompress.size() & 0xFF);
 
         // Now send the uncompressed data out.
@@ -153,11 +153,11 @@ public class DeflateOutputStream extends OutputStream {
         // Status byte
         out.write(0x00); // 0x00 = compressed
         // Write the size of the compressed data
-        out.write((bytesCompressed >>  8) & 0xFF);
+        out.write((bytesCompressed >> 8) & 0xFF);
         out.write(bytesCompressed & 0xFF);
 
         // Now send the compressed data out.
-        out.write(output,0,bytesCompressed);
+        out.write(output, 0, bytesCompressed);
 
         // Write a log about the compression
         LOG.debug("Compressed in=" + dataToCompress.size() + " bytes, out=" + bytesCompressed + ", reduction(%): " + (100 - (bytesCompressed * 100 / dataToCompress.size())));

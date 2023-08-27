@@ -13,6 +13,7 @@ public enum NetROMRoutingTable {
 
     /**
      * Add a node to the routing table, replacing any existing node with the same callsign
+     *
      * @param node
      */
     public void addRoute(NetROMRoute node) {
@@ -20,22 +21,23 @@ public enum NetROMRoutingTable {
         // Remove any existing node with the same callsign
         for (NetROMRoute existingNode : nodes) {
             if (existingNode.getDestinationNodeCallsign().equals(node.getDestinationNodeCallsign())
-             && existingNode.getNeighbourNodeCallsign().equals(node.getNeighbourNodeCallsign())
-            && existingNode.getDestinationNodeMnemonic().equals(node.getDestinationNodeMnemonic())) {
+                    && existingNode.getNeighbourNodeCallsign().equals(node.getNeighbourNodeCallsign())
+                    && existingNode.getDestinationNodeMnemonic().equals(node.getDestinationNodeMnemonic())) {
                 nodes.remove(existingNode);
                 break;
             }
         }
 
-        nodes.add(0,node);
+        nodes.add(0, node);
     }
 
     /**
      * Add a list of nodes to the routing table, replacing any existing nodes with the same callsign
+     *
      * @param nodes
      */
     public void addRoutes(List<NetROMRoute> nodes) {
-        for (NetROMRoute n: nodes) {
+        for (NetROMRoute n : nodes) {
             addRoute(n);
         }
     }

@@ -2,9 +2,9 @@ package org.prowl.kisset.gui.terminals;
 
 public interface TerminalHost {
 
-    void setTerminal(Terminal terminal);
-
     Terminal getTerminal();
+
+    void setTerminal(Terminal terminal);
 
     void setStatus(String statusText, int currentStream);
 

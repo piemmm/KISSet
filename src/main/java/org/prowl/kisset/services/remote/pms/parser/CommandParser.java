@@ -5,10 +5,10 @@ import org.apache.commons.logging.LogFactory;
 import org.prowl.kisset.KISSet;
 import org.prowl.kisset.Messages;
 import org.prowl.kisset.annotations.PMSCommand;
-import org.prowl.kisset.services.remote.pms.PMSClientHandler;
-import org.prowl.kisset.services.remote.pms.parser.commands.Command;
 import org.prowl.kisset.eventbus.SingleThreadBus;
 import org.prowl.kisset.objects.Storage;
+import org.prowl.kisset.services.remote.pms.PMSClientHandler;
+import org.prowl.kisset.services.remote.pms.parser.commands.Command;
 import org.prowl.kisset.util.ANSI;
 import org.prowl.kisset.util.UnTokenize;
 import org.reflections.Reflections;
@@ -55,9 +55,8 @@ public class CommandParser {
         for (Class<?> cl : ALL_COMMANDS) {
             try {
                 Object instance = cl.getDeclaredConstructor(new Class[0]).newInstance();
-                if (instance instanceof Command) {
+                if (instance instanceof Command command) {
                     // Setup the command
-                    Command command = (Command) instance;
                     command.setClient(client, this);
                     commands.add(command);
                 } else {

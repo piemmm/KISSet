@@ -6,9 +6,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.prowl.kisset.KISSet;
 import org.prowl.kisset.Messages;
-import org.prowl.kisset.services.host.parser.CommandParser;
-import org.prowl.kisset.services.host.parser.Mode;
-import org.prowl.kisset.services.host.parser.commands.ChangeInterface;
 import org.prowl.kisset.config.Conf;
 import org.prowl.kisset.eventbus.SingleThreadBus;
 import org.prowl.kisset.eventbus.events.HeardNodeEvent;
@@ -18,6 +15,9 @@ import org.prowl.kisset.gui.terminals.TerminalHost;
 import org.prowl.kisset.io.Interface;
 import org.prowl.kisset.io.Stream;
 import org.prowl.kisset.io.StreamState;
+import org.prowl.kisset.services.host.parser.CommandParser;
+import org.prowl.kisset.services.host.parser.Mode;
+import org.prowl.kisset.services.host.parser.commands.ChangeInterface;
 import org.prowl.kisset.util.ANSI;
 import org.prowl.kisset.util.LoopingCircularBuffer;
 import org.prowl.kisset.util.PacketTools;
@@ -36,20 +36,6 @@ public class TNCHost {
     public static final String CR = CommandParser.CR;
     // Logging
     private static final Log LOG = LogFactory.getLog("TNCHost");
-    // The command parser
-    private final CommandParser parser;
-
-    // The controller for this terminal (the host class)
-    private TerminalHost host;
-
-    // Terminal window input stream
-    private final InputStream in;
-    // Terminal window output stream
-    private final OutputStream out;
-
-    // True if the TNC monitor mode is enabled
-    private boolean monitorEnabled;
-
     /**
      * List of strings to look for and their counterpart terminal types that can best display them
      * we use this as a hacky way to automatically switch to the best terminal type for the data given
@@ -58,10 +44,20 @@ public class TNCHost {
 
     static {
         // TELSTAR
-        terminalTypes.put(new String(new byte[]{0x11, 0x0c,0x1b, 'B', 'T', 0x1b, 'A', 'E', 0x1b, 'F', 'L', 0x1b, 'D', 'S', 0x1b, 'G', 'T', 0x1b, 'E', 'A', 0x1b, 'C', 'R'}), TeletextTerminal.class);
+        terminalTypes.put(new String(new byte[]{0x11, 0x0c, 0x1b, 'B', 'T', 0x1b, 'A', 'E', 0x1b, 'F', 'L', 0x1b, 'D', 'S', 0x1b, 'G', 'T', 0x1b, 'E', 'A', 0x1b, 'C', 'R'}), TeletextTerminal.class);
     }
 
-    private LoopingCircularBuffer lastLine = new LoopingCircularBuffer(256);
+    // The command parser
+    private final CommandParser parser;
+    // Terminal window input stream
+    private final InputStream in;
+    // Terminal window output stream
+    private final OutputStream out;
+    // The controller for this terminal (the host class)
+    private final TerminalHost host;
+    // True if the TNC monitor mode is enabled
+    private boolean monitorEnabled;
+    private final LoopingCircularBuffer lastLine = new LoopingCircularBuffer(256);
 
 
     /**
@@ -87,6 +83,10 @@ public class TNCHost {
         return host.getTerminal();
     }
 
+    public void setTerminalType(Terminal terminal) {
+        host.setTerminal(terminal);
+    }
+
     // Convenience method for setStatus on the terminalHost
     public void updateStatus() {
         String status = Messages.get("idle");
@@ -96,17 +96,13 @@ public class TNCHost {
             currentStream = parser.getCurrentInterface().getStreams().indexOf(stream);
             StreamState streamState = parser.getCurrentInterface().getCurrentStream().getStreamState();
             if (streamState != null && streamState == StreamState.CONNECTED) {
-                status = streamState.toString() + " " + parser.getCurrentInterface().getCurrentStream().getRemoteCall();
+                status = streamState + " " + parser.getCurrentInterface().getCurrentStream().getRemoteCall();
             } else {
                 status = streamState.toString();
             }
         }
 
         host.setStatus(status, currentStream);
-    }
-
-    public void setTerminalType(Terminal terminal) {
-        host.setTerminal(terminal);
     }
 
     public void setMode(Mode mode, boolean sendPrompt) {
@@ -182,7 +178,7 @@ public class TNCHost {
 
         byte[] bytes = data.getBytes();
         for (byte b : bytes) {
-           addByteToLastLine(b);
+            addByteToLastLine(b);
         }
         out.write(bytes);
     }
@@ -195,6 +191,7 @@ public class TNCHost {
             lastLine.put(b);
         }
     }
+
     // Check to see if we need to switch terminal types automatically.
     public void checkForTerminalSwitch() {
 

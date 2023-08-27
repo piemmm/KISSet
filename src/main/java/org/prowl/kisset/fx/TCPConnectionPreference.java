@@ -6,7 +6,6 @@ import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.TextField;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.prowl.kisset.config.BeaconType;
-import org.prowl.kisset.config.Conf;
 
 
 public class TCPConnectionPreference extends ConnectionPreferenceInterface {
@@ -77,7 +76,6 @@ public class TCPConnectionPreference extends ConnectionPreferenceInterface {
         configuration.setProperty("port", portTextField.getText());
         super.applyToConfig(configuration);
     }
-
 
 
 }

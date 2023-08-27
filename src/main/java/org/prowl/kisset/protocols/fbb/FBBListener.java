@@ -24,27 +24,26 @@ public enum FBBListener {
     @Subscribe
     public void onHeardNode(HeardNodeEvent event) {
         try {
-           if (event.getNode().getFrame().getPid() != AX25Frame.PID_NOLVL3) {
-               return;
-           }
+            if (event.getNode().getFrame().getPid() != AX25Frame.PID_NOLVL3) {
+                return;
+            }
 
-           if (!event.getNode().getDestination().equals("FBB")) {
-               return;
-           }
+            if (!event.getNode().getDestination().equals("FBB")) {
+                return;
+            }
 
-           byte[] body = event.getNode().getFrame().getBody();
-           String data = new String(body);
-           if (data.matches("^[0-9][0-9]+ ")) {
+            byte[] body = event.getNode().getFrame().getBody();
+            String data = new String(body);
+            if (data.matches("^[0-9][0-9]+ ")) {
                 // It's a FBB message
                 //FBBMessage fbbMessage = new FBBMessage(event.getNode());
                 //KISSet.INSTANCE.getStorage().addFBBMessage(fbbMessage);
 
-           }
+            }
 
 
-
-        } catch(Throwable e) {
-            LOG.error(e.getMessage(),e);
+        } catch (Throwable e) {
+            LOG.error(e.getMessage(), e);
         }
     }
 

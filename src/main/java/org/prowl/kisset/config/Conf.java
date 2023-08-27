@@ -64,20 +64,9 @@ public enum Conf {
         this.defaultSetting = defaultSetting;
     }
 
-    public String stringDefault() {
-        return String.valueOf(defaultSetting);
-    }
-
-    public int intDefault() {
-        return Integer.parseInt(String.valueOf(defaultSetting));
-    }
-
-    public boolean boolDefault() {
-        return Boolean.parseBoolean(String.valueOf(defaultSetting));
-    }
-
     /**
      * Create a default Net/ROM alias based on the callsign.
+     *
      * @return
      */
     public static final String createDefaultNetromAlias() {
@@ -88,6 +77,18 @@ public enum Conf {
         }
 
 
+    }
+
+    public String stringDefault() {
+        return String.valueOf(defaultSetting);
+    }
+
+    public int intDefault() {
+        return Integer.parseInt(String.valueOf(defaultSetting));
+    }
+
+    public boolean boolDefault() {
+        return Boolean.parseBoolean(String.valueOf(defaultSetting));
     }
 
 }

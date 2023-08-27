@@ -155,8 +155,7 @@ class AX25OutputStream extends OutputStream {
 
                 // ijh this code is just weird (and didn't work)
                 // submit new frame to destination (blocking if window buffer is full)
-                ;
-//                do {
+                //                do {
 //                    nextVS = connState.vs;
 //
 ////                    if (connState.transmitWindow[nextVS] != null) {

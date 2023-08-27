@@ -1,35 +1,14 @@
 package org.prowl.kisset.protocols.aprs;
 
-import com.gluonhq.maps.MapLayer;
 import com.gluonhq.maps.MapPoint;
-import javafx.geometry.Point2D;
-import javafx.geometry.Pos;
-import javafx.scene.CacheHint;
 import javafx.scene.Node;
-import javafx.scene.canvas.Canvas;
-import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
-import javafx.scene.shape.Line;
-import javafx.scene.shape.Polyline;
 import net.ab0oo.aprs.parser.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.prowl.kisset.KISSet;
 import org.prowl.kisset.fx.APRSController;
-
-
-import javax.imageio.ImageIO;
-import javax.sound.midi.Track;
-import javax.swing.*;
-import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.nio.Buffer;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 /**
  * This is a mapping node that contains information about APRS
@@ -41,8 +20,8 @@ public class APRSNode {
 
     private TrackShape trackLine;
 
-    private String sourceCallsign;
-    private String destinationAPRSCallsign;
+    private final String sourceCallsign;
+    private final String destinationAPRSCallsign;
 
     private MapPoint location;
     private Node icon;

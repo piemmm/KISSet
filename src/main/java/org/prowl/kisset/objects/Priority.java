@@ -10,7 +10,7 @@ public enum Priority {
 
     HIGH,    // things like chat
     MEDIUM,  // APRS and things that are not as important as chat
-    LOW;     // background message sync
+    LOW     // background message sync
 
 
 }

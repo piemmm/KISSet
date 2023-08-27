@@ -34,8 +34,8 @@ public class BasicTransmittingConnector extends Connector implements Transmittin
     private static final ProtocolFamily[] PROTOCOL_FAMILIES = ProtocolFamily.values();
     private final byte[] rcvBuf = new byte[4096];
     private final AX25Stack stack;
-    private InputStream in;
     private final ArrayList<AX25FrameSource> queue = new ArrayList<>();
+    private final int retransmitCount;
     /**
      * This is the default callsign this connector will use for transmitting things like UI frames.
      * <p>
@@ -44,13 +44,13 @@ public class BasicTransmittingConnector extends Connector implements Transmittin
      */
     public AX25Callsign defaultCallsign;
     KissEscapeOutputStream kos;
+    private InputStream in;
     private String debugTag = "";
     private transient KissEscapeOutputStream.RcvState curState = KissEscapeOutputStream.RcvState.IDLE;
     private int wEnd = 0;
     private transient long frameStartTime = -1L;
-    private final int retransmitCount;
     private transient TimedQueueEntry delayQueueHead = null;
-    private String uuid;
+    private final String uuid;
 
     public BasicTransmittingConnector(String uuid, int pacLen, int maxFrames, int baudRateInBits, int retransmitCount, AX25Callsign defaultCallsign, InputStream in, OutputStream out, ConnectionRequestListener connectionRequestListener) {
         this.defaultCallsign = defaultCallsign;

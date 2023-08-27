@@ -2,8 +2,8 @@ package org.prowl.kisset.services.host.parser.commands;
 
 import org.prowl.kisset.KISSet;
 import org.prowl.kisset.annotations.TNCCommand;
-import org.prowl.kisset.services.host.parser.Mode;
 import org.prowl.kisset.config.Conf;
+import org.prowl.kisset.services.host.parser.Mode;
 
 import java.io.IOException;
 
@@ -25,7 +25,7 @@ public class Mycall extends Command {
         } else {
 
             // Cant set mycall to mypcall check if PMS service is enabled
-            String mypcall = KISSet.INSTANCE.getMyCallNoSSID()+KISSet.INSTANCE.getConfig().getConfig(Conf.pmsSSID,Conf.pmsSSID.stringDefault());
+            String mypcall = KISSet.INSTANCE.getMyCallNoSSID() + KISSet.INSTANCE.getConfig().getConfig(Conf.pmsSSID, Conf.pmsSSID.stringDefault());
             if (mypcall.equalsIgnoreCase(data[1])) {
                 writeToTerminal("*** MYcall cannot be set to PMS mycall " + mypcall + CR);
                 return true;
@@ -34,14 +34,13 @@ public class Mycall extends Command {
             String call = data[1].toUpperCase();
             KISSet.INSTANCE.setMyCall(call);
             writeToTerminal("*** MYcall set to " + KISSet.INSTANCE.getMyCall() + CR);
-            KISSet.INSTANCE.getConfig().setProperty(Conf.callsign,call).saveConfig();
+            KISSet.INSTANCE.getConfig().setProperty(Conf.callsign, call).saveConfig();
 
 
         }
 
         return true;
     }
-
 
 
     @Override

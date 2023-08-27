@@ -12,9 +12,9 @@ public class ServiceHandler {
 
     private static final Log LOG = LogFactory.getLog("ServiceHandler");
 
-    private SubnodeConfiguration configuration;
+    private final SubnodeConfiguration configuration;
 
-    private List<Service> services = new ArrayList<>();
+    private final List<Service> services = new ArrayList<>();
 
     public ServiceHandler(SubnodeConfiguration configuration) {
         this.configuration = configuration;

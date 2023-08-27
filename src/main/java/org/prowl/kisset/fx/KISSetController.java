@@ -25,13 +25,13 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.prowl.kisset.KISSet;
 import org.prowl.kisset.Messages;
-import org.prowl.kisset.services.host.TNCHost;
-import org.prowl.kisset.services.host.parser.CommandParser;
-import org.prowl.kisset.services.host.parser.Mode;
 import org.prowl.kisset.config.Conf;
 import org.prowl.kisset.eventbus.SingleThreadBus;
 import org.prowl.kisset.eventbus.events.ConfigurationChangedEvent;
 import org.prowl.kisset.gui.terminals.*;
+import org.prowl.kisset.services.host.TNCHost;
+import org.prowl.kisset.services.host.parser.CommandParser;
+import org.prowl.kisset.services.host.parser.Mode;
 import org.prowl.kisset.util.LoopingCircularBuffer;
 import org.prowl.kisset.util.Tools;
 
@@ -45,12 +45,9 @@ import java.util.Arrays;
 
 public class KISSetController implements TerminalHost {
 
-    private static final Log LOG = LogFactory.getLog("KISSetController");
-
-    private static final KeyCombination CTRL_C = new KeyCodeCombination(KeyCode.C, KeyCombination.CONTROL_DOWN);
-
     public static final Class[] TERMINALS = new Class[]{ANSITerminal.class, TeletextTerminal.class, PlainTextTerminal.class, DebugTerminal.class};
-
+    private static final Log LOG = LogFactory.getLog("KISSetController");
+    private static final KeyCombination CTRL_C = new KeyCodeCombination(KeyCode.C, KeyCombination.CONTROL_DOWN);
     @FXML
     TextField textEntry;
     @FXML
@@ -59,16 +56,14 @@ public class KISSetController implements TerminalHost {
     MenuItem preferencesMenuItem;
     @FXML
     StackPane stackPane;
+    Terminal terminal = new ANSITerminal(); // The default terminal type.
     @FXML
     private Label streamId;
     @FXML
     private Label statusText;
     @FXML
     private ChoiceBox terminalTypeBox;
-
-
-    Terminal terminal = new ANSITerminal(); // The default terminal type.
-    private LoopingCircularBuffer dataBuffer = new LoopingCircularBuffer(10240);
+    private final LoopingCircularBuffer dataBuffer = new LoopingCircularBuffer(10240);
     // TerminalCanvas canvas;
     private PipedInputStream inpis;
     private PipedOutputStream outpos;
@@ -246,7 +241,7 @@ public class KISSetController implements TerminalHost {
                     } catch (Exception e) {
                         LOG.error(e.getMessage(), e);
                     }
-        });
+                });
 
         configureTerminal();
         startTerminal();
@@ -271,7 +266,7 @@ public class KISSetController implements TerminalHost {
             try {
                 while (true) {
                     int b = inpis.read();
-                    dataBuffer.put((byte)b);
+                    dataBuffer.put((byte) b);
                     terminal.append(b);
 
                 }
@@ -279,6 +274,11 @@ public class KISSetController implements TerminalHost {
                 LOG.debug(e.getMessage(), e);
             }
         });
+    }
+
+    @Override
+    public Terminal getTerminal() {
+        return terminal;
     }
 
     /**
@@ -291,7 +291,7 @@ public class KISSetController implements TerminalHost {
 
         // Pre populate the terminal with our data 'frame' buffer
         byte[] data = dataBuffer.getBytes();
-        for (byte b: data) {
+        for (byte b : data) {
             terminal.append(b & 0xFF);
         }
 
@@ -303,11 +303,6 @@ public class KISSetController implements TerminalHost {
             configureTerminal();
         });
 
-    }
-
-    @Override
-    public Terminal getTerminal() {
-        return terminal;
     }
 
     public void setStatus(String status, int currentStream) {

@@ -5,10 +5,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.prowl.kisset.KISSet;
 import org.prowl.kisset.annotations.TNCCommand;
-import org.prowl.kisset.services.host.parser.Mode;
 import org.prowl.kisset.objects.Priority;
 import org.prowl.kisset.objects.Storage;
 import org.prowl.kisset.objects.messages.Message;
+import org.prowl.kisset.services.host.parser.Mode;
 import org.prowl.kisset.util.Tools;
 
 import java.io.IOException;
@@ -28,7 +28,6 @@ public class SendMessage extends Command {
 
     @Override
     public boolean doCommand(String[] data) throws IOException {
-
 
 
         Mode mode = getMode();
@@ -88,7 +87,7 @@ public class SendMessage extends Command {
                 messageState = null;
                 messageBody = new StringBuilder();
                 buildingMessage = null;
-                writeToTerminal("*** Message saved as "+messageId + CR);
+                writeToTerminal("*** Message saved as " + messageId + CR);
                 setMode(Mode.CMD);
                 return;
             } else if (confirmation.equalsIgnoreCase("n")) {
@@ -123,10 +122,10 @@ public class SendMessage extends Command {
             if (Tools.isAlphaNumeric(subject)) {
                 buildingMessage.setSubject(subject);
                 messageState = MessageState.GET_MESSAGE;
-                writeToTerminal("Enter the message body, end with a '/ex' or a '.' on a line by itself:"+CR);
+                writeToTerminal("Enter the message body, end with a '/ex' or a '.' on a line by itself:" + CR);
             } else {
                 messageState = MessageState.GET_SUBJECT;
-                writeToTerminal("*** Invalid subject"+CR);
+                writeToTerminal("*** Invalid subject" + CR);
             }
         }
 
@@ -140,7 +139,7 @@ public class SendMessage extends Command {
                 writeToTerminal("Enter the subject of the message: ");
             } else {
                 messageState = null;
-                writeToTerminal("*** Invalid callsign"+CR);
+                writeToTerminal("*** Invalid callsign" + CR);
             }
         }
 
@@ -148,7 +147,7 @@ public class SendMessage extends Command {
             buildingMessage = new Message();
             messageState = MessageState.START;
             messageBody = new StringBuilder();
-            writeToTerminal("*** Abort message creation by typing '/abort' at any time"+CR);
+            writeToTerminal("*** Abort message creation by typing '/abort' at any time" + CR);
             writeToTerminal("Enter the callsign of the station you wish to send the message to: ");
         }
     }
@@ -171,5 +170,4 @@ public class SendMessage extends Command {
         SEND_MESSAGE_FAILED
     }
 
-    ;
 }

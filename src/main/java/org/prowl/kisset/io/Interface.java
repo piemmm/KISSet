@@ -5,9 +5,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.prowl.ax25.*;
 import org.prowl.kisset.KISSet;
-import org.prowl.kisset.services.Service;
 import org.prowl.kisset.config.Conf;
 import org.prowl.kisset.objects.user.User;
+import org.prowl.kisset.services.Service;
 
 import java.io.BufferedOutputStream;
 import java.io.IOException;
@@ -21,16 +21,15 @@ public abstract class Interface {
 
 
     protected BasicTransmittingConnector anInterface;
-
+    protected HierarchicalConfiguration config;
+    protected boolean running = true;
+    protected List<Service> services = new ArrayList<>();
     // If the interface fails to start, the reason will be logged here.
     InterfaceStatus interfaceStatus = new InterfaceStatus(InterfaceStatus.State.OK, null);
     private int currentStream = 0;
-    private List<Stream> streams = new ArrayList<>();
-    protected HierarchicalConfiguration config;
+    private final List<Stream> streams = new ArrayList<>();
     private String uuid;
     private Timer beaconTimer;
-    protected boolean running = true;
-    protected List<Service> services = new ArrayList<>();
 
     public Interface(HierarchicalConfiguration config) {
         this.config = config;
@@ -132,12 +131,12 @@ public abstract class Interface {
                 anInterface.sendUI("BEACON", text.getBytes());
             }
         };
-        beaconTimer.schedule(beaconTimerTask, 5000, intervalMinutes * 60 * 1000);
+        beaconTimer.schedule(beaconTimerTask, 5000, (long) intervalMinutes * 60 * 1000);
     }
 
     public boolean checkInboundConnection(ConnState state, AX25Callsign originator, Connector port) {
 
-        LOG.debug("Checking inbound connection: " + state.getSrc() + " to " + state.getDst() + "");
+        LOG.debug("Checking inbound connection: " + state.getSrc() + " to " + state.getDst());
         // Check PMS
         for (Service service : KISSet.INSTANCE.getServices()) {
             if (service.getCallsign() != null && state.getDst().toString().equalsIgnoreCase(service.getCallsign())) {

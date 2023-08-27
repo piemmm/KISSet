@@ -3,9 +3,9 @@ package org.prowl.kisset.services.host.parser.commands;
 import org.apache.commons.lang.StringUtils;
 import org.prowl.kisset.KISSet;
 import org.prowl.kisset.annotations.TNCCommand;
-import org.prowl.kisset.services.host.parser.Mode;
-import org.prowl.kisset.protocols.core.Node;
 import org.prowl.kisset.io.Interface;
+import org.prowl.kisset.protocols.core.Node;
+import org.prowl.kisset.services.host.parser.Mode;
 import org.prowl.kisset.statistics.types.MHeard;
 import org.prowl.kisset.util.ANSI;
 
@@ -41,7 +41,7 @@ public class UHeard extends Command {
                     rssi = "-  ";
                 }
 
-                writeToTerminal(StringUtils.rightPad(Integer.toString(connectors.indexOf(node.getInterface())), 5) + StringUtils.rightPad(node.getCallsign(), 10)  + StringUtils.rightPad(sdf.format(node.getLastHeard()), 18) + " " + StringUtils.rightPad(canReach(node), 14) + CR);
+                writeToTerminal(StringUtils.rightPad(Integer.toString(connectors.indexOf(node.getInterface())), 5) + StringUtils.rightPad(node.getCallsign(), 10) + StringUtils.rightPad(sdf.format(node.getLastHeard()), 18) + " " + StringUtils.rightPad(canReach(node), 14) + CR);
             }
         }
         return true;
