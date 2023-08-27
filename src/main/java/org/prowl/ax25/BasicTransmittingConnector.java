@@ -3,9 +3,7 @@ package org.prowl.ax25;
 import com.fazecast.jSerialComm.SerialPortIOException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.prowl.kisset.eventbus.SingleThreadBus;
-import org.prowl.kisset.eventbus.events.InvalidFrameEvent;
-import org.prowl.kisset.util.Tools;
+import org.prowl.ax25.util.AX25Tools;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -70,6 +68,7 @@ public class BasicTransmittingConnector extends Connector implements Transmittin
     public String getUUID() {
         return uuid;
     }
+
     public void addFrameListener(AX25FrameListener l) {
         stack.addAX25FrameListener(l);
     }
@@ -80,8 +79,8 @@ public class BasicTransmittingConnector extends Connector implements Transmittin
     }
 
     @Override
-    public Connector.PortStats getStats() {
-        return new Connector.PortStats();
+    public PortStats getStats() {
+        return new PortStats();
     }
 
     @Override
@@ -358,7 +357,7 @@ public class BasicTransmittingConnector extends Connector implements Transmittin
                 LOG.info("Serial port closed (probably reopening due to configuration change)");
                 curState = KissEscapeOutputStream.RcvState.IDLE;
                 in = null;
-            } catch(EOFException e) {
+            } catch (EOFException e) {
                 LOG.info("Serial port closed (probably reopening due to configuration change)");
                 curState = KissEscapeOutputStream.RcvState.IDLE;
                 in = null;
@@ -393,11 +392,11 @@ public class BasicTransmittingConnector extends Connector implements Transmittin
                     LOG.warn("Received non-AX.25 frame type: " + dataType + " (ignoring)");
 
             }
-        } catch(Throwable e) {
-            byte[] buffer = new byte[wEnd-1 ];
-            System.arraycopy(rcvBuf, 1, buffer, 0, wEnd -1);
-            SingleThreadBus.INSTANCE.post(new InvalidFrameEvent(buffer, this));
-            LOG.error("Exception whilst processing KISS frame: " + Tools.byteArrayToReadableASCIIString(rcvBuf), e);
+        } catch (Throwable e) {
+            byte[] buffer = new byte[wEnd - 1];
+            System.arraycopy(rcvBuf, 1, buffer, 0, wEnd - 1);
+            //SingleThreadBus.INSTANCE.post(new InvalidFrameEvent(buffer, this));
+            LOG.error("Exception whilst processing KISS frame: " + AX25Tools.byteArrayToReadableASCIIString(rcvBuf), e);
             LOG.error("Stacktrace:  " + e.getMessage(), e);
         }
     }
@@ -543,7 +542,7 @@ public class BasicTransmittingConnector extends Connector implements Transmittin
      */
     public void sendUI(String destinationCallsign, byte[] data) {
         try {
-            LOG.debug("Sending UI frame to " + destinationCallsign + " contents:" + Tools.byteArrayToReadableASCIIString(data));
+            LOG.debug("Sending UI frame to " + destinationCallsign + " contents:" + AX25Tools.byteArrayToReadableASCIIString(data));
             AX25Frame uiFrame = new AX25Frame();
             uiFrame.sender = defaultCallsign;
             uiFrame.dest = new AX25Callsign(destinationCallsign);

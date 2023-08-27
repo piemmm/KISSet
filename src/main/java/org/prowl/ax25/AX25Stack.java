@@ -20,9 +20,9 @@ package org.prowl.ax25;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.prowl.ax25.util.AX25Tools;
 import org.prowl.ax25.util.FastBlockingQueue;
 import org.prowl.ax25.util.ReschedulableTimer;
-import org.prowl.kisset.util.Tools;
 
 import java.io.*;
 import java.net.ConnectException;
@@ -257,8 +257,9 @@ public class AX25Stack implements FrameListener, Runnable {
     }
 
     ConnectionRequestListener getConnectionRequestListener() {
-       return connectionRequestListener;
+        return connectionRequestListener;
     }
+
     /**
      * Register another protocol parsing handler for a particular AX.25 UI/I message PID.
      *
@@ -609,7 +610,7 @@ public class AX25Stack implements FrameListener, Runnable {
             } else if (uType == AX25Frame.UTYPE_UA) {
                 LOG.debug(debugTag + " UTYPE_UA rcvd: " + frame.getFrameTypeString() + (frame.getP() ? " F " : ' ') + frame.sender + "->" + frame.dest);
                 if ((state = getConnState(frame.dest, frame.sender, false)) != null) {
-                    LOG.debug("Connstate: "+state);
+                    LOG.debug("Connstate: " + state);
                     switch (state.transition) {
                         case LINK_UP:
                             state.transition = ConnState.ConnTransition.STEADY;
@@ -760,7 +761,7 @@ public class AX25Stack implements FrameListener, Runnable {
                 if (toMe) {
                     LOG.debug(debugTag + " rcvd: " + frame.getFrameTypeString() +
                             (frame.getP() ? " P " : ' ') + frame.sender + "->" + frame.dest + " NS=" + frame.getNS() +
-                            " NR=" + frame.getNR() + " #=" + frame.body.length + " VR=" + state.modReceivedFrameIndex +" body:"+ Tools.byteArrayToHexString(frame.body));
+                            " NR=" + frame.getNR() + " #=" + frame.body.length + " VR=" + state.modReceivedFrameIndex + " body:" + AX25Tools.byteArrayToHexString(frame.body));
                     // check frame number against flow control
                     int ns = frame.getNS();
 

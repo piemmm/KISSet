@@ -20,7 +20,6 @@ package org.prowl.ax25;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.prowl.kisset.util.Tools;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -196,10 +195,13 @@ class AX25OutputStream extends OutputStream {
                             counter++;
                         }
                     }
-                    if (counter+2 < (f.mod128 ? 128 : 8) && counter < connState.stack.maxFrames) {
+                    if (counter + 2 < (f.mod128 ? 128 : 8) && counter < connState.stack.maxFrames) {
                         break;
                     }
-                    Tools.delay(1000);
+                    try {
+                        Thread.sleep(1000);
+                    } catch (Throwable e) {
+                    }
                 }
 
                 connState.transmitWindow[nextVS] = f;
