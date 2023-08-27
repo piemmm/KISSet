@@ -5,7 +5,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.prowl.ax25.*;
 import org.prowl.kisset.KISSet;
-import org.prowl.kisset.comms.Service;
+import org.prowl.kisset.services.Service;
 import org.prowl.kisset.config.Conf;
 import org.prowl.kisset.objects.user.User;
 

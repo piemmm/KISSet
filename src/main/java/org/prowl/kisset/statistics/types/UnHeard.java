@@ -5,7 +5,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.prowl.kisset.KISSet;
 import org.prowl.ax25.AX25Frame;
-import org.prowl.kisset.core.Node;
+import org.prowl.kisset.protocols.core.Node;
 import org.prowl.kisset.eventbus.events.HeardNodeEvent;
 import org.prowl.kisset.util.Tools;
 

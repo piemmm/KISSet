@@ -1,6 +1,6 @@
 package org.prowl.kisset.io;
 
-import org.prowl.kisset.comms.host.parser.ExtensionState;
+import org.prowl.kisset.services.host.parser.ExtensionState;
 
 import java.io.IOException;
 import java.io.InputStream;

@@ -4,7 +4,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.paho.client.mqttv3.IMqttClient;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
-import org.prowl.kisset.core.Node;
+import org.prowl.kisset.protocols.core.Node;
 
 import java.util.concurrent.Callable;
 

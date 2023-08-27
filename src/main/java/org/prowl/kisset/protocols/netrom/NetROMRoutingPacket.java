@@ -2,7 +2,7 @@ package org.prowl.kisset.protocols.netrom;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.prowl.kisset.core.Node;
+import org.prowl.kisset.protocols.core.Node;
 import org.prowl.kisset.objects.routing.NetROMRoute;
 import org.prowl.kisset.util.PacketTools;
 

@@ -15,13 +15,13 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.prowl.kisset.KISSet;
 import org.prowl.kisset.config.Conf;
-import org.prowl.kisset.core.Node;
 import org.prowl.kisset.eventbus.SingleThreadBus;
 import org.prowl.kisset.eventbus.events.ConfigurationChangedEvent;
 import org.prowl.kisset.eventbus.events.HeardNodeEvent;
 import org.prowl.kisset.eventbus.events.InvalidFrameEvent;
 import org.prowl.kisset.gui.terminals.ANSITerminal;
 import org.prowl.kisset.io.Interface;
+import org.prowl.kisset.protocols.core.Node;
 import org.prowl.kisset.util.ANSI;
 import org.prowl.kisset.util.PacketTools;
 import org.prowl.kisset.util.Tools;
@@ -114,9 +114,9 @@ public class MonitorController {
     }
 
     public void setup() {
-        SingleThreadBus.INSTANCE.register(this);
         configureTerminal();
         startTerminal();
+        SingleThreadBus.INSTANCE.register(this);
     }
 
 
@@ -133,37 +133,24 @@ public class MonitorController {
             e.printStackTrace();
         }
 
-
-
-        Tools.runOnThread(() -> {
-            try {
-                while (true) {
-                    terminal.append(inpis.read());
-
-
-                }
-            } catch (Exception e) {
-                LOG.debug(e.getMessage(), e);
-            }
-
-        });
-
         Platform.runLater(() -> {
-
-
             try {
-                for (int i = 0; i < 3; i++) {
-                    // Ansi code to move down 100 lines
-                    inpos.write("\u001b[100B".getBytes());
-                    inpos.flush();
-                }
-                inpos.write(("Traffic Monitor" + CR).getBytes());
+                inpos.write((CR + CR + CR + "Packet Monitor" + CR).getBytes());
                 inpos.flush();
             } catch (IOException e) {
                 LOG.error(e.getMessage(), e);
             }
         });
 
+        Tools.runOnThread(() -> {
+            try {
+                while (true) {
+                    terminal.append(inpis.read());
+                }
+            } catch (Exception e) {
+                LOG.debug(e.getMessage(), e);
+            }
+        });
     }
 
     @Subscribe
@@ -204,14 +191,13 @@ public class MonitorController {
         int interfaceNumber = KISSet.INSTANCE.getInterfaceHandler().getInterfaces().indexOf(anInterface);
 
         Platform.runLater(() -> {
-            write(ANSI.BOLD+interfaceNumber+ANSI.NORMAL+": "+ANSI.RED+"Invalid frame received:"+ANSI.NORMAL+CR+Tools.byteArrayToReadableASCIIString(event.invalidData)+CR);
+            write(ANSI.BOLD + interfaceNumber + ANSI.NORMAL + ": " + ANSI.RED + "Invalid frame received:" + ANSI.NORMAL + CR + Tools.byteArrayToReadableASCIIString(event.invalidData) + CR);
             try {
                 inpos.flush();
             } catch (IOException e) {
             }
         });
     }
-
 
 
     // Convenience write class

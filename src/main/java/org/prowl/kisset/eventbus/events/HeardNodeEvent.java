@@ -1,7 +1,7 @@
 package org.prowl.kisset.eventbus.events;
 
 
-import org.prowl.kisset.core.Node;
+import org.prowl.kisset.protocols.core.Node;
 import org.prowl.kisset.util.Tools;
 
 public class HeardNodeEvent extends BaseEvent {

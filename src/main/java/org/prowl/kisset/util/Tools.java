@@ -11,8 +11,8 @@ import net.ab0oo.aprs.parser.Parser;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.prowl.ax25.AX25Frame;
-import org.prowl.kisset.core.Capability;
-import org.prowl.kisset.core.Node;
+import org.prowl.kisset.protocols.core.Capability;
+import org.prowl.kisset.protocols.core.Node;
 
 import java.io.DataInputStream;
 import java.io.IOException;

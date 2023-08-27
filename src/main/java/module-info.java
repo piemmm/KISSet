@@ -36,8 +36,8 @@ module org.prowl.kisset {
     exports org.prowl.kisset.protocols;
     exports org.prowl.kisset.protocols.dxcluster;
     exports org.prowl.kisset.protocols.fbb;
-    exports org.prowl.kisset.comms.host;
-    exports org.prowl.kisset.comms.remote.pms;
+    exports org.prowl.kisset.services.host;
+    exports org.prowl.kisset.services.remote.pms;
     opens org.prowl.kisset.fx to javafx.fxml;
     exports org.prowl.kisset.objects.routing;
     exports org.prowl.kisset.protocols.netrom;

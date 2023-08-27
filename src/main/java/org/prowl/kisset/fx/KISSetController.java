@@ -5,7 +5,6 @@ import com.google.common.eventbus.Subscribe;
 import de.jangassen.MenuToolkit;
 import de.jangassen.model.AppearanceMode;
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -26,9 +25,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.prowl.kisset.KISSet;
 import org.prowl.kisset.Messages;
-import org.prowl.kisset.comms.host.TNCHost;
-import org.prowl.kisset.comms.host.parser.CommandParser;
-import org.prowl.kisset.comms.host.parser.Mode;
+import org.prowl.kisset.services.host.TNCHost;
+import org.prowl.kisset.services.host.parser.CommandParser;
+import org.prowl.kisset.services.host.parser.Mode;
 import org.prowl.kisset.config.Conf;
 import org.prowl.kisset.eventbus.SingleThreadBus;
 import org.prowl.kisset.eventbus.events.ConfigurationChangedEvent;
@@ -43,8 +42,6 @@ import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 
 public class KISSetController implements TerminalHost {
 

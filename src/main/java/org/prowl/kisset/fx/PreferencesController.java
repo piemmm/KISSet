@@ -12,7 +12,6 @@ import javafx.scene.control.cell.ComboBoxListCell;
 import javafx.scene.text.Font;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import net.synedra.validatorfx.Check;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -104,9 +103,9 @@ public class PreferencesController {
 
     private int[] FONT_SIZES = {8, 9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 26, 28, 36, 48, 72};
 
-    private int[] NETROM_SSID = { -1, -2, -3, -4, -5, -6, -7 };
+    private int[] NETROM_SSID = {-1, -2, -3, -4, -5, -6, -7};
 
-    private int[] MAILBOX_SSID = { -1, -2, -3, -4, -5, -6, -7 };
+    private int[] MAILBOX_SSID = {-1, -2, -3, -4, -5, -6, -7};
 
 
     @FXML
@@ -229,7 +228,6 @@ public class PreferencesController {
         }
 
 
-
         // Monitor window transparency
         monitorTransparency.setValue(config.getConfig(Conf.monitorTransparency, Conf.monitorTransparency.intDefault()));
 
@@ -273,7 +271,6 @@ public class PreferencesController {
 
         explanatoryText.setText(Messages.get("explanatoryText"));
     }
-
 
 
     public void updateList() {

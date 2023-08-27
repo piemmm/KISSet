@@ -2,7 +2,7 @@ package org.prowl.kisset.protocols.xrouter;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.prowl.kisset.core.Node;
+import org.prowl.kisset.protocols.core.Node;
 import org.prowl.kisset.objects.routing.INP3Route;
 import org.prowl.kisset.util.PacketTools;
 import org.prowl.kisset.util.Tools;

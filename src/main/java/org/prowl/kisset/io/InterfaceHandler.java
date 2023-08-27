@@ -4,7 +4,7 @@ import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.SubnodeConfiguration;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.prowl.kisset.comms.Service;
+import org.prowl.kisset.services.Service;
 
 import java.io.IOException;
 import java.util.ArrayList;

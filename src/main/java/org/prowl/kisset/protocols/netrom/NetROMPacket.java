@@ -1,6 +1,6 @@
 package org.prowl.kisset.protocols.netrom;
 
-import org.prowl.kisset.core.Node;
+import org.prowl.kisset.protocols.core.Node;
 import org.prowl.kisset.util.ANSI;
 import org.prowl.kisset.util.PacketTools;
 import org.prowl.kisset.util.Tools;
