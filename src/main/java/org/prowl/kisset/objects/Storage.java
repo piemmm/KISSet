@@ -107,6 +107,14 @@ public class Storage {
         storeData(getNewsMessageFile(message), message.toPacket());
     }
 
+    public File getMapStorageDir() {
+        File mapCache = new File(getStorageDir(), "mapcache");
+        if (!mapCache.exists()) {
+            mapCache.mkdirs();
+        }
+        return mapCache;
+    }
+
     public File getStorageDir() {
         String userHome = System.getProperty("user.home");
         File appDir = new File(userHome, ".kisset");

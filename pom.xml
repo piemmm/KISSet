@@ -68,23 +68,30 @@
             <version>1.2.5</version>
         </dependency>
 
-        <!--        Maps -->
-        <dependency>
-            <groupId>com.gluonhq</groupId>
-            <artifactId>maps</artifactId>
-            <version>2.0.0-ea+6</version>
-        </dependency>
-        <dependency>
-            <groupId>com.gluonhq.attach</groupId>
-            <artifactId>storage</artifactId>
-            <version>4.0.18</version>
-            <classifier>desktop</classifier>
-        </dependency>
-        <dependency>
-            <groupId>com.gluonhq.attach</groupId>
-            <artifactId>util</artifactId>
-            <version>4.0.18</version>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>com.google.auto.service</groupId>-->
+<!--            <artifactId>auto-service</artifactId>-->
+<!--            <version>1.0.1</version>-->
+<!--        </dependency>-->
+
+
+<!--        &lt;!&ndash;        Maps &ndash;&gt;-->
+<!--        <dependency>-->
+<!--            <groupId>com.gluonhq</groupId>-->
+<!--            <artifactId>maps</artifactId>-->
+<!--            <version>2.0.0-ea+6</version>-->
+<!--        </dependency>-->
+<!--        <dependency>-->
+<!--            <groupId>com.gluonhq.attach</groupId>-->
+<!--            <artifactId>storage</artifactId>-->
+<!--            <version>4.0.18</version>-->
+<!--            <classifier>desktop</classifier>-->
+<!--        </dependency>-->
+<!--        <dependency>-->
+<!--            <groupId>com.gluonhq.attach</groupId>-->
+<!--            <artifactId>util</artifactId>-->
+<!--            <version>4.0.18</version>-->
+<!--        </dependency>-->
 
 
         <!--        These are required for the menu and theme stuff.-->

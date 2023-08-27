@@ -1,6 +1,5 @@
 package org.prowl.kisset.protocols.aprs;
 
-import com.gluonhq.maps.MapPoint;
 import javafx.scene.Node;
 import javafx.scene.image.ImageView;
 import javafx.scene.paint.Color;
@@ -8,6 +7,7 @@ import javafx.scene.shape.Circle;
 import net.ab0oo.aprs.parser.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.prowl.maps.MapPoint;
 import org.prowl.kisset.fx.APRSController;
 
 /**

@@ -1,9 +1,6 @@
 package org.prowl.kisset.fx;
 
 
-import com.gluonhq.maps.MapLayer;
-import com.gluonhq.maps.MapPoint;
-import com.gluonhq.maps.MapView;
 import com.google.common.eventbus.Subscribe;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -16,6 +13,9 @@ import javafx.scene.shape.Polyline;
 import javafx.scene.text.Font;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.prowl.maps.MapLayer;
+import org.prowl.maps.MapPoint;
+import org.prowl.maps.MapView;
 import org.prowl.kisset.KISSet;
 import org.prowl.kisset.config.Conf;
 import org.prowl.kisset.eventbus.SingleThreadBus;
@@ -87,6 +87,18 @@ public class APRSController {
         mapView.setZoom(8);
         aprsLayer = new APRSLayer();
         mapView.addLayer(aprsLayer);
+
+//        // Set our own tile renderer
+//        TileRetriever source = new CachingTileRetriever();
+//
+////        TileRetrieverProvider provider = TileRetrieverProvider.getInstance();
+//        ServiceLoader<TileRetriever> t = ServiceLoader.load(TileRetriever.class);
+//        for (TileRetriever tileRetriever : t) {
+//            System.out.println(tileRetriever);
+//        }
+//        provider.load();
+
+
     }
 
     public class APRSLayer extends MapLayer {

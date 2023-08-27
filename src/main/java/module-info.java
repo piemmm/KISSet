@@ -21,10 +21,10 @@ module org.prowl.kisset {
     requires com.google.common;
     requires javAPRSlib;
     requires javafx.web;
-    requires com.gluonhq.maps;
-    requires com.gluonhq.attach.storage;
-    requires com.gluonhq.attach.util;
     requires org.eclipse.paho.client.mqttv3;
+    requires com.google.errorprone.annotations;
+
+
 
     opens org.prowl.kisset to javafx.fxml;
     exports org.prowl.kisset.eventbus.events;
@@ -41,4 +41,6 @@ module org.prowl.kisset {
     opens org.prowl.kisset.fx to javafx.fxml;
     exports org.prowl.kisset.objects.routing;
     exports org.prowl.kisset.protocols.netrom;
+    exports org.prowl.maps;
+
 }

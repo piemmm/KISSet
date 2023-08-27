@@ -1,9 +1,9 @@
 package org.prowl.kisset.protocols.aprs;
 
-import com.gluonhq.maps.MapPoint;
 import javafx.collections.ObservableList;
 import javafx.geometry.Point2D;
 import javafx.scene.shape.Polyline;
+import org.prowl.maps.MapPoint;
 import org.prowl.kisset.fx.APRSController;
 
 import java.util.ArrayList;
