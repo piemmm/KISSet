@@ -276,12 +276,13 @@ public class ANSITerminal extends HBox implements Terminal {
     }
 
     boolean lastByteWasCR = false;
+
     /**
      * Appends the text to the terminal buffer for later drawing.
      */
     public synchronized void append(int b) {
         //b = b & 0xFF;
-       // LOG.debug("Append:" + Integer.toString(b,16));
+        // LOG.debug("Append:" + Integer.toString(b,16));
         // Store the byte in the buffer.
 
         if (b == 10) {
@@ -348,7 +349,7 @@ public class ANSITerminal extends HBox implements Terminal {
     /**
      * Draws the terminal buffer to the canvas.
      */
-    private synchronized void draw() {
+    private void draw() {
         GraphicsContext g = canvas.getGraphicsContext2D();
         g.setFont(font);
         g.clearRect(0, 0, getWidth(), getHeight());
@@ -367,112 +368,114 @@ public class ANSITerminal extends HBox implements Terminal {
         int extraLine = 0;
         // We start at the bottom line, and draw upwards and downwards when wrapping lines
 
-        int scrollOffset = (int) vScrollBar.getMax() - (int) vScrollBar.getValue();
-        for (int i = (buffer.size() - 1) - scrollOffset; i > 0; i--) {
+        synchronized (buffer) {
+            int scrollOffset = (int) vScrollBar.getMax() - (int) vScrollBar.getValue();
+            for (int i = (buffer.size() - 1) - scrollOffset; i > 0; i--) {
 
-            // Don't bother drawing offscreen stuff.
-            if (y < 0) {
-                break;
-            }
-
-            byte[] line = buffer.get(i);
-            // pre-walk the line so we know how high it is and therefore where to start drawing.
-            int lineHeight = calculateNumberOfLines(i);
-            QuickAttribute a = attributesInUse.get(Math.max(0, i - 2));
-            g.setFill(a.color);
-            underline = a.underLine;
-            bold = a.bold;
-            background = a.bgcolor;
-
-            x = 0;
-            y -= charHeight * lineHeight;
-            y = y - extraLine;
-            extraLine = 0;
-
-
-            int skippedAnsi = 0;
-            for (int j = 0; j < line.length; j++) {
-                // If the character is an ansi code, then we need to handle it.
-                if (line[j] == 0x1B) {
-                    DecodedAnsi da = decodeAnsi(line, j, decodeDA);
-                    skippedAnsi += da.size + 1;
-                    j += da.size;
-                    if (da.qa != null) {
-                        g.setFill(da.qa.color);
-                        bold = da.qa.bold;
-                        underline = da.qa.underLine;
-                        background = da.qa.bgcolor;
-                    }
-                } else {
-
-                    // Now draw the byte array with line wrapping
-                    if (x + charWidth >= width) {
-                        y += charHeight;
-                        extraLine += charHeight;
-                        x = 0;
-                    }
-
-                    if (startSelect != null && endSelect != null) {
-                        BufferPosition select1 = startSelect;
-                        BufferPosition select2 = endSelect;
-                        if (select2.compareTo(select1) > 0) {
-                            BufferPosition tmp = select1;
-                            select1 = select2;
-                            select2 = tmp;
-                        }
-
-                        if (select1.arrayIndex == select2.arrayIndex) {
-                            if (select1.arrayIndex == i && select1.characterIndex + skippedAnsi == j) {
-                                Effect inverseEffect = new Blend(BlendMode.HARD_LIGHT);
-                                g.applyEffect(inverseEffect);
-                                inverse = true;
-                            }
-                            if (select2.arrayIndex == i && select2.characterIndex + skippedAnsi == j) {
-                                inverse = false;
-                            }
-                        } else {
-                            if (select1.arrayIndex == i && j == 0) {
-                                Effect inverseEffect = new Blend(BlendMode.HARD_LIGHT);
-                                g.applyEffect(inverseEffect);
-                                inverse = true;
-                            }
-                            if (select2.arrayIndex == i && j == line.length - 1) {
-                                inverse = false;
-                            }
-                        }
-                    }
-
-                    if (inverse) {
-                        Paint currentFill = g.getFill();
-                        g.setFill(Color.color(0.5, 0.5, 0.5, 0.5));
-                        g.fillRect(x, y - charHeight, charWidth + 1, charHeight + (charHeight - baseline));
-                        g.setFill(currentFill);
-                    } else {
-                        g.setEffect(null);
-                    }
-
-
-                    // If background is set, then we need to draw a rectangle first.
-                    if (background != null) {
-                        Paint currentFill = g.getFill();
-                        g.setFill(background);
-                        g.fillRect(x, y - charHeight, charWidth + 1, charHeight + (charHeight - baseline));
-                        g.setFill(currentFill);
-                    }
-
-                    g.fillText(String.valueOf((char) line[j]), x, y);
-                    if (bold) {
-                        g.fillText(String.valueOf((char) line[j]), x + 1, y);
-                    }
-                    if (underline) {
-                        g.strokeLine(x, y + charHeight - baseline, x + charWidth, y + charHeight - baseline);
-                    }
-                    x += charWidth;
-
-
+                // Don't bother drawing offscreen stuff.
+                if (y < 0) {
+                    break;
                 }
-            }
 
+                byte[] line = buffer.get(i);
+                // pre-walk the line so we know how high it is and therefore where to start drawing.
+                int lineHeight = calculateNumberOfLines(i);
+                QuickAttribute a = attributesInUse.get(Math.max(0, i - 2));
+                g.setFill(a.color);
+                underline = a.underLine;
+                bold = a.bold;
+                background = a.bgcolor;
+
+                x = 0;
+                y -= charHeight * lineHeight;
+                y = y - extraLine;
+                extraLine = 0;
+
+
+                int skippedAnsi = 0;
+                for (int j = 0; j < line.length; j++) {
+                    // If the character is an ansi code, then we need to handle it.
+                    if (line[j] == 0x1B) {
+                        DecodedAnsi da = decodeAnsi(line, j, decodeDA);
+                        skippedAnsi += da.size + 1;
+                        j += da.size;
+                        if (da.qa != null) {
+                            g.setFill(da.qa.color);
+                            bold = da.qa.bold;
+                            underline = da.qa.underLine;
+                            background = da.qa.bgcolor;
+                        }
+                    } else {
+
+                        // Now draw the byte array with line wrapping
+                        if (x + charWidth >= width) {
+                            y += charHeight;
+                            extraLine += charHeight;
+                            x = 0;
+                        }
+
+                        if (startSelect != null && endSelect != null) {
+                            BufferPosition select1 = startSelect;
+                            BufferPosition select2 = endSelect;
+                            if (select2.compareTo(select1) > 0) {
+                                BufferPosition tmp = select1;
+                                select1 = select2;
+                                select2 = tmp;
+                            }
+
+                            if (select1.arrayIndex == select2.arrayIndex) {
+                                if (select1.arrayIndex == i && select1.characterIndex + skippedAnsi == j) {
+                                    Effect inverseEffect = new Blend(BlendMode.HARD_LIGHT);
+                                    g.applyEffect(inverseEffect);
+                                    inverse = true;
+                                }
+                                if (select2.arrayIndex == i && select2.characterIndex + skippedAnsi == j) {
+                                    inverse = false;
+                                }
+                            } else {
+                                if (select1.arrayIndex == i && j == 0) {
+                                    Effect inverseEffect = new Blend(BlendMode.HARD_LIGHT);
+                                    g.applyEffect(inverseEffect);
+                                    inverse = true;
+                                }
+                                if (select2.arrayIndex == i && j == line.length - 1) {
+                                    inverse = false;
+                                }
+                            }
+                        }
+
+                        if (inverse) {
+                            Paint currentFill = g.getFill();
+                            g.setFill(Color.color(0.5, 0.5, 0.5, 0.5));
+                            g.fillRect(x, y - charHeight, charWidth + 1, charHeight + (charHeight - baseline));
+                            g.setFill(currentFill);
+                        } else {
+                            g.setEffect(null);
+                        }
+
+
+                        // If background is set, then we need to draw a rectangle first.
+                        if (background != null) {
+                            Paint currentFill = g.getFill();
+                            g.setFill(background);
+                            g.fillRect(x, y - charHeight, charWidth + 1, charHeight + (charHeight - baseline));
+                            g.setFill(currentFill);
+                        }
+
+                        g.fillText(String.valueOf((char) line[j]), x, y);
+                        if (bold) {
+                            g.fillText(String.valueOf((char) line[j]), x + 1, y);
+                        }
+                        if (underline) {
+                            g.strokeLine(x, y + charHeight - baseline, x + charWidth, y + charHeight - baseline);
+                        }
+                        x += charWidth;
+
+
+                    }
+                }
+
+            }
         }
     }
 
@@ -607,7 +610,7 @@ public class ANSITerminal extends HBox implements Terminal {
                         decodeQA.bgcolor = Color.CYAN;
                         break;
                     default:
-                       // LOG.warn("Unknown ANSI code: " + code);
+                        // LOG.warn("Unknown ANSI code: " + code);
                         break;
                 }
             }
