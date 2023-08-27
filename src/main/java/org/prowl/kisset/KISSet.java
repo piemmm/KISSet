@@ -15,6 +15,7 @@ import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.prowl.kisset.config.Conf;
 import org.prowl.kisset.config.Config;
 import org.prowl.kisset.eventbus.SingleThreadBus;
@@ -32,11 +33,13 @@ import org.prowl.kisset.services.remote.pms.PMSService;
 import org.prowl.kisset.statistics.Statistics;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileSystemView;
 import java.awt.*;
 import java.awt.desktop.AppReopenedEvent;
 import java.awt.desktop.AppReopenedListener;
-import java.io.IOException;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.security.Security;
 import java.util.List;
 import java.util.*;
 
@@ -446,15 +449,21 @@ public class KISSet extends Application {
     public void init() throws Exception {
         super.init();
         INSTANCE = KISSet.this;
+
+        // Use bouncycastle for crypto
+        Security.addProvider(new BouncyCastleProvider());
+        // There is an issue with x25519 keys on some systems, so we disable them for the moment.
+        System.setProperty("jdk.tls.namedGroups","secp256r1, secp384r1, secp521r1, ffdhe2048, ffdhe3072, ffdhe4096, ffdhe6144, ffdhe8192");
+
         // Push debugging to a file if we are debugging a built app with no console
-//        try {
-//            File outputFile = File.createTempFile("debug", ".log", FileSystemView.getFileSystemView().getDefaultDirectory());
-//            PrintStream output = new PrintStream(new BufferedOutputStream(new FileOutputStream(outputFile)), true);
-//            System.setOut(output);
-//            System.setErr(output);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
+        try {
+            File outputFile = File.createTempFile("debug", ".log", FileSystemView.getFileSystemView().getDefaultDirectory());
+            PrintStream output = new PrintStream(new BufferedOutputStream(new FileOutputStream(outputFile)), true);
+            System.setOut(output);
+            System.setErr(output);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public Statistics getStatistics() {

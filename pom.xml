@@ -68,6 +68,19 @@
             <version>1.2.5</version>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk18on -->
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk18on</artifactId>
+            <version>1.75</version>
+        </dependency>
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-ext-jdk18on</artifactId>
+            <version>1.75</version>
+        </dependency>
+
+
 <!--        <dependency>-->
 <!--            <groupId>com.google.auto.service</groupId>-->
 <!--            <artifactId>auto-service</artifactId>-->

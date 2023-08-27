@@ -31,11 +31,13 @@ import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.image.Image;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.prowl.kisset.KISSet;
 
 import javax.imageio.ImageIO;
 import java.io.File;
 import java.io.IOException;
+import java.security.Security;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Semaphore;
 
