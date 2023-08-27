@@ -7,7 +7,6 @@ import org.apache.commons.logging.LogFactory;
 import org.prowl.ax25.*;
 import org.prowl.kisset.KISSet;
 import org.prowl.kisset.annotations.InterfaceDriver;
-import org.prowl.kisset.ax25.*;
 import org.prowl.kisset.comms.Service;
 import org.prowl.kisset.core.Node;
 import org.prowl.kisset.eventbus.SingleThreadBus;
@@ -87,14 +86,14 @@ public class KISSviaSerial extends Interface {
         // what the system has available, so the user is not completely in the dark whe looking at logs.
         SerialPort[] ports = SerialPort.getCommPorts();
         for (SerialPort testPort : ports) {
-            LOG.debug("Found serial port: " + testPort.getSystemPortName() + " - " + testPort.getSystemPortPath() + " - " + testPort.getDescriptivePortName()+ " - " + testPort.getPortDescription());
+            LOG.debug("Found serial port: " + testPort.getSystemPortName() + " - " + testPort.getSystemPortPath() + " - " + testPort.getDescriptivePortName() + " - " + testPort.getPortDescription());
             if (testPort.getSystemPortPath().contains(port)) {
                 serialPort = testPort;
             }
         }
 
         if (serialPort == null) {
-            interfaceStatus = new InterfaceStatus(InterfaceStatus.State.ERROR,"Could not find serial port: " + port);
+            interfaceStatus = new InterfaceStatus(InterfaceStatus.State.ERROR, "Could not find serial port: " + port);
             LOG.warn(interfaceStatus.getMessage());
             return;
         }
@@ -156,7 +155,7 @@ public class KISSviaSerial extends Interface {
 
             @Override
             public boolean isLocal(String callsign) {
-                for (Service service: services) {
+                for (Service service : services) {
                     if (service.getCallsign().equalsIgnoreCase(callsign)) {
                         return true;
                     }
@@ -225,7 +224,7 @@ public class KISSviaSerial extends Interface {
 
         // Interface will be null if the interface was not setup (not connected) or if the port was not found.
         if (anInterface == null) {
-            throw new IOException("Serial Port interface on '"+ port +"' did not complete startup - please check configuration");
+            throw new IOException("Serial Port interface on '" + port + "' did not complete startup - please check configuration");
         }
         anInterface.makeConnection(from, to, connectionEstablishmentListener);
 
@@ -253,7 +252,7 @@ public class KISSviaSerial extends Interface {
     @Override
     public String toString() {
         if (serialPort == null) {
-            return getClass().getSimpleName() + " ("+port+")";
+            return getClass().getSimpleName() + " (" + port + ")";
         }
         return getClass().getSimpleName() + " (" + serialPort.getSystemPortName() + ")";
     }

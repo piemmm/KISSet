@@ -6,7 +6,6 @@ import org.apache.commons.logging.LogFactory;
 import org.prowl.ax25.*;
 import org.prowl.kisset.KISSet;
 import org.prowl.kisset.annotations.InterfaceDriver;
-import org.prowl.kisset.ax25.*;
 import org.prowl.kisset.comms.Service;
 import org.prowl.kisset.core.Node;
 import org.prowl.kisset.eventbus.SingleThreadBus;
@@ -91,7 +90,7 @@ public class KISSviaTCP extends Interface {
                 socketConnection = new Socket(InetAddress.getByName(address), port);
                 in = new BufferedInputStream(socketConnection.getInputStream());
                 out = new BufferedOutputStream(socketConnection.getOutputStream());
-                interfaceStatus = new InterfaceStatus(InterfaceStatus.State.OK,null);
+                interfaceStatus = new InterfaceStatus(InterfaceStatus.State.OK, null);
                 LOG.info("Connected to kiss service at: " + address + ":" + port);
                 break;
             } catch (ConnectException e) {
