@@ -245,7 +245,7 @@ public class BasicTransmittingConnector extends Connector implements Transmittin
                 stats.numXmtBytes += byteCount;
                 stats.numXmtFrames++;
             }
-            LOG.debug(debugTag + "Sent frame: KISSByteCount:" + byteCount + "   frameByteCount:" + frame.getByteFrame().length + "   frame:" + frame + "  asciiFrame:" + frame.getAsciiFrame());
+            LOG.debug(debugTag + "Sending frame:" + frame + "  body:" + AX25Tools.byteArrayToReadableASCIIString(frame.body));
         } catch (Exception e) {
             //  fireTransmitting(false);
             //  fireFailed();

@@ -171,7 +171,7 @@ public class KISSviaSerial extends Interface {
         anInterface.addFrameListener(new AX25FrameListener() {
             @Override
             public void consumeAX25Frame(AX25Frame frame, Connector connector) {
-                LOG.debug("Got frame: " + frame.toString() + "  body=" + Tools.byteArrayToHexString(frame.getBody()));
+             //   LOG.debug("Got frame: " + frame.toString() + "  body=" + Tools.byteArrayToHexString(frame.getBody()));
 
                 Node node = new Node(KISSviaSerial.this, frame.sender.toString(), frame.rcptTime, frame.dest.toString(), frame);
 

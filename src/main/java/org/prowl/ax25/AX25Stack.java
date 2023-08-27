@@ -759,9 +759,7 @@ public class AX25Stack implements FrameListener, Runnable {
             }
             if (state != null && state.isOpen()) {
                 if (toMe) {
-                    LOG.debug(debugTag + " rcvd: " + frame.getFrameTypeString() +
-                            (frame.getP() ? " P " : ' ') + frame.sender + "->" + frame.dest + " NS=" + frame.getNS() +
-                            " NR=" + frame.getNR() + " #=" + frame.body.length + " VR=" + state.modReceivedFrameIndex + " body:" + AX25Tools.byteArrayToHexString(frame.body));
+                    LOG.debug("rx: state.NR="+state.modReceivedFrameIndex+"  "+ frame);
                     // check frame number against flow control
                     int ns = frame.getNS();
 
@@ -778,9 +776,9 @@ public class AX25Stack implements FrameListener, Runnable {
                                 state.in.add(frame);
                             }
                         }
-                    } else {
+                    //} else {
                         //TODO: delay a bit until we can send a SREJ in case it's only a one-packet drop, and also to debounce sending this multiple times
-                        transmitREJ(connector, frame.dest, frame.sender, reverseDigipeaters(frame.digipeaters), state, false);
+                    //    transmitREJ(connector, frame.dest, frame.sender, reverseDigipeaters(frame.digipeaters), state, false);
                     }
                     // update received state for other end
                     int nr = frame.getNR();
@@ -853,7 +851,7 @@ public class AX25Stack implements FrameListener, Runnable {
                             }
 
                             // Must resend frames if we the acked frame counter is not the same as we have sent.
-                            //ackFrames = ackFrames | (state.modAcknowledgedFrameIndex != state.modSentFrameIndex);
+                            ackFrames = ackFrames | (state.modAcknowledgedFrameIndex != state.modSentFrameIndex);
                             if (ackFrames) {
                                 state.clearResendableFrame();
                                 AX25Frame f;
