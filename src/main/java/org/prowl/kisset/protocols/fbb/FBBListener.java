@@ -3,7 +3,7 @@ package org.prowl.kisset.protocols.fbb;
 import com.google.common.eventbus.Subscribe;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.prowl.kisset.ax25.AX25Frame;
+import org.prowl.ax25.AX25Frame;
 import org.prowl.kisset.eventbus.SingleThreadBus;
 import org.prowl.kisset.eventbus.events.HeardNodeEvent;
 

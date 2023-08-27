@@ -3,6 +3,7 @@ package org.prowl.kisset.io;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.prowl.ax25.*;
 import org.prowl.kisset.KISSet;
 import org.prowl.kisset.annotations.InterfaceDriver;
 import org.prowl.kisset.ax25.*;

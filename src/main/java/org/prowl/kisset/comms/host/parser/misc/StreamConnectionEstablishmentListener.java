@@ -2,8 +2,8 @@ package org.prowl.kisset.comms.host.parser.misc;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.prowl.kisset.ax25.ConnState;
-import org.prowl.kisset.ax25.ConnectionEstablishmentListener;
+import org.prowl.ax25.ConnState;
+import org.prowl.ax25.ConnectionEstablishmentListener;
 import org.prowl.kisset.comms.host.parser.CommandParser;
 import org.prowl.kisset.comms.host.parser.ExtensionState;
 import org.prowl.kisset.comms.host.parser.Mode;

@@ -2,11 +2,10 @@ package org.prowl.kisset.protocols.aprs;
 
 import com.google.common.eventbus.Subscribe;
 import net.ab0oo.aprs.parser.APRSPacket;
-import net.ab0oo.aprs.parser.APRSTypes;
 import net.ab0oo.aprs.parser.Parser;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.prowl.kisset.ax25.AX25Frame;
+import org.prowl.ax25.AX25Frame;
 import org.prowl.kisset.eventbus.SingleThreadBus;
 import org.prowl.kisset.eventbus.events.APRSPacketEvent;
 import org.prowl.kisset.eventbus.events.HeardNodeEvent;

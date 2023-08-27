@@ -1,6 +1,6 @@
 package org.prowl.kisset.eventbus.events;
 
-import org.prowl.kisset.ax25.BasicTransmittingConnector;
+import org.prowl.ax25.BasicTransmittingConnector;
 
 /**
  * Represents an invalid AX.25/KISS frame being received.

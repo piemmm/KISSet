@@ -1,7 +1,7 @@
 package org.prowl.kisset.core;
 
 
-import org.prowl.kisset.ax25.AX25Frame;
+import org.prowl.ax25.AX25Frame;
 import org.prowl.kisset.io.Interface;
 
 import java.util.ArrayList;

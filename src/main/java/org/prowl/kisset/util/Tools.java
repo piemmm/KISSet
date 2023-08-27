@@ -10,7 +10,7 @@ import net.ab0oo.aprs.parser.InformationField;
 import net.ab0oo.aprs.parser.Parser;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.prowl.kisset.ax25.AX25Frame;
+import org.prowl.ax25.AX25Frame;
 import org.prowl.kisset.core.Capability;
 import org.prowl.kisset.core.Node;
 
