@@ -37,7 +37,7 @@ public class TrackShape extends Polyline {
         if (points.size() > 0) {
             MapPoint lastPoint = points.get(points.size() - 1);
             double distance =  Tools.distance(point.getLatitude(), lastPoint.getLatitude(), point.getLongitude(), lastPoint.getLongitude(), 0,0);
-            if (distance > 100000) {
+            if (distance > 20000) {
                 return; // Ignore if the distance is more than 100km, this is probably a corrupt entry
             }
         }

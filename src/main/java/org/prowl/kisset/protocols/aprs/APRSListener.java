@@ -31,9 +31,7 @@ public enum APRSListener {
         AX25Frame frame = event.getNode().getFrame();
         boolean isAprs = false;
         try {
-            String aprsString = frame.sender.toString() + ">" + frame.dest.toString() + ":" + frame.getAsciiFrame();
-            APRSPacket packet = Parser.parse(aprsString);
-            // if (packet.getType() != APRSTypes.UNSPECIFIED) {
+            APRSPacket packet = Parser.parseAX25(frame.getRawPacket());
             // APRS packet reserialize the body
             //KISSet.INSTANCE.getStorage().addRecentAPRSPacket(aprsPacket);
             SingleThreadBus.INSTANCE.post(new APRSPacketEvent(packet));

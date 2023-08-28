@@ -4,6 +4,7 @@ import javafx.geometry.Rectangle2D;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 import org.apache.commons.logging.Log;
@@ -48,9 +49,16 @@ public class SymbolCache {
 
         x = x * iconSize;
         y = y * iconSize;
+//
+//        DropShadow dropShadow = new DropShadow();
+//        dropShadow.setRadius(3.0);
+//        dropShadow.setOffsetX(3.0);
+//        dropShadow.setOffsetY(3.0);
+//        dropShadow.setSpread(0);
 
         Canvas canvas = new Canvas(iconSize, iconSize);
         GraphicsContext gc = canvas.getGraphicsContext2D();
+        //gc.setEffect(dropShadow);
         gc.setImageSmoothing(true);
         gc.drawImage(tableImage, x, y, iconSize, iconSize, 0, 0, 32, 32);
         SnapshotParameters params = new SnapshotParameters();

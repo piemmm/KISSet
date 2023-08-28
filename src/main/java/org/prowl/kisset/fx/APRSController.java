@@ -3,6 +3,7 @@ package org.prowl.kisset.fx;
 
 import com.google.common.eventbus.Subscribe;
 import javafx.animation.FadeTransition;
+import javafx.animation.RotateTransition;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.geometry.Bounds;
@@ -13,6 +14,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
 import javafx.scene.shape.Polyline;
 import javafx.scene.text.Font;
+import javafx.scene.transform.Rotate;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.prowl.kisset.KISSet;
@@ -186,6 +188,9 @@ public class APRSController {
                     Platform.runLater(() -> {
                         updateNode(node);
                         aprsLayer.getChildren().add(icon);
+                        if (node.getTrack() != null) {
+                            aprsLayer.getChildren().add(node.getTrack());
+                        }
                     });
                 }
             } else {
@@ -194,6 +199,9 @@ public class APRSController {
                     //node.getIcon().setVisible(false);
                     Platform.runLater(() -> {
                         aprsLayer.getChildren().remove(icon);
+                        if (node.getTrack() != null) {
+                            aprsLayer.getChildren().remove(node.getTrack());
+                        }
                     });
                 }
             }
@@ -245,7 +253,7 @@ public class APRSController {
                     existingNode.updateLocation(event.getAprsPacket().getRecevedTimestamp().getTime(), node.getLocation(), aprsLayer);
                     if (firstAddPolyline) {
                         //  addNode(existingNode.getTrack(), existingNode.getLocation());
-                        getChildren().add(existingNode.getTrack());
+                        //getChildren().add(existingNode.getTrack());
                     }
                     updateNode(existingNode);
                     animateNode(existingNode.getIcon());
@@ -258,14 +266,23 @@ public class APRSController {
 
         public void animateNode(Node node) {
 
-            FadeTransition ft = new FadeTransition();
-            ft.setNode(node);
-            ft.setFromValue(1.0);
-            ft.setToValue(0.0);
-            ft.setDuration(javafx.util.Duration.millis(500));
-            ft.setCycleCount(8);
-            ft.setAutoReverse(true);
-            ft.play();
+//            FadeTransition ft = new FadeTransition();
+//            ft.setNode(node);
+//            ft.setFromValue(1.0);
+//            ft.setToValue(0.0);
+//            ft.setDuration(javafx.util.Duration.millis(500));
+//            ft.setCycleCount(8);
+//            ft.setAutoReverse(true);
+//            ft.play();
+
+            RotateTransition rt = new RotateTransition();
+            rt.setNode(node);
+           rt.setByAngle(360);
+            rt.setAxis(Rotate.Y_AXIS);
+            rt.setDuration(javafx.util.Duration.millis(500));
+            rt.setCycleCount(4);
+            rt.setAutoReverse(false);
+            rt.play();
         }
 
         public void updateNode(APRSNode node) {

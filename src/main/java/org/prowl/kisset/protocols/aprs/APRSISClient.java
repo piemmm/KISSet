@@ -33,7 +33,7 @@ public enum APRSISClient {
     private static final Log LOG = LogFactory.getLog("APRSISClient");
 
     public String server = "rotate.aprs.net";
-    public int port = 10152; // 10152 full feed, 14580 filtered feed
+    public int port = 14580; // 10152 full feed, 14580 filtered feed
     // testing
     double lat = 52.0542919;
     double lon = -0.7594734;

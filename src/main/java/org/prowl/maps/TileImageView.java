@@ -49,6 +49,7 @@ public class TileImageView extends ImageView {
         setFitWidth(256);
         setPreserveRatio(true);
         setProgress(0);
+        setCache(false);
         CompletableFuture<Image> future = TILE_RETRIEVER.loadTile(zoom, i, j);
         if (!future.isDone()) {
             Optional.ofNullable(placeholderImageSupplier).ifPresent(s -> setImage(s.get()));

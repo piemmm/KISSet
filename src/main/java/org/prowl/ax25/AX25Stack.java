@@ -1480,9 +1480,6 @@ public class AX25Stack implements FrameListener, Runnable {
                     } catch (Exception e) {
                         LOG.error(e.getMessage(), e);
                     }
-                } else {
-                    // log unhandleable/unrecognized protocol
-                    LOG.debug(connector + ": ignored " + body.length + "-byte protocol PID=0x" + Integer.toHexString(pid & 0xFF) + " msg from " + sender + "->" + dest);
                 }
             }
         }

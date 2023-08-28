@@ -38,6 +38,7 @@ public class APRSNode {
                 Position position = positionField.getPosition();
                 location = new MapPoint(position.getLatitude(), position.getLongitude());
                 icon = getIconFromTable(position.getSymbolTable(), position.getSymbolCode());
+                icon.setCache(false);
             }
         }
         sourceCallsign = packet.getSourceCall();
