@@ -4,11 +4,11 @@ import javafx.scene.Node;
 import javafx.scene.image.ImageView;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
-import net.ab0oo.aprs.parser.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.prowl.maps.MapPoint;
+import org.prowl.aprslib.parser.*;
 import org.prowl.kisset.fx.APRSController;
+import org.prowl.maps.MapPoint;
 
 /**
  * This is a mapping node that contains information about APRS
@@ -17,7 +17,7 @@ public class APRSNode {
 
     private static final Log LOG = LogFactory.getLog("APRSNode");
 
-
+    private boolean isAddedToParent = false;
     private TrackShape trackLine;
 
     private final String sourceCallsign;
@@ -25,6 +25,9 @@ public class APRSNode {
 
     private MapPoint location;
     private Node icon;
+
+    public double x;
+    public double y;
 
     public APRSNode(APRSPacket packet) {
 
@@ -84,5 +87,13 @@ public class APRSNode {
 
     public TrackShape getTrack() {
         return trackLine;
+    }
+
+    public boolean isAddedToParent() {
+        return isAddedToParent;
+    }
+
+    public void setAddedToParent(boolean isAddedToParent) {
+        this.isAddedToParent = isAddedToParent;
     }
 }

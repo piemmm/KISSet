@@ -1,7 +1,7 @@
 package org.prowl.kisset.eventbus.events;
 
 
-import net.ab0oo.aprs.parser.APRSPacket;
+import org.prowl.aprslib.parser.APRSPacket;
 
 public class APRSPacketEvent extends BaseEvent {
 

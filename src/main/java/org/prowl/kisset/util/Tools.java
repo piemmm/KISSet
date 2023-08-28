@@ -4,12 +4,12 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontPosture;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
-import net.ab0oo.aprs.parser.APRSPacket;
-import net.ab0oo.aprs.parser.APRSTypes;
-import net.ab0oo.aprs.parser.InformationField;
-import net.ab0oo.aprs.parser.Parser;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.prowl.aprslib.parser.APRSPacket;
+import org.prowl.aprslib.parser.APRSTypes;
+import org.prowl.aprslib.parser.InformationField;
+import org.prowl.aprslib.parser.Parser;
 import org.prowl.ax25.AX25Frame;
 import org.prowl.kisset.protocols.core.Capability;
 import org.prowl.kisset.protocols.core.Node;
@@ -223,5 +223,35 @@ public class Tools {
             return null;
         }
     }
+
+    /**
+     * Calculate distance between two points in latitude and longitude taking
+     * into account height difference. If you are not interested in height
+     * difference pass 0.0. Uses Haversine method as its base.
+     *
+     * lat1, lon1 Start point lat2, lon2 End point el1 Start altitude in meters
+     * el2 End altitude in meters
+     * @returns Distance in Meters
+     */
+    public static double distance(double lat1, double lat2, double lon1,
+                                  double lon2, double el1, double el2) {
+
+        final int R = 6371; // Radius of the earth
+
+        double latDistance = Math.toRadians(lat2 - lat1);
+        double lonDistance = Math.toRadians(lon2 - lon1);
+        double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
+                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
+                * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        double distance = R * c * 1000; // convert to meters
+
+        double height = el1 - el2;
+
+        distance = Math.pow(distance, 2) + Math.pow(height, 2);
+
+        return Math.sqrt(distance);
+    }
+
 
 }

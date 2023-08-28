@@ -3,9 +3,9 @@ package org.prowl.kisset.fx;
 
 import com.google.common.eventbus.Subscribe;
 import javafx.animation.FadeTransition;
-import javafx.animation.RotateTransition;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
+import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
@@ -15,9 +15,6 @@ import javafx.scene.shape.Polyline;
 import javafx.scene.text.Font;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.prowl.maps.MapLayer;
-import org.prowl.maps.MapPoint;
-import org.prowl.maps.MapView;
 import org.prowl.kisset.KISSet;
 import org.prowl.kisset.config.Conf;
 import org.prowl.kisset.eventbus.SingleThreadBus;
@@ -25,6 +22,10 @@ import org.prowl.kisset.eventbus.events.APRSPacketEvent;
 import org.prowl.kisset.eventbus.events.ConfigurationChangedEvent;
 import org.prowl.kisset.protocols.aprs.APRSNode;
 import org.prowl.kisset.protocols.aprs.TrackShape;
+import org.prowl.kisset.util.Tools;
+import org.prowl.maps.MapLayer;
+import org.prowl.maps.MapPoint;
+import org.prowl.maps.MapView;
 
 import java.util.*;
 
@@ -45,10 +46,15 @@ public class APRSController {
      */
     private APRSLayer aprsLayer;
 
+
+    private List<APRSNode> visibleNodes = new ArrayList<>();
+
     @Subscribe
     public void onConfigChanged(ConfigurationChangedEvent event) {
 
     }
+
+    public final Object MONITOR = new Object();
 
     @FXML
     private void onSearch() {
@@ -96,13 +102,45 @@ public class APRSController {
 
         private final Map<String, APRSNode> nodeMap = Collections.synchronizedMap(new HashMap<>());
 
+        private Bounds bounds;
+
         public APRSLayer() {
             super();
             SingleThreadBus.INSTANCE.register(this);
+
+            Tools.runOnThread(() -> {
+                while (true) {
+                    synchronized (MONITOR) {
+                        try {
+                            MONITOR.wait();
+                        } catch (Throwable e) {
+                        }
+                    }
+                    if (bounds == null) {
+                        continue;
+                    }
+                    List<APRSNode> newNodes = new ArrayList<>();
+                    synchronized (nodeMap) {
+                        for (APRSNode node : nodeMap.values()) {
+
+                            Point2D mapPoint = getMapPoint(node.getLocation().getLatitude(), node.getLocation().getLongitude());
+                            node.x = mapPoint.getX() - (16);
+                            node.y = mapPoint.getY() - 16;
+
+                            if (hideIfInvisible(node)) {
+                                newNodes.add(node);
+                            }
+                        }
+                    }
+                    visibleNodes = newNodes;
+                }
+            });
+
         }
 
         public void clear() {
             nodeMap.clear();
+            visibleNodes.clear();
             getChildren().clear();
         }
 
@@ -124,12 +162,42 @@ public class APRSController {
          */
         @Override
         protected void layoutLayer() {
+            bounds = mapView.getLayoutBounds();
 
-            Collection<APRSNode> nodes = nodeMap.values();
-            for (APRSNode node : nodes) {
-                updateNode(node);
-                updateTrack(node);
+            synchronized (MONITOR) {
+                MONITOR.notifyAll();
             }
+
+            for (APRSNode node : visibleNodes) {
+                updateNode(node);
+                //if (hideIfInvisible(node)) {
+                updateTrack(node);
+                //}
+            }
+        }
+
+        public boolean hideIfInvisible(APRSNode node) {
+
+            Node icon = node.getIcon();
+            if (bounds.contains(node.x, node.y)) {
+                if (!node.isAddedToParent()) {
+                    node.setAddedToParent(true);
+                    //    node.getIcon().setVisible(true);
+                    Platform.runLater(() -> {
+                        updateNode(node);
+                        aprsLayer.getChildren().add(icon);
+                    });
+                }
+            } else {
+                if (node.isAddedToParent()) {
+                    node.setAddedToParent(false);
+                    //node.getIcon().setVisible(false);
+                    Platform.runLater(() -> {
+                        aprsLayer.getChildren().remove(icon);
+                    });
+                }
+            }
+            return node.isAddedToParent();
         }
 
         public Point2D getMapPointExt(double lat, double lon) {
@@ -156,6 +224,9 @@ public class APRSController {
                 if (node.getLocation().getLatitude() == 0 && node.getLocation().getLongitude() == 0) {
                     return; // we're treating 0,0 as an invalid GPS location that's just 'junk' data.
                 }
+
+                // Get the current viewing rectangle
+
 
                 APRSNode existingNode = nodeMap.get(node.getSourceCallsign());
                 if (existingNode == null) {
@@ -203,18 +274,10 @@ public class APRSController {
             // Get the icon
             Node icon = node.getIcon();
             Point2D mapPoint = getMapPoint(location.getLatitude(), location.getLongitude());
-            icon.setVisible(true);
             icon.setTranslateX(mapPoint.getX() - (16));
             icon.setTranslateY(mapPoint.getY() - 16);
-
-//            // Rotate the node to show it updated
-//            RotateTransition rt = new RotateTransition();
-//            rt.setNode(icon);
-//            rt.setByAngle(360);
-//            rt.setDuration(javafx.util.Duration.millis(1000));
-//            rt.setCycleCount(1);
-//            rt.setAutoReverse(false);
-//            rt.play();
+            node.x = mapPoint.getX() - (16);
+            node.y = mapPoint.getY() - 16;
 
         }
 
@@ -239,23 +302,25 @@ public class APRSController {
             Tooltip t = new Tooltip(aprsNode.getSourceCallsign());
             Tooltip.install(node, t);
 
-            // Probably add our context sensitive mentu here too
+            //  Probably add our context sensitive mentu here too
 
-            // Initial opacity is 0 as we are fading in
-            node.setOpacity(0);
 
-            // Add the node to the GUI
-            getChildren().add(node);
-
-            // Fade the node into visibility
-            FadeTransition ft = new FadeTransition();
-            ft.setNode(node);
-            ft.setFromValue(0);
-            ft.setToValue(1.0);
-            ft.setDuration(javafx.util.Duration.millis(1000));
-            ft.setCycleCount(1);
-            ft.setAutoReverse(false);
-            ft.play();
+            // Add the node to the map if in the visible area
+            if (bounds == null) {
+                return;
+            }
+            if (hideIfInvisible(aprsNode)) {
+                node.setOpacity(0);
+                // Fade the node into visibility
+                FadeTransition ft = new FadeTransition();
+                ft.setNode(node);
+                ft.setFromValue(0);
+                ft.setToValue(1.0);
+                ft.setDuration(javafx.util.Duration.millis(1000));
+                ft.setCycleCount(1);
+                ft.setAutoReverse(false);
+                ft.play();
+            }
         }
 
     }

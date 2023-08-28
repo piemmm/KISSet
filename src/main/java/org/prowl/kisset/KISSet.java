@@ -455,15 +455,15 @@ public class KISSet extends Application {
         // There is an issue with x25519 keys on some systems, so we disable them for the moment.
         System.setProperty("jdk.tls.namedGroups","secp256r1, secp384r1, secp521r1, ffdhe2048, ffdhe3072, ffdhe4096, ffdhe6144, ffdhe8192");
 
-        // Push debugging to a file if we are debugging a built app with no console
-        try {
-            File outputFile = File.createTempFile("debug", ".log", FileSystemView.getFileSystemView().getDefaultDirectory());
-            PrintStream output = new PrintStream(new BufferedOutputStream(new FileOutputStream(outputFile)), true);
-            System.setOut(output);
-            System.setErr(output);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//        // Push debugging to a file if we are debugging a built app with no console
+//        try {
+//            File outputFile = File.createTempFile("debug", ".log", FileSystemView.getFileSystemView().getDefaultDirectory());
+//            PrintStream output = new PrintStream(new BufferedOutputStream(new FileOutputStream(outputFile)), true);
+//            System.setOut(output);
+//            System.setErr(output);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
     }
 
     public Statistics getStatistics() {

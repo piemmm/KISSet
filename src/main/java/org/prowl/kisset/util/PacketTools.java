@@ -1,11 +1,12 @@
 package org.prowl.kisset.util;
 
-import net.ab0oo.aprs.parser.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.prowl.aprslib.parser.*;
 import org.prowl.ax25.AX25Frame;
 import org.prowl.kisset.KISSet;
 import org.prowl.kisset.eventbus.events.HeardNodeEvent;
+import org.prowl.kisset.objects.messages.Message;
 import org.prowl.kisset.protocols.core.Node;
 import org.prowl.kisset.protocols.netrom.NetROMPacket;
 import org.prowl.kisset.protocols.netrom.NetROMRoutingPacket;
@@ -296,7 +297,8 @@ public class PacketTools {
                 builder.append(" Object Name: " + objectField.getObjectName() + CR);
             }
 
-            if (info instanceof MessagePacket message) {
+            MessagePacket message = (MessagePacket) info.getAprsData(APRSTypes.T_MESSAGE);
+            if (message != null) {
                 builder.append(" Target Callsign: " + message.getTargetCallsign() + CR);
                 builder.append("Message Number: " + message.getMessageNumber() + CR);
                 builder.append(" Message: " + message.getMessageBody() + CR);

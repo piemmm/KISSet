@@ -157,11 +157,11 @@
 
         <!-- Our modified (and unit tested) aprslib -->
         <dependency>
-            <groupId>net.ab0oo</groupId>
-            <artifactId>javAPRSlib</artifactId>
+            <groupId>org.prowl</groupId>
+            <artifactId>aprslib</artifactId>
             <version>2.0</version>
             <scope>system</scope>
-            <systemPath>${project.basedir}/lib/javAPRSlib-2.0.jar</systemPath>
+            <systemPath>${project.basedir}/lib/aprslib-1.0.0-SNAPSHOT.jar</systemPath>
         </dependency>
 
         <!-- Reflections, for finding classes in the classpath -->

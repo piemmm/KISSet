@@ -1,9 +1,9 @@
 package org.prowl.kisset.protocols.aprs;
 
 import com.google.common.eventbus.Subscribe;
-import net.ab0oo.aprs.parser.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.prowl.aprslib.parser.*;
 import org.prowl.kisset.KISSet;
 import org.prowl.kisset.config.Conf;
 import org.prowl.kisset.config.Config;
@@ -17,6 +17,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.Deque;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -32,7 +33,7 @@ public enum APRSISClient {
     private static final Log LOG = LogFactory.getLog("APRSISClient");
 
     public String server = "rotate.aprs.net";
-    public int port = 14580; // 10152 full feed, 14580 filtered feed
+    public int port = 10152; // 10152 full feed, 14580 filtered feed
     // testing
     double lat = 52.0542919;
     double lon = -0.7594734;
@@ -49,7 +50,7 @@ public enum APRSISClient {
             public void run() {
                 connect();
             }
-        }, 10000, 60000);
+        }, 4000, 60000);
         SingleThreadBus.INSTANCE.register(this);
     }
 
@@ -97,6 +98,8 @@ public enum APRSISClient {
             OutputStream out = s.getOutputStream();
 
             out.write(("user APRSPR-TS pass -1 filter r/" + lat + "/" + lon + "/" + rangeKM + "\n").getBytes());
+           // out.write(("user APRSPR-TS pass -1\n\n").getBytes());
+
             out.flush();
 
             BufferedReader reader = new BufferedReader(new InputStreamReader(in), 32768);
@@ -136,10 +139,12 @@ public enum APRSISClient {
                 Position pos = positionField.getPosition();
                 SingleThreadBus.INSTANCE.post(new APRSPacketEvent(p));
             } else {
-                //  System.err.println("No position for:" +packet);
+               // LOG.debug("No position for:" +packet);
             }
         } catch (UnparsablePositionException e) {
             // Don't care
+            LOG.debug("Unparseable position: " + packet);
+            LOG.debug(e.getMessage(),e);
         } catch (Throwable e) {
             System.err.println(packet);
             e.printStackTrace();

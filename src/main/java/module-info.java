@@ -19,7 +19,7 @@ module org.prowl.kisset {
     requires com.github.oshi;
     requires versioncompare;
     requires com.google.common;
-    requires javAPRSlib;
+    requires aprslib;
     requires javafx.web;
     requires org.eclipse.paho.client.mqttv3;
     requires com.google.errorprone.annotations;
