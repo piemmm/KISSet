@@ -38,6 +38,7 @@ import javax.imageio.ImageIO;
 import java.io.File;
 import java.io.IOException;
 import java.security.Security;
+import java.util.HashSet;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Semaphore;
 
@@ -49,6 +50,9 @@ import java.util.concurrent.Semaphore;
 public class OsmTileRetriever implements TileRetriever {
 
     private Semaphore imageLimit = new Semaphore(2);
+
+    // Make sure we don't keep trying the same images over, and over, and over again.
+    private HashSet<String> failedImages = new HashSet();
 
     private static final Log LOG = LogFactory.getLog("OsmTileRetriever");
     private static final String host = "https://tile.openstreetmap.org/";
@@ -71,9 +75,20 @@ public class OsmTileRetriever implements TileRetriever {
     public CompletableFuture<Image> loadTile(int zoom, long i, long j) {
 
         // Image is cached!
-        File cacheFile = new File(KISSet.INSTANCE.getStorage().getMapStorageDir(), zoom + "-" + i + "-" + j + ".png");
+        String key = zoom + "-" + i + "-" + j + ".png";
+        File cacheFile = new File(KISSet.INSTANCE.getStorage().getMapStorageDir(), key);
         if (cacheFile.exists()) {
             return CompletableFuture.completedFuture(new Image(cacheFile.toURI().toString(), false));
+        }
+
+        // Don't redownload the same image attempt over and over.
+        if (failedImages.contains(key)) {
+            return CompletableFuture.failedFuture(new Exception("Image failed to load previously, not trying again"));
+        }
+        failedImages.add(key);
+        // Crude clear.
+        if (failedImages.size() > 200) {
+            failedImages.clear();
         }
 
         return CompletableFuture.supplyAsync(() -> {

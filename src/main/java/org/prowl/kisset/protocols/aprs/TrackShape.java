@@ -3,6 +3,8 @@ package org.prowl.kisset.protocols.aprs;
 import javafx.collections.ObservableList;
 import javafx.geometry.Point2D;
 import javafx.scene.shape.Polyline;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.prowl.kisset.util.Tools;
 import org.prowl.maps.MapPoint;
 import org.prowl.kisset.fx.APRSController;
@@ -11,6 +13,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TrackShape extends Polyline {
+
+    private static final Log LOG = LogFactory.getLog("TrackShape");
 
     private final APRSController.APRSLayer mapLayer;
 
@@ -32,7 +36,7 @@ public class TrackShape extends Polyline {
         //Now check the distance isn't stupidly large
         if (points.size() > 0) {
             MapPoint lastPoint = points.get(points.size() - 1);
-            double distance =  Tools.distance(point.getLatitude(), point.getLongitude(), lastPoint.getLatitude(), lastPoint.getLongitude(), 0,0);
+            double distance =  Tools.distance(point.getLatitude(), lastPoint.getLatitude(), point.getLongitude(), lastPoint.getLongitude(), 0,0);
             if (distance > 100000) {
                 return; // Ignore if the distance is more than 100km, this is probably a corrupt entry
             }
