@@ -2,6 +2,8 @@ package org.prowl.kisset.fx;
 
 
 import com.google.common.eventbus.Subscribe;
+import javafx.animation.FadeTransition;
+import javafx.animation.RotateTransition;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.geometry.Point2D;
@@ -87,17 +89,6 @@ public class APRSController {
         mapView.setZoom(8);
         aprsLayer = new APRSLayer();
         mapView.addLayer(aprsLayer);
-
-//        // Set our own tile renderer
-//        TileRetriever source = new CachingTileRetriever();
-//
-////        TileRetrieverProvider provider = TileRetrieverProvider.getInstance();
-//        ServiceLoader<TileRetriever> t = ServiceLoader.load(TileRetriever.class);
-//        for (TileRetriever tileRetriever : t) {
-//            System.out.println(tileRetriever);
-//        }
-//        provider.load();
-
 
     }
 
@@ -186,12 +177,24 @@ public class APRSController {
                         getChildren().add(existingNode.getTrack());
                     }
                     updateNode(existingNode);
-
+                    animateNode(existingNode.getIcon());
 
                 }
 
                 // markDirty();
             });
+        }
+
+        public void animateNode(Node node) {
+
+            FadeTransition ft = new FadeTransition();
+            ft.setNode(node);
+            ft.setFromValue(1.0);
+            ft.setToValue(0.0);
+            ft.setDuration(javafx.util.Duration.millis(500));
+            ft.setCycleCount(8);
+            ft.setAutoReverse(true);
+            ft.play();
         }
 
         public void updateNode(APRSNode node) {
@@ -203,6 +206,15 @@ public class APRSController {
             icon.setVisible(true);
             icon.setTranslateX(mapPoint.getX() - (16));
             icon.setTranslateY(mapPoint.getY() - 16);
+
+//            // Rotate the node to show it updated
+//            RotateTransition rt = new RotateTransition();
+//            rt.setNode(icon);
+//            rt.setByAngle(360);
+//            rt.setDuration(javafx.util.Duration.millis(1000));
+//            rt.setCycleCount(1);
+//            rt.setAutoReverse(false);
+//            rt.play();
 
         }
 
@@ -223,10 +235,27 @@ public class APRSController {
             node.setTranslateX(mapPoint.getX() - (16));
             node.setTranslateY(mapPoint.getY() - 16);
 
+            // Tooltip for useful information popup
             Tooltip t = new Tooltip(aprsNode.getSourceCallsign());
             Tooltip.install(node, t);
 
+            // Probably add our context sensitive mentu here too
+
+            // Initial opacity is 0 as we are fading in
+            node.setOpacity(0);
+
+            // Add the node to the GUI
             getChildren().add(node);
+
+            // Fade the node into visibility
+            FadeTransition ft = new FadeTransition();
+            ft.setNode(node);
+            ft.setFromValue(0);
+            ft.setToValue(1.0);
+            ft.setDuration(javafx.util.Duration.millis(1000));
+            ft.setCycleCount(1);
+            ft.setAutoReverse(false);
+            ft.play();
         }
 
     }

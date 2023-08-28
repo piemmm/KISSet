@@ -55,7 +55,6 @@ public class ServiceHandler {
                 // Something blew up. Log it and carry on.
                 LOG.error("Unable to add service: " + className, e);
             }
-
         }
     }
 
