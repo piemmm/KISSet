@@ -35,6 +35,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.prowl.kisset.KISSet;
 
 import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.security.Security;
@@ -75,7 +76,7 @@ public class OsmTileRetriever implements TileRetriever {
     public CompletableFuture<Image> loadTile(int zoom, long i, long j) {
 
         // Image is cached!
-        String key = zoom + "-" + i + "-" + j + ".png";
+        String key = zoom + "-" + i + "-" + j + ".png".intern();
         File cacheFile = new File(KISSet.INSTANCE.getStorage().getMapStorageDir(), key);
         if (cacheFile.exists()) {
             return CompletableFuture.completedFuture(new Image(cacheFile.toURI().toString(), true));
@@ -101,7 +102,9 @@ public class OsmTileRetriever implements TileRetriever {
                         LOG.error("Error loading image:" + image.getException().getMessage(), image.getException());
                     } else if (newValue.intValue() == 1) {
                         try {
-                            ImageIO.write(SwingFXUtils.fromFXImage(image, null), "png", cacheFile);
+                            BufferedImage bufferedImage = SwingFXUtils.fromFXImage(image, null);
+                            ImageIO.write(bufferedImage, "png", cacheFile);
+                            bufferedImage.flush(); // release memory
                         } catch (IOException e) {
                             LOG.error(e.getMessage(), e);
                         }
