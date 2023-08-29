@@ -20,7 +20,8 @@ public class APRSNode {
     private boolean isAddedToParent = false;
     private TrackShape trackLine;
 
-    private final String sourceCallsign;
+    // Actual object callsign not digipeater
+    private  String sourceCallsign;
     private final String destinationAPRSCallsign;
 
     private MapPoint location;
@@ -30,6 +31,8 @@ public class APRSNode {
     public double y;
 
     public APRSNode(APRSPacket packet) {
+        // Default if no object call found
+        sourceCallsign = packet.getSourceCall();
 
         InformationField info = packet.getAprsInformation();
         if (info != null) {
@@ -40,14 +43,28 @@ public class APRSNode {
                 icon = getIconFromTable(position.getSymbolTable(), position.getSymbolCode());
                 icon.setCache(false);
             }
+
+            ItemField item = (ItemField) info.getAprsData(APRSTypes.T_ITEM);
+            if (item != null) {
+                sourceCallsign = item.getItemName();
+            }
+
+            ObjectField object = (ObjectField) info.getAprsData(APRSTypes.T_OBJECT);
+            if (object != null) {
+                sourceCallsign = object.getObjectName();
+            }
+
         }
 
-        sourceCallsign = packet.getSourceCall();
         destinationAPRSCallsign = packet.getDestinationCall();
 
         if (icon == null) {
             icon = new Circle(5, Color.BLACK);
         }
+    }
+
+    public void updateIcon() {
+
     }
 
     public String getSourceCallsign() {
@@ -77,6 +94,10 @@ public class APRSNode {
         }
         this.location = newLocation;
 
+    }
+
+    public void setIcon(Node icon) {
+        this.icon = icon;
     }
 
     public Node getIcon() {

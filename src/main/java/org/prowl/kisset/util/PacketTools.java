@@ -3,10 +3,10 @@ package org.prowl.kisset.util;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.prowl.aprslib.parser.*;
+import org.prowl.ax25.AX25Callsign;
 import org.prowl.ax25.AX25Frame;
 import org.prowl.kisset.KISSet;
 import org.prowl.kisset.eventbus.events.HeardNodeEvent;
-import org.prowl.kisset.objects.messages.Message;
 import org.prowl.kisset.protocols.core.Node;
 import org.prowl.kisset.protocols.netrom.NetROMPacket;
 import org.prowl.kisset.protocols.netrom.NetROMRoutingPacket;
@@ -135,6 +135,19 @@ public class PacketTools {
         builder.append(node.getCallsign());
         builder.append(">");
         builder.append(node.getDestination());
+        AX25Callsign[] digipeaters = node.getFrame().digipeaters;
+        if (digipeaters != null) {
+            for (int i = digipeaters.length - 1; i >= 0; i--) {
+                AX25Callsign digi = digipeaters[i];
+                String call = digi.getBaseCallsign();
+                if (digi.getSSID() != 0) {
+                    call += "-" + digi.getSSID();
+                }
+                builder.append(",");
+                builder.append(call);
+            }
+        }
+
         builder.append(ANSI.CYAN);
         builder.append("[");
         builder.append(node.getFrame().getFrameTypeString());

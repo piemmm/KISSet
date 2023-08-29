@@ -9,10 +9,12 @@ import javafx.geometry.Bounds;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.shape.Circle;
 import javafx.scene.shape.Polyline;
 import javafx.scene.text.Font;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.prowl.aprslib.parser.APRSPacket;
 import org.prowl.kisset.KISSet;
 import org.prowl.kisset.config.Conf;
 import org.prowl.kisset.eventbus.SingleThreadBus;
@@ -225,6 +227,7 @@ public class APRSController {
 
 
             Platform.runLater(() -> {
+                APRSPacket packet = event.getAprsPacket();
                 APRSNode node = new APRSNode(event.getAprsPacket());
 
                 if (node.getLocation() == null) {
@@ -241,6 +244,7 @@ public class APRSController {
                 APRSNode existingNode = nodeMap.get(node.getSourceCallsign());
                 if (existingNode == null) {
                     // Add new node to map
+
                     nodeMap.put(node.getSourceCallsign(), node);
                     //getChildren().add(node.getIcon());
                     addNode(node, node.getLocation());
@@ -256,6 +260,29 @@ public class APRSController {
                     if (distance < 20) {
                         return;
                     }
+
+                    // If we have a better icon, then update it. This is for packets which may not
+                    // transmit an symbol on the packet we first receive, but instead on later packets.
+                    if (node.getIcon() != null && !(node.getIcon() instanceof Circle)) {
+                        Platform.runLater(() -> {
+                            aprsLayer.getChildren().remove(existingNode.getIcon());
+                            existingNode.setIcon(node.getIcon());
+
+                            // Make sure it's already translated to the correct location
+                            Point mapPoint = new Point();
+                            Node icon = node.getIcon();
+                            getMapPoint(mapPoint, existingNode.getLocation().getLatitude(), existingNode.getLocation().getLongitude());
+                            icon.setVisible(true);
+                            icon.setTranslateX(mapPoint.x - (16));
+                            icon.setTranslateY(mapPoint.y - 16);
+                            node.setIcon(null);
+
+                            // Let our hide and show thread know that we've changed the icon and that it's not currently
+                            // added to the node tree.
+                            node.setAddedToParent(false);
+                        });
+                    }
+
 
                     Polyline polyLine = existingNode.getTrack();
                     existingNode.updateLocation(event.getAprsPacket().getRecevedTimestamp().getTime(), node.getLocation(), aprsLayer);
