@@ -9,6 +9,7 @@ public enum Conf {
 
     // Enum list of configuration variables with their defaults
     callsign(""),
+    locator(""),
     monitor(false),
     terminalFont(OSDefaults.getDefaultPlatformFont()),
     terminalFontSize(14),

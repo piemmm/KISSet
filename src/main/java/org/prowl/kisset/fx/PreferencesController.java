@@ -115,6 +115,7 @@ public class PreferencesController {
 
         // General
         config.setProperty(Conf.callsign, stationCallsign.getText());
+        config.setProperty(Conf.locator, maidenheadLocator.getText());
 
         // Terminal
         config.setProperty(Conf.terminalFont, fontSelector.getSelectionModel().getSelectedItem());
@@ -261,7 +262,7 @@ public class PreferencesController {
     public void updateControls() {
         // General preference pane
         stationCallsign.setText(config.getConfig(Conf.callsign, Conf.callsign.stringDefault()).toUpperCase(Locale.ENGLISH));
-
+        maidenheadLocator.setText(config.getConfig(Conf.locator, Conf.locator.stringDefault()).toUpperCase(Locale.ENGLISH));
 
         fontSelector.setCellFactory(listView -> {
             return new ComboBoxListCell<String>() {

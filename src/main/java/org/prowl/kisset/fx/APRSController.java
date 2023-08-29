@@ -193,7 +193,8 @@ public class APRSController {
                         updateNode(node);
                         aprsLayer.getChildren().add(icon);
                         if (node.getTrack() != null) {
-                            aprsLayer.getChildren().add(node.getTrack());
+                            // commented out because it's just easier not having to iterate to work out intersections.
+                            //aprsLayer.getChildren().add(node.getTrack());
                         }
                     });
                 }
@@ -204,7 +205,7 @@ public class APRSController {
                     Platform.runLater(() -> {
                         aprsLayer.getChildren().remove(icon);
                         if (node.getTrack() != null) {
-                            aprsLayer.getChildren().remove(node.getTrack());
+                            //aprsLayer.getChildren().remove(node.getTrack());
                         }
                     });
                 }

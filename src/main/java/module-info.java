@@ -25,7 +25,6 @@ module org.prowl.kisset {
     requires com.google.errorprone.annotations;
     requires org.bouncycastle.provider;
 
-
     opens org.prowl.kisset to javafx.fxml;
     exports org.prowl.kisset.eventbus.events;
     exports org.prowl.kisset.protocols.mqtt;
