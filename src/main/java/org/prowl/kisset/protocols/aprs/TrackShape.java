@@ -8,24 +8,26 @@ import org.apache.commons.logging.LogFactory;
 import org.prowl.kisset.util.Tools;
 import org.prowl.maps.MapPoint;
 import org.prowl.kisset.fx.APRSController;
+import org.prowl.maps.Point;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class TrackShape extends Polyline {
+public final class TrackShape extends Polyline {
 
     private static final Log LOG = LogFactory.getLog("TrackShape");
 
     private final APRSController.APRSLayer mapLayer;
 
     private final List<MapPoint> points = new ArrayList<>();
+    private final Point sharedUpdatePoint = new Point();
 
     public TrackShape(APRSController.APRSLayer layer) {
         super();
         this.mapLayer = layer;
     }
 
-    public void addPoint(MapPoint point) {
+    public void addPoint(APRSNode node, MapPoint point) {
 
         // Get the last point
         if (point.getLatitude() == 0 || point.getLongitude() == 0) {
@@ -40,12 +42,26 @@ public class TrackShape extends Polyline {
             if (distance > 20000) {
                 return; // Ignore if the distance is more than 100km, this is probably a corrupt entry
             }
+            // We also ignore stationary GPS aliasing meanders.
+            if (distance < 20) {
+              //  LOG.debug("Ignoring due to distance: " + distance);
+                return;
+            }
+        }
+        Point p = new Point();
+        mapLayer.getMapPointExt(p, point.getLatitude(), point.getLongitude());
+        super.getPoints().add(p.x);
+        super.getPoints().add(p.y);
+        points.add(point);
+
+        // We cap at 100 points max.
+        if (points.size() > 100) {
+            points.remove(0);
         }
 
-        Point2D p = mapLayer.getMapPointExt(point.getLatitude(), point.getLongitude());
-        super.getPoints().add(p.getX());
-        super.getPoints().add(p.getY());
-        points.add(point);
+        if (points.size() > 70) {
+            LOG.debug("Points list size: " + points.size() + " for aprs: " + node.getSourceCallsign() + " at " + point.getLatitude() + ", " + point.getLongitude());
+        }
     }
 
     public void update() {
@@ -53,9 +69,9 @@ public class TrackShape extends Polyline {
         synchronized (pointsList) {
             pointsList.clear();
             for (MapPoint point : points) {
-                Point2D p = mapLayer.getMapPointExt(point.getLatitude(), point.getLongitude());
-                pointsList.add(p.getX());
-                pointsList.add(p.getY());
+                mapLayer.getMapPointExt(sharedUpdatePoint, point.getLatitude(), point.getLongitude());
+                pointsList.add(sharedUpdatePoint.x);
+                pointsList.add(sharedUpdatePoint.y);
             }
         }
     }

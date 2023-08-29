@@ -229,7 +229,7 @@ public class MapView extends Region {
 
     private boolean dirty = false;
 
-    protected void markDirty() {
+    public void markDirty() {
         dirty = true;
         this.setNeedsLayout(true);
     }

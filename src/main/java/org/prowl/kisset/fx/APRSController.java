@@ -3,18 +3,14 @@ package org.prowl.kisset.fx;
 
 import com.google.common.eventbus.Subscribe;
 import javafx.animation.FadeTransition;
-import javafx.animation.RotateTransition;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.geometry.Bounds;
-import javafx.geometry.Point2D;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import javafx.scene.control.Tooltip;
 import javafx.scene.shape.Polyline;
 import javafx.scene.text.Font;
-import javafx.scene.transform.Rotate;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.prowl.kisset.KISSet;
@@ -28,6 +24,7 @@ import org.prowl.kisset.util.Tools;
 import org.prowl.maps.MapLayer;
 import org.prowl.maps.MapPoint;
 import org.prowl.maps.MapView;
+import org.prowl.maps.Point;
 
 import java.util.*;
 
@@ -75,6 +72,8 @@ public class APRSController {
             mapView.setCenter(results.get(0).getLocation().getLatitude(), results.get(0).getLocation().getLongitude());
         }
 
+        // debug
+        System.gc();
     }
 
 
@@ -104,6 +103,7 @@ public class APRSController {
 
         private final Map<String, APRSNode> nodeMap = Collections.synchronizedMap(new HashMap<>());
 
+        private Point updateNodeSharedPoint = new Point();
         private Bounds bounds;
 
         public APRSLayer() {
@@ -111,6 +111,7 @@ public class APRSController {
             SingleThreadBus.INSTANCE.register(this);
 
             Tools.runOnThread(() -> {
+                Point mapPoint = new Point();
                 while (true) {
                     synchronized (MONITOR) {
                         try {
@@ -121,13 +122,14 @@ public class APRSController {
                     if (bounds == null) {
                         continue;
                     }
+                    Tools.delay(50);
                     List<APRSNode> newNodes = new ArrayList<>();
                     synchronized (nodeMap) {
                         for (APRSNode node : nodeMap.values()) {
 
-                            Point2D mapPoint = getMapPoint(node.getLocation().getLatitude(), node.getLocation().getLongitude());
-                            node.x = mapPoint.getX() - (16);
-                            node.y = mapPoint.getY() - 16;
+                            getMapPoint(mapPoint, node.getLocation().getLatitude(), node.getLocation().getLongitude());
+                            node.x = mapPoint.x - (16);
+                            node.y = mapPoint.y - 16;
 
                             if (hideIfInvisible(node)) {
                                 newNodes.add(node);
@@ -208,8 +210,8 @@ public class APRSController {
             return node.isAddedToParent();
         }
 
-        public Point2D getMapPointExt(double lat, double lon) {
-            return getMapPoint(lat, lon);
+        public void getMapPointExt(Point p, double lat, double lon) {
+            getMapPoint(p, lat, lon);
         }
 
 
@@ -245,16 +247,18 @@ public class APRSController {
                 } else {
                     // Update existing node, possibly adding a track line.
                     boolean firstAddPolyline = false;
+
+                    double distance =  Tools.distance(node.getLocation().getLatitude(), existingNode.getLocation().getLatitude(), node.getLocation().getLongitude(), existingNode.getLocation().getLongitude(), 0,0);
+                    if (distance > 20000) {
+                        return; // Ignore if the distance is more than 100km, this is probably a corrupt entry
+                    }
+                    // We also ignore stationary GPS aliasing meanders.
+                    if (distance < 20) {
+                        return;
+                    }
+
                     Polyline polyLine = existingNode.getTrack();
-                    if (polyLine == null) {
-                        // first polyline, so add
-                        firstAddPolyline = true;
-                    }
                     existingNode.updateLocation(event.getAprsPacket().getRecevedTimestamp().getTime(), node.getLocation(), aprsLayer);
-                    if (firstAddPolyline) {
-                        //  addNode(existingNode.getTrack(), existingNode.getLocation());
-                        //getChildren().add(existingNode.getTrack());
-                    }
                     updateNode(existingNode);
                     animateNode(existingNode.getIcon());
 
@@ -266,23 +270,23 @@ public class APRSController {
 
         public void animateNode(Node node) {
 
-//            FadeTransition ft = new FadeTransition();
-//            ft.setNode(node);
-//            ft.setFromValue(1.0);
-//            ft.setToValue(0.0);
-//            ft.setDuration(javafx.util.Duration.millis(500));
-//            ft.setCycleCount(8);
-//            ft.setAutoReverse(true);
-//            ft.play();
-
-            RotateTransition rt = new RotateTransition();
-            rt.setNode(node);
-           rt.setByAngle(360);
-            rt.setAxis(Rotate.Y_AXIS);
-            rt.setDuration(javafx.util.Duration.millis(500));
-            rt.setCycleCount(4);
-            rt.setAutoReverse(false);
-            rt.play();
+            FadeTransition ft = new FadeTransition();
+            ft.setNode(node);
+            ft.setFromValue(1.0);
+            ft.setToValue(0.0);
+            ft.setDuration(javafx.util.Duration.millis(500));
+            ft.setCycleCount(8);
+            ft.setAutoReverse(true);
+            ft.play();
+//
+//            RotateTransition rt = new RotateTransition();
+//            rt.setNode(node);
+//           rt.setByAngle(360);
+//            rt.setAxis(Rotate.Y_AXIS);
+//            rt.setDuration(javafx.util.Duration.millis(500));
+//            rt.setCycleCount(4);
+//            rt.setAutoReverse(false);
+//            rt.play();
         }
 
         public void updateNode(APRSNode node) {
@@ -290,12 +294,12 @@ public class APRSController {
 
             // Get the icon
             Node icon = node.getIcon();
-            Point2D mapPoint = getMapPoint(location.getLatitude(), location.getLongitude());
-            icon.setTranslateX(mapPoint.getX() - (16));
-            icon.setTranslateY(mapPoint.getY() - 16);
-            node.x = mapPoint.getX() - (16);
-            node.y = mapPoint.getY() - 16;
-
+            getMapPoint(updateNodeSharedPoint, location.getLatitude(), location.getLongitude());
+            icon.setTranslateX(updateNodeSharedPoint.x - (16));
+            icon.setTranslateY(updateNodeSharedPoint.y - 16);
+            node.x = updateNodeSharedPoint.x - (16);
+            node.y = updateNodeSharedPoint.y - 16;
+            mapView.markDirty();
         }
 
         public void updateTrack(APRSNode node) {
@@ -309,18 +313,16 @@ public class APRSController {
 
         public void addNode(APRSNode aprsNode, MapPoint location) {
             // Get the icon
+            Point mapPoint = new Point();
             Node node = aprsNode.getIcon();
-            Point2D mapPoint = getMapPoint(location.getLatitude(), location.getLongitude());
+            getMapPoint(mapPoint, location.getLatitude(), location.getLongitude());
             node.setVisible(true);
-            node.setTranslateX(mapPoint.getX() - (16));
-            node.setTranslateY(mapPoint.getY() - 16);
+            node.setTranslateX(mapPoint.x - (16));
+            node.setTranslateY(mapPoint.y - 16);
 
-            // Tooltip for useful information popup
-            Tooltip t = new Tooltip(aprsNode.getSourceCallsign());
-            Tooltip.install(node, t);
 
-            //  Probably add our context sensitive mentu here too
-
+            // We don't add a tooltip here or a context sensitive menu as this will be handled by a single menu
+            // for all elsewhere. If we add one per node then we see memory usage exploderate.
 
             // Add the node to the map if in the visible area
             if (bounds == null) {

@@ -143,11 +143,11 @@ public enum APRSISClient {
             }
         } catch (UnparsablePositionException e) {
             // Don't care
-            LOG.debug("Unparseable position: " + packet);
-            LOG.debug(e.getMessage(),e);
+//            LOG.debug("Unparseable position: " + packet);
+//            LOG.debug(e.getMessage(),e);
         } catch (Throwable e) {
-            System.err.println(packet);
-            e.printStackTrace();
+//            System.err.println(packet);
+//            e.printStackTrace();
 
         }
     }

@@ -23,6 +23,7 @@ import org.prowl.kisset.eventbus.SingleThreadBus;
 import org.prowl.kisset.eventbus.events.ConfigurationChangedEvent;
 import org.prowl.kisset.io.Interface;
 import org.prowl.kisset.util.Tools;
+import org.prowl.maps.MapPoint;
 
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
@@ -92,6 +93,9 @@ public class PreferencesController {
     private TextField mqttPassword;
     @FXML
     private TextField mqttTopic;
+    @FXML
+    private TextField maidenheadLocator;
+
     private Config config;
 
     private final int[] FONT_SIZES = {8, 9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 26, 28, 36, 48, 72};
@@ -178,6 +182,64 @@ public class PreferencesController {
     @FXML
     public void editInterfaceButtonClicked() {
         showAddInterfaceScreen((Interface) interfaceList.getSelectionModel().getSelectedItem());
+    }
+
+    @FXML
+    /**
+     * Show the 'choose location' modal box in the aprs tab
+     */
+    public void onChooseLocation() {
+
+        try {
+            // Create the GUI.
+            Stage stage = new Stage();
+            FXMLLoader fxmlLoader = new FXMLLoader(KISSet.class.getResource("fx/ChooseLocationController.fxml"));
+            Parent root = fxmlLoader.load();
+            ChooseLocationController controller = fxmlLoader.getController();
+            Scene scene = new Scene(root, 640, 480);
+            stage.setTitle("Click to select a location on map, then click OK");
+            stage.initOwner(addInterfaceButton.getScene().getWindow());
+            stage.initModality(Modality.WINDOW_MODAL);
+            stage.setScene(scene);
+            controller.setup(stage, () -> {
+                MapPoint mapPoint = controller.getLocation();
+                if (mapPoint != null) {
+                    LOG.info("Map point: " + mapPoint);
+                }
+            });
+            stage.showAndWait();
+        } catch (Throwable e) {
+            LOG.error(e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Show the select map box in the general preferences tab
+     */
+    @FXML
+    public void onSelectMaidenhead() {
+        try {
+            // Create the GUI.
+            Stage stage = new Stage();
+            FXMLLoader fxmlLoader = new FXMLLoader(KISSet.class.getResource("fx/ChooseLocationController.fxml"));
+            Parent root = fxmlLoader.load();
+            ChooseLocationController controller = fxmlLoader.getController();
+            Scene scene = new Scene(root, 640, 480);
+            stage.setTitle("Click to select a location on map, then click OK");
+            stage.initOwner(addInterfaceButton.getScene().getWindow());
+            stage.initModality(Modality.WINDOW_MODAL);
+            stage.setScene(scene);
+            controller.setup(stage, () -> {
+                MapPoint mapPoint = controller.getLocation();
+                if (mapPoint != null) {
+                    LOG.info("Map point: " + mapPoint);
+                    maidenheadLocator.setText(Tools.toLocator(mapPoint.getLatitude(), mapPoint.getLongitude()));
+                }
+            });
+            stage.showAndWait();
+        } catch (Throwable e) {
+            LOG.error(e.getMessage(), e);
+        }
     }
 
     @FXML

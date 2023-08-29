@@ -278,13 +278,14 @@ public class BaseMap extends Group {
         return new MapPoint(_lat.get(), _lon.get());
     }
 
-    public Point2D getMapPoint(double lat, double lon) {
-        return getMapPoint(zoom.get(), lat, lon);
+    public void getMapPoint(Point p, double lat, double lon) {
+        getMapPoint(p, zoom.get(), lat, lon);
     }
 
-    private Point2D getMapPoint(double zoom, double lat, double lon) {
+    private void getMapPoint(Point answer, double zoom, double lat, double lon) {
         if (this.getScene() == null) {
-            return null;
+            answer.x = 0;
+            answer.y = 0;
         }
         double n = Math.pow(2, zoom);
         double lat_rad = Math.PI * lat / 180;
@@ -296,8 +297,8 @@ public class BaseMap extends Group {
         double tty = mey - this.getMyHeight() / 2;
         double x = this.getTranslateX() + mex;
         double y = this.getTranslateY() + mey;
-        Point2D answer = new Point2D(x, y);
-        return answer;
+        answer.x = x;
+        answer.y = y;
     }
 
     public ReadOnlyDoubleProperty centerLon() {
@@ -514,12 +515,13 @@ public class BaseMap extends Group {
      * flag and request a next pulse.
      * This is much more performant than redrawing the map on each input event.
      */
-    private void markDirty() {
+    public void markDirty() {
         this.dirty = true;
         calculateCenterCoords();
         this.setNeedsLayout(true);
         Platform.requestNextPulse();
     }
+
 
     private double getMyWidth() {
         return this.getParent().getLayoutBounds().getWidth();

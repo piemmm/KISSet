@@ -14,6 +14,8 @@ import org.prowl.ax25.AX25Frame;
 import org.prowl.kisset.protocols.core.Capability;
 import org.prowl.kisset.protocols.core.Node;
 
+import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.security.MessageDigest;
@@ -99,9 +101,7 @@ public class Tools {
                 if (packet.isAprs()) {
                     InformationField informationField = packet.getAprsInformation();
                     if (informationField != null) {
-                        if (informationField.getAprsData(APRSTypes.T_POSITION) != null ||
-                                informationField.getAprsData(APRSTypes.T_OBJECT) != null ||
-                                informationField.getAprsData(APRSTypes.T_ITEM) != null) {
+                        if (informationField.getAprsData(APRSTypes.T_POSITION) != null || informationField.getAprsData(APRSTypes.T_OBJECT) != null || informationField.getAprsData(APRSTypes.T_ITEM) != null) {
                             isAprs = true;
                         }
                     }
@@ -228,21 +228,19 @@ public class Tools {
      * Calculate distance between two points in latitude and longitude taking
      * into account height difference. If you are not interested in height
      * difference pass 0.0. Uses Haversine method as its base.
-     *
+     * <p>
      * lat1, lon1 Start point lat2, lon2 End point el1 Start altitude in meters
      * el2 End altitude in meters
+     *
      * @returns Distance in Meters
      */
-    public static double distance(double lat1, double lat2, double lon1,
-                                  double lon2, double el1, double el2) {
+    public static double distance(double lat1, double lat2, double lon1, double lon2, double el1, double el2) {
 
         final int R = 6371; // Radius of the earth
 
         double latDistance = Math.toRadians(lat2 - lat1);
         double lonDistance = Math.toRadians(lon2 - lon1);
-        double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
-                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
-                * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
+        double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2) + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         double distance = R * c * 1000; // convert to meters
 
@@ -251,6 +249,63 @@ public class Tools {
         distance = Math.pow(distance, 2) + Math.pow(height, 2);
 
         return Math.sqrt(distance);
+    }
+
+    /**
+     * Convert a lat/lon to maidenhead locator
+     * based on
+     * https://ham.stackexchange.com/questions/221/how-can-one-convert-from-lat-long-to-grid-square
+     */
+    public static String toLocator(double lat, double lon) {
+
+        String alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        String locator = "";
+        lon += 180;
+        lat += 90;
+        locator += alphabet.charAt((int) (lon / 20));
+        locator += alphabet.charAt((int) (lat / 10));
+        lon %= 20;
+        lat %= 10;
+        locator += (int) (lon / 2);
+        locator += (int) lat;
+        lon %= 2;
+        lat %= 1;
+        locator += alphabet.charAt((int) (lon / (5.0 / 60)));
+        locator += alphabet.charAt((int) (lat / (2.5 / 60)));
+        return locator;
+    }
+
+    /**
+     * Convert from a locator to a lat/lon bounding box
+     */
+    public static Rectangle2D locatorToBoundingBox(String locator) {
+        Rectangle2D boundingBox = new Rectangle2D.Double();
+        locator = locator.toUpperCase();
+        double[] bbox = new double[4];
+        bbox[0] = (locator.charAt(0) - 'A') * 20 - 180;
+        bbox[1] = (locator.charAt(1) - 'A') * 10 - 90;
+        bbox[2] = (locator.charAt(2) - '0') * 2;
+        bbox[3] = (locator.charAt(3) - '0');
+
+        bbox[0] += (locator.charAt(4) - 'A') * 5.0 / 60;
+        bbox[1] += (locator.charAt(5) - 'A') * 2.5 / 60;
+        bbox[2] += 2.5 / 60;
+        bbox[3] += 5.0 / 60;
+
+        boundingBox.setRect(bbox[0], bbox[1], bbox[2], bbox[3]);
+
+        return boundingBox;
+    }
+
+    /**
+     * Convert from a locator to a lat lon centered in the bounding box
+     * @return
+     */
+    public static Point2D locatorToLatLonCentered(String locator) {
+        Point2D latlng = new Point2D.Double();
+        Rectangle2D box =  locatorToBoundingBox(locator);
+        latlng.setLocation(box.getCenterX(), box.getCenterY());
+        return latlng;
     }
 
 

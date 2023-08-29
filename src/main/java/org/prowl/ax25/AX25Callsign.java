@@ -19,8 +19,6 @@ package org.prowl.ax25;
  */
 
 
-import org.prowl.ax25.util.StringCache;
-
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Serializable;
@@ -129,9 +127,9 @@ public final class AX25Callsign implements Comparable<AX25Callsign>, Cloneable, 
                     valid = false;
                 }
                 ssid = (byte) tmpSsid;
-                callsign = StringCache.intern(textCallsign.substring(0, pos));
+                callsign = textCallsign.substring(0, pos).intern();
             } else {
-                callsign = StringCache.intern(textCallsign);
+                callsign = textCallsign.intern();
             }
         }
     }
@@ -157,7 +155,7 @@ public final class AX25Callsign implements Comparable<AX25Callsign>, Cloneable, 
                 valid = validateCallsign(textCallsign, startPos, pos);
             }
             ssid = 0;
-            callsign = StringCache.intern(textCallsign.substring(startPos, endPos));
+            callsign = textCallsign.substring(startPos, endPos).intern();
         } else {
             if (pos - startPos < 2) {
 //                    throw new IllegalArgumentException("callsign " + textCallsign + " too short");
@@ -183,9 +181,9 @@ public final class AX25Callsign implements Comparable<AX25Callsign>, Cloneable, 
                     valid = false;
                 }
                 ssid = (byte) tmpSsid;
-                callsign = StringCache.intern(textCallsign.substring(startPos, pos));
+                callsign = textCallsign.substring(startPos, pos).intern();
             } else {
-                callsign = StringCache.intern(textCallsign.substring(startPos, endPos));
+                callsign = textCallsign.substring(startPos, endPos).intern();
             }
         }
     }
@@ -276,7 +274,7 @@ public final class AX25Callsign implements Comparable<AX25Callsign>, Cloneable, 
                 throw new IllegalArgumentException("no characters allowed after whitespace in callsign '" + new String(buf, 0, offset, 6) + "'");
             }
         }
-        callsign = StringCache.intern(new String(b, 0, len));
+        callsign = new String(b, 0, len).intern();
         int b6 = buf[offset + 6];
         h_c = (b6 & 0x80) != 0;
         reserved = (byte) ((b6 & 0x60) >> 5);
@@ -526,10 +524,10 @@ public final class AX25Callsign implements Comparable<AX25Callsign>, Cloneable, 
                 return s;
             } else {
                 if (isRealCallsign(callsign)) {
-                    return cachedToString = StringCache.intern(callsign + '-' + ssid);
+                    return cachedToString = (callsign + '-' + ssid).intern();
                 } else {
                     // if it looks like a Mic-E destination, don't clutter the cache
-                    return cachedToString = callsign + '-' + ssid;
+                    return cachedToString = (callsign + '-' + ssid).intern();
                 }
             }
         }

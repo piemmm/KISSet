@@ -78,7 +78,7 @@ public class OsmTileRetriever implements TileRetriever {
         String key = zoom + "-" + i + "-" + j + ".png";
         File cacheFile = new File(KISSet.INSTANCE.getStorage().getMapStorageDir(), key);
         if (cacheFile.exists()) {
-            return CompletableFuture.completedFuture(new Image(cacheFile.toURI().toString(), false));
+            return CompletableFuture.completedFuture(new Image(cacheFile.toURI().toString(), true));
         }
 
         // Don't redownload the same image attempt over and over.

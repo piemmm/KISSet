@@ -113,8 +113,8 @@ public class MapLayer extends Parent {
      * @param lon the longitude
      * @return a Point2D in pixels
      */
-    protected final Point2D getMapPoint(double lat, double lon) {
-        return baseMap.getMapPoint(lat, lon);
+    protected final void getMapPoint(Point p, double lat, double lon) {
+        baseMap.getMapPoint(p, lat, lon);
     }
 
 }

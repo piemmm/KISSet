@@ -41,6 +41,7 @@ public class APRSNode {
                 icon.setCache(false);
             }
         }
+
         sourceCallsign = packet.getSourceCall();
         destinationAPRSCallsign = packet.getDestinationCall();
 
@@ -71,7 +72,7 @@ public class APRSNode {
             }
             if (newLocation.getLongitude() != location.getLongitude() || newLocation.getLatitude() != location.getLatitude()) {
                 // Only add a point if the location has changed.
-                trackLine.addPoint(newLocation);
+                trackLine.addPoint(this, newLocation);
             }
         }
         this.location = newLocation;
