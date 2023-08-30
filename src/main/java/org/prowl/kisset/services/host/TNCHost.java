@@ -110,7 +110,8 @@ public class TNCHost {
     }
 
     // Start the TNC host
-    public void start() {
+    public void
+    start() {
         Platform.runLater(new Runnable() {
             @Override
             public void run() {

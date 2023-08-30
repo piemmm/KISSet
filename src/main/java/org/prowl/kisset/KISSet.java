@@ -21,6 +21,8 @@ import org.prowl.kisset.config.Config;
 import org.prowl.kisset.eventbus.SingleThreadBus;
 import org.prowl.kisset.eventbus.events.ConfigurationChangedEvent;
 import org.prowl.kisset.fx.*;
+import org.prowl.kisset.gui.terminals.Terminal;
+import org.prowl.kisset.gui.terminals.TerminalHost;
 import org.prowl.kisset.io.InterfaceHandler;
 import org.prowl.kisset.objects.Storage;
 import org.prowl.kisset.protocols.RoutingListener;
@@ -29,15 +31,18 @@ import org.prowl.kisset.protocols.aprs.APRSListener;
 import org.prowl.kisset.protocols.dxcluster.DXListener;
 import org.prowl.kisset.protocols.mqtt.MQTTClient;
 import org.prowl.kisset.services.Service;
+import org.prowl.kisset.services.host.TNCHost;
 import org.prowl.kisset.services.remote.pms.PMSService;
 import org.prowl.kisset.statistics.Statistics;
 
 import javax.swing.*;
-import javax.swing.filechooser.FileSystemView;
 import java.awt.*;
 import java.awt.desktop.AppReopenedEvent;
 import java.awt.desktop.AppReopenedListener;
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.security.Security;
 import java.util.List;
@@ -45,7 +50,10 @@ import java.util.*;
 
 public class KISSet extends Application {
 
-    private static final Log LOG = LogFactory.getLog("KISSet");
+
+    private static Log LOG;
+
+
     public static KISSet INSTANCE;
     public String myCall = "";
     protected List<Service> serviceList = Collections.synchronizedList(new ArrayList<>());
@@ -58,8 +66,63 @@ public class KISSet extends Application {
     private Stage aprsStage;
     private Storage storage;
 
+    private OutputStream stdOut;
+    private InputStream stdIn;
+
+    /**
+     * If this is true, then we are running in a terminal
+     */
+    public static boolean terminalMode = false;
+
+    public KISSet() {
+        super();
+    }
+
     public static void main(String[] args) {
-        launch();
+
+        // Parse command line arguments
+        for (String s : args) {
+            String setting = "";
+            if (s.startsWith("--")) {
+                setting = s.substring(2);
+            } else if (s.startsWith("-")) {
+                setting = s.substring(1);
+            }
+
+            if (s.contains("=")) {
+                // property=value setting
+                String[] parts = s.split("=");
+                if (parts.length == 2) {
+                    // System.setProperty(parts[0], parts[1]);
+                }
+            } else {
+                // just a seting like --terminal or something like that
+                if (setting.equalsIgnoreCase("terminal")) {
+                    terminalMode = true;
+                } else if (setting.equalsIgnoreCase("help") || setting.equalsIgnoreCase("h") || setting.equalsIgnoreCase("?")) {
+                    System.out.println("KISSet command line options:");
+                    System.out.println("--terminal - Run in terminal mode");
+                    System.out.println("--help - Show this help");
+                    System.exit(0);
+                }
+            }
+        }
+
+        ;
+
+        // Also, if we're unable to open any windows, then set terminalMode to true
+        if (GraphicsEnvironment.isHeadless()) {
+            terminalMode = true;
+        }
+
+        if (!terminalMode) {
+            launch();
+        } else {
+            KISSet kisset = new KISSet();
+            kisset.initTerminalMode();
+            // launchTerminalMode();
+        }
+
     }
 
     @Override
@@ -86,8 +149,6 @@ public class KISSet extends Application {
                 Application.setUserAgentStylesheet(new PrimerLight().getUserAgentStylesheet());
             }
 
-            // Init resource bundles.
-            Messages.init();
 
             initAll();
         } catch (Throwable e) {
@@ -184,6 +245,8 @@ public class KISSet extends Application {
 
     public void initAll() {
         try {
+            // Init resource bundles.
+            Messages.init();
 
             // This will always be desktop=
             System.setProperty("javafx.platform", "Desktop");
@@ -228,14 +291,17 @@ public class KISSet extends Application {
             // APRS-IS client
             APRSISClient client = APRSISClient.INSTANCE;
 
+            // MQTT for packet uploads
             MQTTClient mqttClient = new MQTTClient();
             mqttClient.start();
 
 
-            initMonitor();
-            initDX();
-            initFBB();
-            initAPRS();
+            if (!terminalMode) {
+                initMonitor();
+                initDX();
+                initFBB();
+                initAPRS();
+            }
             //  testConnectionTerminal();
         } catch (Throwable e) {
             LOG.error(e.getMessage(), e);
@@ -447,15 +513,17 @@ public class KISSet extends Application {
 
     @Override
     public void init() throws Exception {
+        LOG = LogFactory.getLog("KISSet");
         super.init();
         INSTANCE = KISSet.this;
 
         // Use bouncycastle for crypto
         Security.addProvider(new BouncyCastleProvider());
         // There is an issue with x25519 keys on some systems, so we disable them for the moment.
-        System.setProperty("jdk.tls.namedGroups","secp256r1, secp384r1, secp521r1, ffdhe2048, ffdhe3072, ffdhe4096, ffdhe6144, ffdhe8192");
+        System.setProperty("jdk.tls.namedGroups", "secp256r1, secp384r1, secp521r1, ffdhe2048, ffdhe3072, ffdhe4096, ffdhe6144, ffdhe8192");
 
 //        // Push debugging to a file if we are debugging a built app with no console
+//        if (!terminalMode) {
 //        try {
 //            File outputFile = File.createTempFile("debug", ".log", FileSystemView.getFileSystemView().getDefaultDirectory());
 //            PrintStream output = new PrintStream(new BufferedOutputStream(new FileOutputStream(outputFile)), true);
@@ -464,6 +532,43 @@ public class KISSet extends Application {
 //        } catch (IOException e) {
 //            e.printStackTrace();
 //        }
+//        }
+    }
+
+    public void initTerminalMode() {
+        INSTANCE = KISSet.this;
+
+        // Redirect stdout/err
+        stdOut = System.out;
+        stdIn = System.in;
+
+        System.setErr(new PrintStream(PrintStream.nullOutputStream()));
+        System.setOut(new PrintStream(PrintStream.nullOutputStream()));
+        LOG = LogFactory.getLog("KISSet");
+        initAll();
+
+        TNCHost tncHost = new TNCHost(new TerminalHost() {
+            @Override
+            public Terminal getTerminal() {
+                return null;
+            }
+
+            @Override
+            public void setTerminal(Terminal terminal) {
+            }
+
+            @Override
+            public void setStatus(String statusText, int currentStream) {
+            }
+        }, stdIn, stdOut);
+    }
+
+    public InputStream getStdIn() {
+        return stdIn;
+    }
+
+    public OutputStream getStdOut() {
+        return stdOut;
     }
 
     public Statistics getStatistics() {
