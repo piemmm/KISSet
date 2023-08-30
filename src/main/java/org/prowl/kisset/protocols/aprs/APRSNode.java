@@ -79,13 +79,15 @@ public class APRSNode {
         return location;
     }
 
-    public void updateLocation(long time, MapPoint newLocation, APRSController.APRSLayer layer) {
+    public boolean updateLocation(long time, MapPoint newLocation, APRSController.APRSLayer layer) {
+        boolean created = false;
         if (location != null) {
             if (trackLine == null) {
                 // Lazy create the track line
                 trackLine = new TrackShape(layer);
                 trackLine.setStroke(Color.RED);
                 trackLine.setStrokeWidth(4);
+                created = true;
             }
             if (newLocation.getLongitude() != location.getLongitude() || newLocation.getLatitude() != location.getLatitude()) {
                 // Only add a point if the location has changed.
@@ -93,7 +95,7 @@ public class APRSNode {
             }
         }
         this.location = newLocation;
-
+return created;
     }
 
     public void setIcon(Node icon) {

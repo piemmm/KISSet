@@ -185,7 +185,8 @@ public class APRSController {
         public boolean hideIfInvisible(APRSNode node) {
 
             Node icon = node.getIcon();
-            if (bounds.contains(node.x, node.y)) {
+
+            if (bounds.contains(node.x, node.y) || (node.getTrack() != null && (node.getTrack().intersects(bounds)))) {
                 if (!node.isAddedToParent()) {
                     node.setAddedToParent(true);
                     //    node.getIcon().setVisible(true);
@@ -193,8 +194,7 @@ public class APRSController {
                         updateNode(node);
                         aprsLayer.getChildren().add(icon);
                         if (node.getTrack() != null) {
-                            // commented out because it's just easier not having to iterate to work out intersections.
-                            //aprsLayer.getChildren().add(node.getTrack());
+                            aprsLayer.getChildren().add(node.getTrack());
                         }
                     });
                 }
@@ -205,7 +205,7 @@ public class APRSController {
                     Platform.runLater(() -> {
                         aprsLayer.getChildren().remove(icon);
                         if (node.getTrack() != null) {
-                            //aprsLayer.getChildren().remove(node.getTrack());
+                            aprsLayer.getChildren().remove(node.getTrack());
                         }
                     });
                 }
@@ -266,21 +266,28 @@ public class APRSController {
                     // transmit an symbol on the packet we first receive, but instead on later packets.
                     if (node.getIcon() != null && !(node.getIcon() instanceof Circle)) {
                         Platform.runLater(() -> {
-                            aprsLayer.getChildren().remove(existingNode.getIcon());
-                            existingNode.setIcon(node.getIcon());
+                            synchronized (existingNode) {
+                                aprsLayer.getChildren().remove(existingNode.getIcon());
+                                if (node.getTrack() != null) {
+                                    aprsLayer.getChildren().remove(existingNode.getTrack());
+                                }
+                                existingNode.setIcon(node.getIcon());
 
-                            // Make sure it's already translated to the correct location
-                            Point mapPoint = new Point();
-                            Node icon = node.getIcon();
-                            getMapPoint(mapPoint, existingNode.getLocation().getLatitude(), existingNode.getLocation().getLongitude());
-                            icon.setVisible(true);
-                            icon.setTranslateX(mapPoint.x - (16));
-                            icon.setTranslateY(mapPoint.y - 16);
-                            node.setIcon(null);
+                                // Make sure it's already translated to the correct location
+                                Point mapPoint = new Point();
+                                Node icon = node.getIcon();
+                                getMapPoint(mapPoint, existingNode.getLocation().getLatitude(), existingNode.getLocation().getLongitude());
+                                icon.setVisible(true);
+                                icon.setTranslateX(mapPoint.x - (16));
+                                icon.setTranslateY(mapPoint.y - 16);
+                                existingNode.x = mapPoint.x - (16);
+                                existingNode.y = mapPoint.y - 16;
+                                node.setIcon(null);
 
-                            // Let our hide and show thread know that we've changed the icon and that it's not currently
-                            // added to the node tree.
-                            node.setAddedToParent(false);
+                                // Let our hide and show thread know that we've changed the icon and that it's not currently
+                                // added to the node tree.
+                                existingNode.setAddedToParent(false);
+                            }
                         });
                     }
 
@@ -298,14 +305,19 @@ public class APRSController {
 
         public void animateNode(Node node) {
 
-            FadeTransition ft = new FadeTransition();
-            ft.setNode(node);
-            ft.setFromValue(1.0);
-            ft.setToValue(0.0);
-            ft.setDuration(javafx.util.Duration.millis(500));
-            ft.setCycleCount(8);
-            ft.setAutoReverse(true);
-            ft.play();
+
+
+
+
+
+//            FadeTransition ft = new FadeTransition();
+//            ft.setNode(node);
+//            ft.setFromValue(1.0);
+//            ft.setToValue(0.0);
+//            ft.setDuration(javafx.util.Duration.millis(500));
+//            ft.setCycleCount(8);
+//            ft.setAutoReverse(true);
+//            ft.play();
 //
 //            RotateTransition rt = new RotateTransition();
 //            rt.setNode(node);
