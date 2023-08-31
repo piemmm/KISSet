@@ -53,7 +53,7 @@ import java.security.Security;
 import java.util.List;
 import java.util.*;
 
-public class KISSet extends Application {
+public class KISSet {
 
 
     private static Log LOG;
@@ -65,12 +65,7 @@ public class KISSet extends Application {
     private Config configuration;
     private InterfaceHandler interfaceHandler;
     private Statistics statistics;
-    private Stage monitorStage;
-    private Stage dxStage;
-    private Stage fbbStage;
-    private Stage aprsStage;
     private Storage storage;
-
     private OutputStream stdOut;
     private InputStream stdIn;
 
@@ -81,6 +76,7 @@ public class KISSet extends Application {
 
     public KISSet() {
         super();
+        INSTANCE = this;
     }
 
     public static void main(String[] args) {
@@ -119,6 +115,18 @@ public class KISSet extends Application {
             }
         }
 
+        // Old check to test if headless is actually active as we don't actually trust isHeadless()
+        if (!GraphicsEnvironment.isHeadless()) {
+            try {
+                JFrame frame = new JFrame("test");
+                frame.setVisible(true);
+                frame.setVisible(false);
+            } catch (Throwable e) {
+                terminalMode = true;
+                System.setProperty("java.awt.headless", "true");
+            }
+        }
+
 
         // Also, if we're unable to open any windows, then set terminalMode to true
         if (GraphicsEnvironment.isHeadless()) {
@@ -128,137 +136,27 @@ public class KISSet extends Application {
             terminalMode = true;
         }
 
+        // Main class holding non-gui stuff.
+        KISSet kisset = new KISSet();
+
         if (!terminalMode) {
-            launch();
-        } else {
-            System.setProperty("java.awt.headless", "true");
-            KISSet kisset = new KISSet();
+            kisset.initAll();
+            KISSetApp.main(args);
+         } else {
+            System.setProperty("javafx.macosx.embedded", "true");
+
+
             kisset.initTerminalMode(terminalType);
             // launchTerminalMode();
         }
 
     }
 
-    @Override
-    public void start(Stage stage) throws IOException {
-        SingleThreadBus.INSTANCE.register(this);
-        Platform.setImplicitExit(false);
-        try {
-
-            // Find out if the system theme is a 'dark' or a 'light' theme.
-            final OsThemeDetector detector = OsThemeDetector.getDetector();
-            detector.registerListener(isDark -> {
-                Platform.runLater(() -> {
-                    if (isDark) {
-                        Application.setUserAgentStylesheet(new PrimerDark().getUserAgentStylesheet());
-                    } else {
-                        Application.setUserAgentStylesheet(new PrimerLight().getUserAgentStylesheet());
-                    }
-                });
-            });
-            final boolean isDarkThemeUsed = detector.isDark();
-            if (isDarkThemeUsed) {
-                Application.setUserAgentStylesheet(new PrimerDark().getUserAgentStylesheet());
-            } else {
-                Application.setUserAgentStylesheet(new PrimerLight().getUserAgentStylesheet());
-            }
-
-
-            initAll();
-        } catch (Throwable e) {
-            LOG.error(e.getMessage(), e);
-            System.exit(1);
-        }
-
-        // Create the GUI.
-        FXMLLoader fxmlLoader = new FXMLLoader(KISSet.class.getResource("fx/KISSetController.fxml"));
-        Parent root = fxmlLoader.load();
-        KISSetController controller = fxmlLoader.getController();
-        Scene scene = new Scene(root, 750, 480);
-        stage.setTitle("KISSet");
-        stage.setScene(scene);
-        stage.setOpacity(1 - (configuration.getConfig(Conf.terminalTransparency, Conf.terminalTransparency.intDefault()) / 100.0));
-
-        stage.show();
-        controller.setup();
-
-        stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
-            @Override
-            public void handle(WindowEvent t) {
-                stage.hide();
-            }
-        });
-
-        // Set the window icon
-        stage.getIcons().add(new Image(KISSet.class.getResourceAsStream("img/icon.png")));
-
-        // Set the taskbar icon if the OS supports it
-        try {
-            if (Taskbar.isTaskbarSupported()) {
-                Taskbar task = Taskbar.getTaskbar();
-                if (task.isSupported(Taskbar.Feature.ICON_IMAGE)) {
-                    Toolkit toolkit = Toolkit.getDefaultToolkit();
-                    java.awt.Image icon = toolkit.getImage(getClass().getResource("img/icon.png"));
-                    task.setIconImage(icon);
-                }
-            }
-        } catch (SecurityException e) {
-            LOG.debug(e.getMessage(), e);
-        }
-
-
-        // Show the main window when the dock icon is clicked.
-        if (Desktop.isDesktopSupported()) {
-            Desktop.getDesktop().addAppEventListener(new AppReopenedListener() {
-                @Override
-                public void appReopened(AppReopenedEvent e) {
-                    Platform.runLater(() -> {
-                        stage.show();
-                    });
-                }
-            });
-        }
-        createTrayIcon(stage);
-    }
-
-    public void createTrayIcon(Stage stage) {
-        try {
-            if (SystemTray.isSupported()) {
-                Toolkit toolkit = Toolkit.getDefaultToolkit();
-                java.awt.Image icon = new ImageIcon(getClass().getResource("img/tray-white.png")).getImage();
-                //toolkit.getImage(getClass().getResource("img/icon.png"));
-                SystemTray tray = SystemTray.getSystemTray();
-                TrayIcon trayIcon = new TrayIcon(icon);
-                trayIcon.setImageAutoSize(true);
-
-                // Simple click listener
-                trayIcon.addMouseListener(new java.awt.event.MouseAdapter() {
-                    @Override
-                    public void mouseClicked(java.awt.event.MouseEvent evt) {
-                        Platform.runLater(() -> {
-                            stage.show();
-                        });
-                    }
-                });
-
-                // We can change and use this for menu popups another time.
-                trayIcon.addActionListener(e -> {
-                    Platform.runLater(() -> {
-                        stage.show();
-                    });
-                });
-
-                // Add the icon to the system tray
-                tray.add(trayIcon);
-            }
-        } catch (Throwable e) {
-            LOG.debug(e.getMessage(), e);
-        }
-
-    }
 
     public void initAll() {
         try {
+            LOG = LogFactory.getLog("KISSet");
+
             // Init resource bundles.
             Messages.init();
 
@@ -309,52 +207,12 @@ public class KISSet extends Application {
             MQTTClient mqttClient = new MQTTClient();
             mqttClient.start();
 
-
-            if (!terminalMode) {
-                initMonitor();
-                initDX();
-                initFBB();
-                initAPRS();
-            }
-            //  testConnectionTerminal();
         } catch (Throwable e) {
             LOG.error(e.getMessage(), e);
             System.exit(1);
         }
     }
 
-//    public void testConnectionTerminal() {
-//        try {
-//            Stage terminalStage = new Stage();
-//            FXMLLoader fxmlLoader = new FXMLLoader(KISSet.class.getResource("fx/TerminalController.fxml"));
-//            Parent root = fxmlLoader.load();
-//            TerminalController controller = fxmlLoader.getController();
-//            Scene scene = new Scene(root, 700, 580);
-//            terminalStage.setTitle("Connection test");
-//            terminalStage.setScene(scene);
-//            terminalStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
-//                @Override
-//                public void handle(WindowEvent t) {
-//                    SingleThreadBus.INSTANCE.unregister(controller);
-//                    terminalStage.close();
-//                }
-//            });
-//            terminalStage.setOpacity(1 - (configuration.getConfig(Conf.monitorTransparency, Conf.monitorTransparency.intDefault()) / 100.0));
-//            // This is an unfortunate hack for layout issues.
-//            terminalStage.show();
-//            controller.setup();
-//
-//
-//
-//
-////
-//            Socket s = new Socket(InetAddress.getByName("glasstty.com"), 6502);
-//            controller.setConnection(s.getInputStream(), s.getOutputStream());
-//           controller.start();
-//        } catch (Throwable e) {
-//            LOG.error(e.getMessage(), e);
-//        }
-//    }
 
     public void createServices() {
         // Create services
@@ -371,183 +229,7 @@ public class KISSet extends Application {
         }
     }
 
-    public void showPreferences() {
-        try {
-            // Create the GUI.
-            Stage stage = new Stage();
-            FXMLLoader fxmlLoader = new FXMLLoader(KISSet.class.getResource("fx/PreferencesController.fxml"));
-            Parent root = fxmlLoader.load();
-            PreferencesController controller = fxmlLoader.getController();
-            Scene scene = new Scene(root, 640, 480);
-            stage.setTitle("Preferences");
-            stage.setScene(scene);
-            stage.show();
-            controller.setup();
-        } catch (Throwable e) {
-            LOG.error(e.getMessage(), e);
-        }
-    }
 
-    public void initMonitor() {
-        try {
-            if (monitorStage == null) {
-                monitorStage = new Stage();
-                FXMLLoader fxmlLoader = new FXMLLoader(KISSet.class.getResource("fx/MonitorController.fxml"));
-                Parent root = fxmlLoader.load();
-                MonitorController controller = fxmlLoader.getController();
-                Scene scene = new Scene(root, 800, 280);
-                monitorStage.setTitle("Packet Monitor");
-                monitorStage.setScene(scene);
-                monitorStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
-                    @Override
-                    public void handle(WindowEvent t) {
-                        monitorStage.close();
-                    }
-                });
-                monitorStage.setOpacity(1 - (configuration.getConfig(Conf.monitorTransparency, Conf.monitorTransparency.intDefault()) / 100.0));
-
-
-                controller.setup();
-            }
-        } catch (IOException e) {
-            LOG.error(e.getMessage(), e);
-        }
-    }
-
-    public void showMonitor() {
-        monitorStage.show();
-    }
-
-    public void initDX() {
-        try {
-            if (dxStage == null) {
-                dxStage = new Stage();
-                FXMLLoader fxmlLoader = new FXMLLoader(KISSet.class.getResource("fx/DXController.fxml"));
-                Parent root = fxmlLoader.load();
-                DXController controller = fxmlLoader.getController();
-                Scene scene = new Scene(root, 800, 280);
-                dxStage.setTitle("DX Monitor");
-                dxStage.setScene(scene);
-                dxStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
-                    @Override
-                    public void handle(WindowEvent t) {
-                        dxStage.close();
-                    }
-                });
-                dxStage.setOpacity(1 - (configuration.getConfig(Conf.dxTransparency, Conf.dxTransparency.intDefault()) / 100.0));
-
-
-                controller.setup();
-            }
-        } catch (IOException e) {
-            LOG.error(e.getMessage(), e);
-        }
-    }
-
-    public void showDX() {
-        dxStage.show();
-    }
-
-    public void initFBB() {
-        try {
-            if (fbbStage == null) {
-                fbbStage = new Stage();
-                FXMLLoader fxmlLoader = new FXMLLoader(KISSet.class.getResource("fx/FBBController.fxml"));
-                Parent root = fxmlLoader.load();
-                FBBController controller = fxmlLoader.getController();
-                Scene scene = new Scene(root, 800, 280);
-                fbbStage.setTitle("Broadcast FBB Messages");
-                fbbStage.setScene(scene);
-                fbbStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
-                    @Override
-                    public void handle(WindowEvent t) {
-                        fbbStage.close();
-                    }
-                });
-                fbbStage.setOpacity(1 - (configuration.getConfig(Conf.dxTransparency, Conf.dxTransparency.intDefault()) / 100.0));
-
-
-                controller.setup();
-            }
-        } catch (IOException e) {
-            LOG.error(e.getMessage(), e);
-        }
-    }
-
-    public void showFBB() {
-        fbbStage.show();
-    }
-
-    public void initAPRS() {
-        try {
-            if (aprsStage == null) {
-                aprsStage = new Stage();
-                FXMLLoader fxmlLoader = new FXMLLoader(KISSet.class.getResource("fx/APRSController.fxml"));
-                Parent root = fxmlLoader.load();
-                APRSController controller = fxmlLoader.getController();
-                Scene scene = new Scene(root, 640, 640);
-                aprsStage.setTitle("APRS Map Viewer");
-                aprsStage.setScene(scene);
-                aprsStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
-                    @Override
-                    public void handle(WindowEvent t) {
-                        aprsStage.close();
-                    }
-                });
-
-
-                controller.setup();
-            }
-        } catch (IOException e) {
-            LOG.error(e.getMessage(), e);
-        }
-    }
-
-    public void showAPRS() {
-        aprsStage.show();
-    }
-
-
-    public void showAbout() {
-        try {
-            // Create the GUI.
-            Stage stage = new Stage();
-            FXMLLoader fxmlLoader = new FXMLLoader(KISSet.class.getResource("fx/AboutController.fxml"));
-            Parent root = fxmlLoader.load();
-            AboutController controller = fxmlLoader.getController();
-            Scene scene = new Scene(root, 350, 380);
-            stage.setTitle("About KISSet");
-            stage.setScene(scene);
-            stage.show();
-            controller.setup();
-        } catch (Throwable e) {
-            LOG.error(e.getMessage(), e);
-        }
-    }
-
-    @Override
-    public void init() throws Exception {
-        LOG = LogFactory.getLog("KISSet");
-        super.init();
-        INSTANCE = KISSet.this;
-
-        // Use bouncycastle for crypto
-        Security.addProvider(new BouncyCastleProvider());
-        // There is an issue with x25519 keys on some systems, so we disable them for the moment.
-        System.setProperty("jdk.tls.namedGroups", "secp256r1, secp384r1, secp521r1, ffdhe2048, ffdhe3072, ffdhe4096, ffdhe6144, ffdhe8192");
-
-//        // Push debugging to a file if we are debugging a built app with no console
-//        if (!terminalMode) {
-//        try {
-//            File outputFile = File.createTempFile("debug", ".log", FileSystemView.getFileSystemView().getDefaultDirectory());
-//            PrintStream output = new PrintStream(new BufferedOutputStream(new FileOutputStream(outputFile)), true);
-//            System.setOut(output);
-//            System.setErr(output);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//        }
-    }
 
     public void initTerminalMode(Class terminalType) {
         INSTANCE = KISSet.this;
@@ -562,7 +244,6 @@ public class KISSet extends Application {
         // Force the logs to a null output
         System.setErr(new PrintStream(PrintStream.nullOutputStream()));
         System.setOut(new PrintStream(PrintStream.nullOutputStream()));
-        LOG = LogFactory.getLog("KISSet");
         initAll();
 
         // Our default terminal is ANSI

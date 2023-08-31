@@ -112,7 +112,7 @@ public class TNCHost {
     // Start the TNC host
     public void
     start() {
-        Platform.runLater(new Runnable() {
+        Tools.runOnThread(new Runnable() {
             @Override
             public void run() {
 
@@ -124,7 +124,7 @@ public class TNCHost {
 
                     updateStatus();
 
-                    Platform.runLater(() -> {
+                    Tools.runOnThread(() -> {
                         Tools.delay(1000);
                         try {
                             checkConfiguration();

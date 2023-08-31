@@ -24,6 +24,7 @@ import javafx.util.StringConverter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.prowl.kisset.KISSet;
+import org.prowl.kisset.KISSetApp;
 import org.prowl.kisset.Messages;
 import org.prowl.kisset.config.Conf;
 import org.prowl.kisset.eventbus.SingleThreadBus;
@@ -33,11 +34,13 @@ import org.prowl.kisset.services.host.parser.CommandParser;
 import org.prowl.kisset.services.host.parser.Mode;
 import org.prowl.kisset.userinterface.desktop.terminals.*;
 import org.prowl.kisset.util.LoopingCircularBuffer;
+import org.prowl.kisset.util.PipedIOStream;
 import org.prowl.kisset.util.Tools;
 
 import java.awt.*;
 import java.awt.desktop.AboutEvent;
 import java.awt.desktop.AboutHandler;
+import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.lang.reflect.Constructor;
@@ -65,8 +68,8 @@ public class KISSetController implements TerminalHost {
     private ChoiceBox terminalTypeBox;
     private final LoopingCircularBuffer dataBuffer = new LoopingCircularBuffer(10240);
     // TerminalCanvas canvas;
-    private PipedInputStream inpis;
-    private PipedOutputStream outpos;
+    private PipedIOStream inpis;
+    private OutputStream outpos;
     private TNCHost tncHost;
 
 
@@ -80,42 +83,42 @@ public class KISSetController implements TerminalHost {
 
     @FXML
     protected void onShowFBB() {
-        KISSet.INSTANCE.showFBB();
+        KISSetApp.INSTANCE.showFBB();
     }
 
     @FXML
     protected void onShowDX() {
-        KISSet.INSTANCE.showDX();
+        KISSetApp.INSTANCE.showDX();
     }
 
     @FXML
     protected void onShowAPRS() {
-        KISSet.INSTANCE.showAPRS();
+        KISSetApp.INSTANCE.showAPRS();
     }
 
     @FXML
     protected void onPreferencesAction() {
-        KISSet.INSTANCE.showPreferences();
+        KISSetApp.INSTANCE.showPreferences();
     }
 
     @FXML
     protected void onMonitorAction() {
-        KISSet.INSTANCE.showMonitor();
+        KISSetApp.INSTANCE.showMonitor();
     }
 
     @FXML
     protected void onDXAction() {
-        KISSet.INSTANCE.showDX();
+        KISSetApp.INSTANCE.showDX();
     }
 
     @FXML
     protected void onFBBAction() {
-        KISSet.INSTANCE.showFBB();
+        KISSetApp.INSTANCE.showFBB();
     }
 
     @FXML
     protected void onAPRSAction() {
-        KISSet.INSTANCE.showAPRS();
+        KISSetApp.INSTANCE.showAPRS();
     }
 
     @FXML
@@ -203,7 +206,7 @@ public class KISSetController implements TerminalHost {
                     @Override
                     public void handleAbout(AboutEvent e) {
                         Platform.runLater(() -> {
-                            KISSet.INSTANCE.showAbout();
+                            KISSetApp.INSTANCE.showAbout();
                         });
 
                     }
@@ -248,20 +251,17 @@ public class KISSetController implements TerminalHost {
     }
 
     public void startTerminal() {
-        inpis = new PipedInputStream();
-        PipedOutputStream inpos = new PipedOutputStream();
-        PipedInputStream outpis = new PipedInputStream();
-        outpos = new PipedOutputStream();
 
-        try {
-            inpis.connect(inpos);
-            outpis.connect(outpos);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        // Create our pipes for streams
+        inpis = new PipedIOStream();
+        PipedIOStream outpis = new PipedIOStream();
+        outpos = outpis.getOutputStream();
+        OutputStream inpos = inpis.getOutputStream();
 
+        // Command processor host
         tncHost = new TNCHost(this, outpis, inpos);
 
+        // Start feeding the terminal responses from it
         Tools.runOnThread(() -> {
             try {
                 while (true) {
