@@ -49,8 +49,11 @@ jobs:
           java-package: jdk+fx
           cache: 'maven'
       - name: "Build with Maven"
-        if: matrix.os != 'macos-latest'
+        if: ${{ (matrix.os != 'macos-latest') && (matrix.os != 'rpi-armv7l-latest') }}
         run: mvn -B clean install --file pom.xml
+      - name: "Build with Maven for armv7l"
+        if: matrix.os == 'rpi-armv7l-latest'
+        run: mvn -B clean install -Djavafx.platform=linux-arm32-monocle --file pom.xml
       - name: "Build with Maven (macOS No Signing)"
         env:
           MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
