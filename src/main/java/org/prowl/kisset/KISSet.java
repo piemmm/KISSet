@@ -559,7 +559,8 @@ public class KISSet extends Application {
         stdOut = System.out;
         stdIn = System.in;
 
-        //System.setErr(new PrintStream(PrintStream.nullOutputStream()));
+        // Force the logs to a null output
+        System.setErr(new PrintStream(PrintStream.nullOutputStream()));
         System.setOut(new PrintStream(PrintStream.nullOutputStream()));
         LOG = LogFactory.getLog("KISSet");
         initAll();
