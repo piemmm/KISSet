@@ -11,8 +11,8 @@ import org.apache.commons.logging.LogFactory;
 import org.prowl.kisset.KISSet;
 import org.prowl.kisset.config.Conf;
 import org.prowl.kisset.eventbus.events.ConfigurationChangedEvent;
-import org.prowl.kisset.gui.terminals.TeletextTerminal;
-import org.prowl.kisset.gui.terminals.Terminal;
+import org.prowl.kisset.userinterface.desktop.terminals.TeletextTerminal;
+import org.prowl.kisset.userinterface.desktop.terminals.Terminal;
 import org.prowl.kisset.util.Tools;
 
 import java.io.IOException;

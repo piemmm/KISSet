@@ -1,4 +1,4 @@
-package org.prowl.kisset.gui.terminals;
+package org.prowl.kisset.userinterface.desktop.terminals;
 
 import org.prowl.kisset.util.ANSI;
 
@@ -19,22 +19,23 @@ public class DebugTerminal extends ANSITerminal {
 
         if (b == 10) {
             lastByteWasCR = false;
-            // ignore unprintable CR (but we let escape through)
+            // Write the hex and update the line
+            writeHex(b);
             updateCurrentLine();
         } else if (b == 13) {
             lastByteWasCR = true;
+            // Write the hex and update the line
+            writeHex(b);
+            updateCurrentLine();
+            // Newline time
             currentLine = new StringBuilder(); // don't use .delete as the backing byte[] would never get trimmed.
             makeNewLine();
             clearSelection();
-
         } else {
+            // Just write the byte and hexify it if it's not a printable char
             lastByteWasCR = false;
             if (b < 32 || b > 128) {
-                currentLine.append(ANSI.YELLOW);
-                currentLine.append('<');
-                currentLine.append(Integer.toString(b, 16));
-                currentLine.append('>');
-                currentLine.append(ANSI.NORMAL);
+                writeHex(b);
             } else {
                 currentLine.append((char) b);
             }
@@ -45,5 +46,12 @@ public class DebugTerminal extends ANSITerminal {
         queueRedraw();
 
     }
+public void writeHex(int b) {
+    currentLine.append(ANSI.YELLOW);
+    currentLine.append('<');
+    currentLine.append(String.format("%02X", b));
+    currentLine.append('>');
+    currentLine.append(ANSI.NORMAL);
+}
 
 }

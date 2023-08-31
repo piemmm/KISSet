@@ -1,4 +1,4 @@
-package org.prowl.kisset.gui.terminals;
+package org.prowl.kisset.userinterface.desktop.terminals;
 
 public interface TerminalHost {
 

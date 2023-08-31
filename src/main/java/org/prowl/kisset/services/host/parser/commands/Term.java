@@ -1,10 +1,10 @@
 package org.prowl.kisset.services.host.parser.commands;
 
 import org.prowl.kisset.annotations.TNCCommand;
-import org.prowl.kisset.gui.terminals.ANSITerminal;
-import org.prowl.kisset.gui.terminals.DebugTerminal;
-import org.prowl.kisset.gui.terminals.PlainTextTerminal;
-import org.prowl.kisset.gui.terminals.TeletextTerminal;
+import org.prowl.kisset.userinterface.desktop.terminals.ANSITerminal;
+import org.prowl.kisset.userinterface.desktop.terminals.DebugTerminal;
+import org.prowl.kisset.userinterface.desktop.terminals.PlainTextTerminal;
+import org.prowl.kisset.userinterface.desktop.terminals.TeletextTerminal;
 import org.prowl.kisset.services.host.parser.Mode;
 
 import java.io.IOException;

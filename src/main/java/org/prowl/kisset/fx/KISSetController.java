@@ -28,10 +28,10 @@ import org.prowl.kisset.Messages;
 import org.prowl.kisset.config.Conf;
 import org.prowl.kisset.eventbus.SingleThreadBus;
 import org.prowl.kisset.eventbus.events.ConfigurationChangedEvent;
-import org.prowl.kisset.gui.terminals.*;
 import org.prowl.kisset.services.host.TNCHost;
 import org.prowl.kisset.services.host.parser.CommandParser;
 import org.prowl.kisset.services.host.parser.Mode;
+import org.prowl.kisset.userinterface.desktop.terminals.*;
 import org.prowl.kisset.util.LoopingCircularBuffer;
 import org.prowl.kisset.util.Tools;
 

@@ -21,8 +21,6 @@ import org.prowl.kisset.config.Config;
 import org.prowl.kisset.eventbus.SingleThreadBus;
 import org.prowl.kisset.eventbus.events.ConfigurationChangedEvent;
 import org.prowl.kisset.fx.*;
-import org.prowl.kisset.gui.terminals.Terminal;
-import org.prowl.kisset.gui.terminals.TerminalHost;
 import org.prowl.kisset.io.InterfaceHandler;
 import org.prowl.kisset.objects.Storage;
 import org.prowl.kisset.protocols.RoutingListener;
@@ -32,8 +30,15 @@ import org.prowl.kisset.protocols.dxcluster.DXListener;
 import org.prowl.kisset.protocols.mqtt.MQTTClient;
 import org.prowl.kisset.services.Service;
 import org.prowl.kisset.services.host.TNCHost;
+import org.prowl.kisset.services.host.parser.Mode;
 import org.prowl.kisset.services.remote.pms.PMSService;
 import org.prowl.kisset.statistics.Statistics;
+import org.prowl.kisset.userinterface.desktop.terminals.Terminal;
+import org.prowl.kisset.userinterface.desktop.terminals.TerminalHost;
+import org.prowl.kisset.userinterface.stdinout.StdANSI;
+import org.prowl.kisset.userinterface.stdinout.StdANSIWindowed;
+import org.prowl.kisset.userinterface.stdinout.StdTerminal;
+import sun.misc.Signal;
 
 import javax.swing.*;
 import java.awt.*;
@@ -79,6 +84,8 @@ public class KISSet extends Application {
     }
 
     public static void main(String[] args) {
+        // Default terminal type for terminal selections.
+        Class terminalType = StdANSI.class;
 
         // Parse command line arguments
         for (String s : args) {
@@ -99,9 +106,13 @@ public class KISSet extends Application {
                 // just a seting like --terminal or something like that
                 if (setting.equalsIgnoreCase("terminal")) {
                     terminalMode = true;
+                }  else if (setting.equalsIgnoreCase("terminal-curses")) {
+                    terminalType=StdANSIWindowed.class;
+                    terminalMode = true;
                 } else if (setting.equalsIgnoreCase("help") || setting.equalsIgnoreCase("h") || setting.equalsIgnoreCase("?")) {
                     System.out.println("KISSet command line options:");
-                    System.out.println("--terminal - Run in terminal mode");
+                    System.out.println("--terminal - Runs in terminal mode");
+                    System.out.println("--terminal-curses - Runs in curses terminal mode");
                     System.out.println("--help - Show this help");
                     System.exit(0);
                 }
@@ -112,6 +123,9 @@ public class KISSet extends Application {
 
         // Also, if we're unable to open any windows, then set terminalMode to true
         if (GraphicsEnvironment.isHeadless()) {
+            if (!terminalMode) {
+                System.out.println("*** Platform has no accessible GUI so running in terminal mode");
+            }
             terminalMode = true;
         }
 
@@ -119,7 +133,7 @@ public class KISSet extends Application {
             launch();
         } else {
             KISSet kisset = new KISSet();
-            kisset.initTerminalMode();
+            kisset.initTerminalMode(terminalType);
             // launchTerminalMode();
         }
 
@@ -535,18 +549,31 @@ public class KISSet extends Application {
 //        }
     }
 
-    public void initTerminalMode() {
+    public void initTerminalMode(Class terminalType) {
         INSTANCE = KISSet.this;
+
+        // Platform line separator
+        System.lineSeparator();
 
         // Redirect stdout/err
         stdOut = System.out;
         stdIn = System.in;
 
-        System.setErr(new PrintStream(PrintStream.nullOutputStream()));
+        //System.setErr(new PrintStream(PrintStream.nullOutputStream()));
         System.setOut(new PrintStream(PrintStream.nullOutputStream()));
         LOG = LogFactory.getLog("KISSet");
         initAll();
 
+        // Our default terminal is ANSI
+        StdTerminal terminal;
+        if (terminalType.equals(StdANSIWindowed.class)) {
+            terminal = new StdANSIWindowed(stdIn, stdOut);
+        } else {
+            terminal = new StdANSI(stdIn, stdOut);
+        }
+        terminal.start();
+
+        // TNC hosts provides host functions that emulate a TNC
         TNCHost tncHost = new TNCHost(new TerminalHost() {
             @Override
             public Terminal getTerminal() {
@@ -560,7 +587,14 @@ public class KISSet extends Application {
             @Override
             public void setStatus(String statusText, int currentStream) {
             }
-        }, stdIn, stdOut);
+        }, terminal.getInputStream(), terminal.getOutputStream());
+
+
+        // Catch ctrl-c and set the TNC to command mode. This uses the sun.misc.Signal class which is deprecated, but
+        // there is no other way to do this at present without relying on someone else to compile some JNI for each platform
+        // (then keep it up-to-date forever)
+        Signal.handle(new Signal("INT"),  // SIGINT
+                signal -> tncHost.setMode(Mode.CMD, true));
     }
 
     public InputStream getStdIn() {

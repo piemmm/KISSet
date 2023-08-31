@@ -24,6 +24,9 @@ module org.prowl.kisset {
     requires org.eclipse.paho.client.mqttv3;
     requires com.google.errorprone.annotations;
     requires org.bouncycastle.provider;
+    requires jdk.unsupported;
+    requires com.googlecode.lanterna;
+
 
     opens org.prowl.kisset to javafx.fxml;
     exports org.prowl.kisset.eventbus.events;
