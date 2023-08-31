@@ -19,8 +19,8 @@ jobs:
   build:
     strategy:
       matrix:
-        #        os: [ubuntu-latest, windows-latest, macos-latest, self-hosted]
-        os: [ubuntu-latest, windows-latest, macos-latest, macos-arm-latest, rpi-arm64-latest, rpi-armv7l-latest]
+        #        os: [ubuntu-latest, windows-latest, macos-latest, self-hosted, macos-arm-latest]
+        os: [ubuntu-latest, windows-latest, macos-latest, rpi-arm64-latest, rpi-armv7l-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Download Wix
