@@ -7,7 +7,8 @@ A terminal program for connecting to a TNC or modem that only support the KISS p
 Releases are available for:<br /><a href="https://github.com/piemmm/KISSet/releases/tag/windows-latest">Windows</a> (.msi file)
 <br/><a href="https://github.com/piemmm/KISSet/releases/tag/ubuntu-latest">Linux</a> (.deb file)
 <br/><a href="https://github.com/piemmm/KISSet/releases/tag/macos-latest">Macos</a> (.dmg file)
-<br/><a href="https://github.com/piemmm/KISSet/releases/tag/rpi-arm64-latest">Raspberry Pi (arm64)</a> (.deb file)
+<br/><a href="https://github.com/piemmm/KISSet/releases/tag/rpi-arm64-latest">Raspberry Pi 64bit (arm64)</a> (.deb file)
+<br/><a href="https://github.com/piemmm/KISSet/releases/tag/rpi-armv7l-latest">Raspberry Pi 32bit (armv7l)</a> (.deb file)
 
 ### Building from source
 
