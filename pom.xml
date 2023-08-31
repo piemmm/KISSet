@@ -590,15 +590,7 @@
             </properties>
         </profile>
 
-        <profile>
-            <id>piarm32</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <properties>
-                <javafx.platform>arm32-monocle</javafx.platform>
-            </properties>
-        </profile>
+
 
         <!-- We use the built-in Maven profile activation system to set the platform property.
         These properties are then use to build the directory paths to the platform specific resources.
