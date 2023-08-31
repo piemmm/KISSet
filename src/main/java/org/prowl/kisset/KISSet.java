@@ -119,7 +119,6 @@ public class KISSet extends Application {
             }
         }
 
-        ;
 
         // Also, if we're unable to open any windows, then set terminalMode to true
         if (GraphicsEnvironment.isHeadless()) {
@@ -132,6 +131,7 @@ public class KISSet extends Application {
         if (!terminalMode) {
             launch();
         } else {
+            System.setProperty("java.awt.headless", "true");
             KISSet kisset = new KISSet();
             kisset.initTerminalMode(terminalType);
             // launchTerminalMode();
