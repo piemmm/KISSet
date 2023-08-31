@@ -60,6 +60,12 @@ jobs:
           MACOS_CERTIFICATE_PWD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
         if: ${{ env.MACOS_CERTIFICATE == null && (matrix.os == 'macos-latest' || matrix.os == 'macos-arm-latest') }}
         run: mvn -B clean install --file pom.xml
+
+      - name: "Removing any old build keychain"
+        if: ${{ (matrix.os == 'macos-arm-latest') && always() }}
+        run: |
+          security delete-keychain build.keychain
+
       - name: "Build with Maven (macOS Signed)"
         env:
           MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
@@ -75,6 +81,7 @@ jobs:
           export IDENTITY=$(security find-identity -v)
           echo $(security find-identity -v)
           mvn -B clean install  -Pmacos-sign --file pom.xml
+
       - name: "Codesign DMG"
         env:
           MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
