@@ -11,4 +11,4 @@
 --temp "${project.build.directory}/installer-main-work"
 --linux-shortcut
 --linux-menu-group Network;HamRadio
---linux-package-deps extra-xdg-menus
+
