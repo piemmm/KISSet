@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.*?>
+<VBox xmlns:fx="http://javafx.com/fxml/1" fx:id="parentPanel" prefHeight="480.0" prefWidth="710.0"
+      xmlns="http://javafx.com/javafx/20.0.1" fx:controller="org.prowl.kissetgui.userinterface.desktop.fx.TerminalController">
+    <children>
+        <BorderPane VBox.vgrow="ALWAYS">
+
+            <bottom>
+                <TextField fx:id="textEntry" onAction="#onTextEnteredAction" onKeyPressed="#onKeyPressed"
+                           promptText="Enter commands here" BorderPane.alignment="CENTER"/>
+            </bottom>
+            <center>
+
+                <StackPane fx:id="stackPane" prefHeight="1200" prefWidth="700" BorderPane.alignment="CENTER"/>
+
+            </center>
+        </BorderPane>
+    </children>
+</VBox>

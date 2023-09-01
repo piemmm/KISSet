@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<VBox xmlns:fx="http://javafx.com/fxml/1" fx:id="parentPanel" prefHeight="480.0" prefWidth="710.0"
+      xmlns="http://javafx.com/javafx/20.0.1" fx:controller="org.prowl.kissetgui.userinterface.desktop.fx.KISSetController">
+    <children>
+        <MenuBar fx:id="menuBar" useSystemMenuBar="true" VBox.vgrow="NEVER">
+            <menus>
+                <Menu mnemonicParsing="false" text="File">
+                    <items>
+                        <MenuItem fx:id="preferencesMenuItem" mnemonicParsing="false" onAction="#onPreferencesAction"
+                                  text="Preferences…"/>
+                        <SeparatorMenuItem mnemonicParsing="false"/>
+                        <MenuItem mnemonicParsing="false" onAction="#onQuitAction" text="Quit"/>
+                    </items>
+                </Menu>
+                <Menu mnemonicParsing="false" text="Window">
+                    <items>
+                        <MenuItem mnemonicParsing="false" onAction="#onMonitorAction" text="Monitor traffic"/>
+                        <MenuItem mnemonicParsing="false" onAction="#onFBBAction" text="FBB Messages"/>
+                        <MenuItem mnemonicParsing="false" onAction="#onDXAction" text="DX Spot Monitor"/>
+                        <MenuItem mnemonicParsing="false" onAction="#onAPRSAction" text="APRS View"/>
+                    </items>
+                </Menu>
+
+                <Menu mnemonicParsing="false" text="Help">
+                    <items>
+                        <MenuItem mnemonicParsing="false" text="About KISSet"/>
+                    </items>
+                </Menu>
+            </menus>
+        </MenuBar>
+        <ToolBar prefHeight="40.0" prefWidth="200.0">
+            <items>
+                <Button fx:id="fbbButton" mnemonicParsing="false" onAction="#onShowFBB" text="FBB"/>
+                <Button fx:id="dxButton" mnemonicParsing="false" onAction="#onShowDX" text="DX"/>
+                <Button fx:id="aprsButton" mnemonicParsing="false" onAction="#onShowAPRS" text="APRS"/>
+                <Button mnemonicParsing="false" onAction="#onMonitorAction" text="Monitor"/>
+                <Label alignment="CENTER_RIGHT" prefHeight="17.0" prefWidth="121.0" text="Terminal Type:"/>
+                <ChoiceBox fx:id="terminalTypeBox" prefWidth="150.0"/>
+            </items>
+        </ToolBar>
+        <BorderPane VBox.vgrow="ALWAYS">
+
+            <bottom>
+                <TextField fx:id="textEntry" onAction="#onTextEnteredAction" onKeyPressed="#onKeyPressed"
+                           promptText="Enter commands here" BorderPane.alignment="CENTER"/>
+            </bottom>
+            <center>
+
+                <StackPane fx:id="stackPane" prefHeight="1200" prefWidth="700" BorderPane.alignment="CENTER"/>
+
+            </center>
+        </BorderPane>
+        <HBox alignment="CENTER_RIGHT" prefHeight="100.0" prefWidth="200.0" spacing="2.0">
+            <children>
+                <Label text="Stream:"/>
+                <Label fx:id="streamId" prefHeight="17.0" prefWidth="29.0" text="0">
+                    <HBox.margin>
+                        <Insets right="10.0"/>
+                    </HBox.margin>
+                </Label>
+                <Label text="Status:">
+                    <HBox.margin>
+                        <Insets right="5.0"/>
+                    </HBox.margin>
+                </Label>
+                <Label fx:id="statusText" prefHeight="17.0" prefWidth="176.0"/>
+            </children>
+            <padding>
+                <Insets bottom="2.0" left="2.0" right="2.0" top="2.0"/>
+            </padding>
+        </HBox>
+    </children>
+</VBox>
