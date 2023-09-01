@@ -1,5 +1,4 @@
 --name ${app.name}
---win-console
 --icon "${project.basedir}/app-icon.png"
 --dest "${project.build.directory}"
 --main-jar ${project.build.finalName}.jar
