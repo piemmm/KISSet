@@ -1,4 +1,4 @@
-package org.prowl.kisset.fx;
+package org.prowl.kisset.userinterface.desktop.fx;
 
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;

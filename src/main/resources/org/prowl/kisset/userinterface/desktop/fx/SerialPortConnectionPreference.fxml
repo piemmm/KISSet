@@ -4,7 +4,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <AnchorPane xmlns:fx="http://javafx.com/fxml/1" prefHeight="400.0" prefWidth="600.0"
-            xmlns="http://javafx.com/javafx/20.0.1" fx:controller="org.prowl.kisset.fx.SerialPortConnectionPreference">
+            xmlns="http://javafx.com/javafx/20.0.1" fx:controller="org.prowl.kisset.userinterface.desktop.fx.SerialPortConnectionPreference">
     <children>
         <GridPane layoutX="225.0" layoutY="130.0" prefHeight="154.0" prefWidth="600.0" AnchorPane.leftAnchor="0.0"
                   AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">

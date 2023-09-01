@@ -15,7 +15,7 @@
         <junit.version>5.10.0</junit.version>
 
         <!-- Set this to the class with the main method for your application -->
-        <main-class>org.prowl.kisset.KISSet</main-class>
+        <main-class>org.prowl.kisset.userinterface.desktop.KISSetGUI</main-class>
         <!-- Change your app's name to something interesting... but you might want to avoid spaces
         just to safe for compatibility across operating systems. -->
         <app.name>KISSet</app.name>

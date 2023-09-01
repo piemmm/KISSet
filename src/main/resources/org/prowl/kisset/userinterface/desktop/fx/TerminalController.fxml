@@ -3,7 +3,7 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.*?>
 <VBox xmlns:fx="http://javafx.com/fxml/1" fx:id="parentPanel" prefHeight="480.0" prefWidth="710.0"
-      xmlns="http://javafx.com/javafx/20.0.1" fx:controller="org.prowl.kisset.fx.TerminalController">
+      xmlns="http://javafx.com/javafx/20.0.1" fx:controller="org.prowl.kisset.userinterface.desktop.fx.TerminalController">
     <children>
         <BorderPane VBox.vgrow="ALWAYS">
 

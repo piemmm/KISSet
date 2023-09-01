@@ -1,4 +1,4 @@
-package org.prowl.kisset;
+package org.prowl.kisset.userinterface.desktop;
 
 import atlantafx.base.theme.PrimerDark;
 import atlantafx.base.theme.PrimerLight;
@@ -16,54 +16,36 @@ import javafx.stage.WindowEvent;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.prowl.kisset.KISSet;
 import org.prowl.kisset.config.Conf;
 import org.prowl.kisset.config.Config;
 import org.prowl.kisset.eventbus.SingleThreadBus;
 import org.prowl.kisset.eventbus.events.ConfigurationChangedEvent;
-import org.prowl.kisset.fx.*;
-import org.prowl.kisset.io.InterfaceHandler;
-import org.prowl.kisset.objects.Storage;
-import org.prowl.kisset.protocols.RoutingListener;
-import org.prowl.kisset.protocols.aprs.APRSISClient;
-import org.prowl.kisset.protocols.aprs.APRSListener;
-import org.prowl.kisset.protocols.dxcluster.DXListener;
-import org.prowl.kisset.protocols.mqtt.MQTTClient;
 import org.prowl.kisset.services.Service;
-import org.prowl.kisset.services.host.TNCHost;
-import org.prowl.kisset.services.host.parser.Mode;
 import org.prowl.kisset.services.remote.pms.PMSService;
-import org.prowl.kisset.statistics.Statistics;
-import org.prowl.kisset.userinterface.desktop.terminals.Terminal;
-import org.prowl.kisset.userinterface.desktop.terminals.TerminalHost;
-import org.prowl.kisset.userinterface.stdinout.StdANSI;
-import org.prowl.kisset.userinterface.stdinout.StdANSIWindowed;
-import org.prowl.kisset.userinterface.stdinout.StdTerminal;
-import sun.misc.Signal;
+import org.prowl.kisset.userinterface.desktop.fx.*;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.desktop.AppReopenedEvent;
 import java.awt.desktop.AppReopenedListener;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.security.Security;
 import java.util.List;
 import java.util.*;
 
-public class KISSetApp extends Application {
+public class KISSetGUI extends Application {
 
 
     private static Log LOG;
 
 
-    public static KISSetApp INSTANCE;
+    public static KISSetGUI INSTANCE;
     public String myCall = "";
     protected List<Service> serviceList = Collections.synchronizedList(new ArrayList<>());
     private Config configuration = KISSet.INSTANCE.getConfig();
-        private Stage monitorStage;
+    private Stage monitorStage;
     private Stage dxStage;
     private Stage fbbStage;
     private Stage aprsStage;
@@ -74,14 +56,15 @@ public class KISSetApp extends Application {
      */
     public static boolean terminalMode = false;
 
-    public KISSetApp() {
+    public KISSetGUI() {
         super();
     }
 
     public static void main(String[] args) {
+                KISSet kisset = new KISSet();
+                kisset.initAll();
 
-            launch();
-
+         launch();
     }
 
     @Override
@@ -117,7 +100,7 @@ public class KISSetApp extends Application {
         }
 
         // Create the GUI.
-        FXMLLoader fxmlLoader = new FXMLLoader(KISSetApp.class.getResource("fx/KISSetController.fxml"));
+        FXMLLoader fxmlLoader = new FXMLLoader(KISSetGUI.class.getResource("fx/KISSetController.fxml"));
         Parent root = fxmlLoader.load();
         KISSetController controller = fxmlLoader.getController();
         Scene scene = new Scene(root, 750, 480);
@@ -136,7 +119,7 @@ public class KISSetApp extends Application {
         });
 
         // Set the window icon
-        stage.getIcons().add(new Image(KISSetApp.class.getResourceAsStream("img/icon.png")));
+        stage.getIcons().add(new Image(KISSetGUI.class.getResourceAsStream("img/icon.png")));
 
         // Set the taskbar icon if the OS supports it
         try {
@@ -238,7 +221,7 @@ public class KISSetApp extends Application {
         try {
             // Create the GUI.
             Stage stage = new Stage();
-            FXMLLoader fxmlLoader = new FXMLLoader(KISSetApp.class.getResource("fx/PreferencesController.fxml"));
+            FXMLLoader fxmlLoader = new FXMLLoader(KISSetGUI.class.getResource("fx/PreferencesController.fxml"));
             Parent root = fxmlLoader.load();
             PreferencesController controller = fxmlLoader.getController();
             Scene scene = new Scene(root, 640, 480);
@@ -255,7 +238,7 @@ public class KISSetApp extends Application {
         try {
             if (monitorStage == null) {
                 monitorStage = new Stage();
-                FXMLLoader fxmlLoader = new FXMLLoader(KISSetApp.class.getResource("fx/MonitorController.fxml"));
+                FXMLLoader fxmlLoader = new FXMLLoader(KISSetGUI.class.getResource("fx/MonitorController.fxml"));
                 Parent root = fxmlLoader.load();
                 MonitorController controller = fxmlLoader.getController();
                 Scene scene = new Scene(root, 800, 280);
@@ -285,7 +268,7 @@ public class KISSetApp extends Application {
         try {
             if (dxStage == null) {
                 dxStage = new Stage();
-                FXMLLoader fxmlLoader = new FXMLLoader(KISSetApp.class.getResource("fx/DXController.fxml"));
+                FXMLLoader fxmlLoader = new FXMLLoader(KISSetGUI.class.getResource("fx/DXController.fxml"));
                 Parent root = fxmlLoader.load();
                 DXController controller = fxmlLoader.getController();
                 Scene scene = new Scene(root, 800, 280);
@@ -315,7 +298,7 @@ public class KISSetApp extends Application {
         try {
             if (fbbStage == null) {
                 fbbStage = new Stage();
-                FXMLLoader fxmlLoader = new FXMLLoader(KISSetApp.class.getResource("fx/FBBController.fxml"));
+                FXMLLoader fxmlLoader = new FXMLLoader(KISSetGUI.class.getResource("fx/FBBController.fxml"));
                 Parent root = fxmlLoader.load();
                 FBBController controller = fxmlLoader.getController();
                 Scene scene = new Scene(root, 800, 280);
@@ -345,7 +328,7 @@ public class KISSetApp extends Application {
         try {
             if (aprsStage == null) {
                 aprsStage = new Stage();
-                FXMLLoader fxmlLoader = new FXMLLoader(KISSetApp.class.getResource("fx/APRSController.fxml"));
+                FXMLLoader fxmlLoader = new FXMLLoader(KISSetGUI.class.getResource("fx/APRSController.fxml"));
                 Parent root = fxmlLoader.load();
                 APRSController controller = fxmlLoader.getController();
                 Scene scene = new Scene(root, 640, 640);
@@ -375,7 +358,7 @@ public class KISSetApp extends Application {
         try {
             // Create the GUI.
             Stage stage = new Stage();
-            FXMLLoader fxmlLoader = new FXMLLoader(KISSetApp.class.getResource("fx/AboutController.fxml"));
+            FXMLLoader fxmlLoader = new FXMLLoader(KISSetGUI.class.getResource("fx/AboutController.fxml"));
             Parent root = fxmlLoader.load();
             AboutController controller = fxmlLoader.getController();
             Scene scene = new Scene(root, 350, 380);
@@ -390,7 +373,7 @@ public class KISSetApp extends Application {
 
     @Override
     public void init() throws Exception {
-        INSTANCE = KISSetApp.this;
+        INSTANCE = KISSetGUI.this;
         LOG = LogFactory.getLog("KISSet");
         super.init();
 
@@ -446,7 +429,7 @@ public class KISSetApp extends Application {
         String versionInfo = "Unknown/Development";
 
         try {
-            versionInfo = new Scanner(KISSetApp.class.getResourceAsStream("/version.txt"), StandardCharsets.UTF_8).useDelimiter("\\A").next();
+            versionInfo = new Scanner(KISSetGUI.class.getResourceAsStream("/version.txt"), StandardCharsets.UTF_8).useDelimiter("\\A").next();
         } catch (Throwable e) {
             LOG.error(e.getMessage(), e);
         }

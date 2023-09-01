@@ -1,19 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.ListView?>
 <?import javafx.scene.layout.*?>
 <VBox xmlns:fx="http://javafx.com/fxml/1" fx:id="parentPanel" prefHeight="480.0" prefWidth="710.0"
-      xmlns="http://javafx.com/javafx/20.0.1" fx:controller="org.prowl.kisset.fx.MonitorController">
+      xmlns="http://javafx.com/javafx/20.0.1" fx:controller="org.prowl.kisset.userinterface.desktop.fx.FBBController">
     <children>
         <BorderPane VBox.vgrow="ALWAYS">
             <center>
 
                 <StackPane fx:id="stackPane" prefHeight="1200" prefWidth="700" BorderPane.alignment="CENTER"/>
             </center>
-            <right>
-                <ListView fx:id="heardList" fixedCellSize="24.0" prefHeight="200.0" prefWidth="120.0"
-                          BorderPane.alignment="CENTER"/>
-            </right>
         </BorderPane>
     </children>
 </VBox>

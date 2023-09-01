@@ -7,7 +7,7 @@ import javafx.scene.shape.Circle;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.prowl.aprslib.parser.*;
-import org.prowl.kisset.fx.APRSController;
+import org.prowl.kisset.userinterface.desktop.fx.APRSController;
 import org.prowl.maps.MapPoint;
 
 /**

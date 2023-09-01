@@ -1,4 +1,4 @@
-package org.prowl.kisset.fx;
+package org.prowl.kisset.userinterface.desktop.fx;
 
 
 import com.google.common.eventbus.Subscribe;

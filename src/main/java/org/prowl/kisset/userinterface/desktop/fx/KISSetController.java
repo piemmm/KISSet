@@ -1,4 +1,4 @@
-package org.prowl.kisset.fx;
+package org.prowl.kisset.userinterface.desktop.fx;
 
 
 import com.google.common.eventbus.Subscribe;
@@ -24,7 +24,7 @@ import javafx.util.StringConverter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.prowl.kisset.KISSet;
-import org.prowl.kisset.KISSetApp;
+import org.prowl.kisset.userinterface.desktop.KISSetGUI;
 import org.prowl.kisset.Messages;
 import org.prowl.kisset.config.Conf;
 import org.prowl.kisset.eventbus.SingleThreadBus;
@@ -41,8 +41,6 @@ import java.awt.*;
 import java.awt.desktop.AboutEvent;
 import java.awt.desktop.AboutHandler;
 import java.io.OutputStream;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
 
@@ -83,42 +81,42 @@ public class KISSetController implements TerminalHost {
 
     @FXML
     protected void onShowFBB() {
-        KISSetApp.INSTANCE.showFBB();
+        KISSetGUI.INSTANCE.showFBB();
     }
 
     @FXML
     protected void onShowDX() {
-        KISSetApp.INSTANCE.showDX();
+        KISSetGUI.INSTANCE.showDX();
     }
 
     @FXML
     protected void onShowAPRS() {
-        KISSetApp.INSTANCE.showAPRS();
+        KISSetGUI.INSTANCE.showAPRS();
     }
 
     @FXML
     protected void onPreferencesAction() {
-        KISSetApp.INSTANCE.showPreferences();
+        KISSetGUI.INSTANCE.showPreferences();
     }
 
     @FXML
     protected void onMonitorAction() {
-        KISSetApp.INSTANCE.showMonitor();
+        KISSetGUI.INSTANCE.showMonitor();
     }
 
     @FXML
     protected void onDXAction() {
-        KISSetApp.INSTANCE.showDX();
+        KISSetGUI.INSTANCE.showDX();
     }
 
     @FXML
     protected void onFBBAction() {
-        KISSetApp.INSTANCE.showFBB();
+        KISSetGUI.INSTANCE.showFBB();
     }
 
     @FXML
     protected void onAPRSAction() {
-        KISSetApp.INSTANCE.showAPRS();
+        KISSetGUI.INSTANCE.showAPRS();
     }
 
     @FXML
@@ -206,7 +204,7 @@ public class KISSetController implements TerminalHost {
                     @Override
                     public void handleAbout(AboutEvent e) {
                         Platform.runLater(() -> {
-                            KISSetApp.INSTANCE.showAbout();
+                            KISSetGUI.INSTANCE.showAbout();
                         });
 
                     }

@@ -1,26 +1,12 @@
 package org.prowl.kisset;
 
-import atlantafx.base.theme.PrimerDark;
-import atlantafx.base.theme.PrimerLight;
 import com.google.common.eventbus.Subscribe;
-import com.jthemedetecor.OsThemeDetector;
-import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.event.EventHandler;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.scene.image.Image;
-import javafx.stage.Stage;
-import javafx.stage.WindowEvent;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.prowl.kisset.config.Conf;
 import org.prowl.kisset.config.Config;
-import org.prowl.kisset.eventbus.SingleThreadBus;
 import org.prowl.kisset.eventbus.events.ConfigurationChangedEvent;
-import org.prowl.kisset.fx.*;
 import org.prowl.kisset.io.InterfaceHandler;
 import org.prowl.kisset.objects.Storage;
 import org.prowl.kisset.protocols.RoutingListener;
@@ -33,6 +19,7 @@ import org.prowl.kisset.services.host.TNCHost;
 import org.prowl.kisset.services.host.parser.Mode;
 import org.prowl.kisset.services.remote.pms.PMSService;
 import org.prowl.kisset.statistics.Statistics;
+import org.prowl.kisset.userinterface.desktop.KISSetGUI;
 import org.prowl.kisset.userinterface.desktop.terminals.Terminal;
 import org.prowl.kisset.userinterface.desktop.terminals.TerminalHost;
 import org.prowl.kisset.userinterface.stdinout.StdANSI;
@@ -42,14 +29,10 @@ import sun.misc.Signal;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.desktop.AppReopenedEvent;
-import java.awt.desktop.AppReopenedListener;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
-import java.security.Security;
 import java.util.List;
 import java.util.*;
 
@@ -141,7 +124,7 @@ public class KISSet {
 
         if (!terminalMode) {
             kisset.initAll();
-            KISSetApp.main(args);
+            KISSetGUI.main(args);
          } else {
             System.setProperty("javafx.macosx.embedded", "true");
 

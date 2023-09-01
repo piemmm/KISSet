@@ -1,13 +1,12 @@
 package org.prowl.kisset.protocols.aprs;
 
 import javafx.collections.ObservableList;
-import javafx.geometry.Point2D;
 import javafx.scene.shape.Polyline;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.prowl.kisset.util.Tools;
 import org.prowl.maps.MapPoint;
-import org.prowl.kisset.fx.APRSController;
+import org.prowl.kisset.userinterface.desktop.fx.APRSController;
 import org.prowl.maps.Point;
 
 import java.util.ArrayList;

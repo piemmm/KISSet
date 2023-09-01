@@ -32,7 +32,6 @@ module org.prowl.kisset {
     exports org.prowl.kisset.eventbus.events;
     exports org.prowl.kisset.protocols.mqtt;
     exports org.prowl.kisset;
-    exports org.prowl.kisset.fx;
     exports org.prowl.kisset.protocols.aprs;
     exports org.prowl.kisset.statistics.types;
     exports org.prowl.kisset.protocols;
@@ -40,9 +39,13 @@ module org.prowl.kisset {
     exports org.prowl.kisset.protocols.fbb;
     exports org.prowl.kisset.services.host;
     exports org.prowl.kisset.services.remote.pms;
-    opens org.prowl.kisset.fx to javafx.fxml;
     exports org.prowl.kisset.objects.routing;
     exports org.prowl.kisset.protocols.netrom;
     exports org.prowl.maps;
+    exports org.prowl.kisset.userinterface.desktop.fx;
+    opens org.prowl.kisset.userinterface.desktop.fx to javafx.fxml;
+    exports org.prowl.kisset.userinterface.desktop;
+    opens org.prowl.kisset.userinterface.desktop to javafx.fxml;
 
 }
+
