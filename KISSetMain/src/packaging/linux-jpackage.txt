@@ -1,4 +1,5 @@
 --name ${app.name}
+--win-console
 --icon "${project.basedir}/app-icon.png"
 --dest "${project.build.directory}"
 --main-jar ${project.build.finalName}.jar
@@ -7,7 +8,7 @@
 --input "${project.build.directory}/dependency"
 --app-version ${app.version}
 --runtime-image "${project.build.directory}/jvm-image"
---temp "${project.build.directory}/installer-work"
+--temp "${project.build.directory}/installer-main-work"
 --linux-shortcut
 --linux-menu-group Network;HamRadio
 --linux-package-deps extra-xdg-menus
