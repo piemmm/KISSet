@@ -37,6 +37,3 @@ build/
 ### Mac OS ###
 .DS_Store
 /target/
-/KISSetMain/target/
-/KISSetGUI/target/
-/target/

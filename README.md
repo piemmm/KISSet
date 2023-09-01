@@ -25,5 +25,5 @@ KISSet uses Bellsofts liberica jdk which has java-fx bundled in. If you require 
 * Terminal support (for systems with no GUI)
 
 
-![Picture of running node](./doc/screen2.png)
+![Picture of running node](../doc/screen2.png)
 
