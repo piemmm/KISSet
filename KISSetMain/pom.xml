@@ -542,7 +542,7 @@
         </profile>
 
         <profile>
-            <id>archtype</id>
+            <id>archtypeb</id>
             <activation>
                 <os>
                     <arch>arm</arch>
