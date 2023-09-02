@@ -82,7 +82,8 @@ jobs:
           MACOS_CERTIFICATE_PWD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
         if: ${{ env.MACOS_CERTIFICATE != null && (matrix.os == 'macos-latest' || matrix.os == 'macos-arm-latest') }}
         run: |
-          export DMG_PATH=$(ls ./target/*.dmg)
+          rm ./target/KISSet-*.dmg
+          export DMG_PATH=$(ls ./target/KISSetGUI*.dmg)
           /usr/bin/codesign --deep --force -s ${{ env.DEV_IDENTITY}} $DMG_PATH -v
           echo DMG_PATH=$DMG_PATH >> $GITHUB_ENV
           echo ${{ env.DMG_PATH }}
