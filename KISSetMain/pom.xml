@@ -254,11 +254,7 @@
             <version>5.8.6</version>
             <scope>compile</scope>
         </dependency>
-        <dependency>
-            <groupId>org.prowl</groupId>
-            <artifactId>kisset</artifactId>
-            <version>1.0-SNAPSHOT</version>
-        </dependency>
+
 
 
         <!--        &lt;!&ndash; https://mvnrepository.com/artifact/org.openjfx/javafx-web &ndash;&gt;-->
