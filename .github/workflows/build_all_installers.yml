@@ -41,10 +41,10 @@ jobs:
         run: echo "$HOME/target/wix" >> $GITHUB_PATH
         if: matrix.os == 'windows-latest'
       - uses: actions/checkout@v3
-      - name: Set up JDK 17
+      - name: Set up JDK 20
         uses: actions/setup-java@v3
         with:
-          java-version: 18.0.2
+          java-version: 20.0.2
           distribution: 'liberica'
           java-package: jdk+fx
           cache: 'maven'
