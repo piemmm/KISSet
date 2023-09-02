@@ -190,8 +190,8 @@ public class KISSet {
         stdIn = System.in;
 
         // Force the logs to a null output
-        //System.setErr(new PrintStream(PrintStream.nullOutputStream()));
-        //System.setOut(new PrintStream(PrintStream.nullOutputStream()));
+        System.setErr(new PrintStream(PrintStream.nullOutputStream()));
+        System.setOut(new PrintStream(PrintStream.nullOutputStream()));
         initAll();
 
         // Our default terminal is ANSI
