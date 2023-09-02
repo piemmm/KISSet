@@ -1,6 +1,6 @@
 --name kisset
 --icon "${project.basedir}/app-icon.png"
---dest "${project.build.directory}"
+--dest "${project.build.directory}/../../target"
 --main-jar ${project.build.finalName}.jar
 --main-class ${main-class}
 --java-options "-Xmaxf0.1 -Xminf0.01"
