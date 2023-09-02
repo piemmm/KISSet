@@ -1,6 +1,7 @@
 package org.prowl.kisset;
 
 import com.google.common.eventbus.Subscribe;
+import com.nixxcode.jvmbrotli.common.BrotliLoader;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.prowl.kisset.config.Conf;
@@ -322,14 +323,23 @@ public class KISSet {
      * Returns the capabilities of the station
      * A = ANSI colours
      * B = BBS
-     * C = Compression
+     * C = Deflate Compression support
      * P = PMS
+     * Y = Google Brotli Compression support
      * Z = Escape sequences for next block
      *
      * @return
      */
     public String getStationCapabilities() {
-        return "APC";
+        StringBuilder sb = new StringBuilder();
+        sb.append("AC");
+        if (BrotliLoader.isBrotliAvailable()) {
+            sb.append("Z");
+        }
+        if (configuration.getConfig(Conf.pmsEnabled, Conf.pmsEnabled.boolDefault())) {
+            sb.append("P");
+        }
+        return sb.toString();
     }
 
     public List<Service> getServices() {

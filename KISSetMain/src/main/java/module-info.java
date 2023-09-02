@@ -15,8 +15,7 @@ module org.prowl.kisset {
     requires org.bouncycastle.provider;
     requires jdk.unsupported;
     requires com.googlecode.lanterna;
-
-
+    requires jvmbrotli;
 
     exports org.prowl.ax25;
     exports org.prowl.kisset.eventbus.events;

@@ -23,6 +23,8 @@ public class DeflateOutputStream extends OutputStream {
      * <p>
      * Around 1k seems to be a good compromise between the two with the best compression
      * and good interactivity (and dictionary updates)
+     *
+     * The maximum permissible size is 64k
      */
     public static final int MAX_BLOCK_SIZE = 1024;
     /**

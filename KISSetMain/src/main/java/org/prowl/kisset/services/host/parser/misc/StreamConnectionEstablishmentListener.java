@@ -1,5 +1,8 @@
 package org.prowl.kisset.services.host.parser.misc;
 
+import com.nixxcode.jvmbrotli.common.BrotliLoader;
+import com.nixxcode.jvmbrotli.dec.BrotliInputStream;
+import com.nixxcode.jvmbrotli.enc.BrotliOutputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.prowl.ax25.ConnState;
@@ -177,15 +180,24 @@ public class StreamConnectionEstablishmentListener implements ConnectionEstablis
         }
 
         boolean compression = false;
-        if (capabilities.contains("C")) {
-            LOG.info("Remote station supports compression");
+
+        // We support brotli compression, if it is available.
+        if (capabilities.contains("Z") && BrotliLoader.isBrotliAvailable()) {
+            LOG.info("Remote station supports brotli compression");
+            response.append("Z");
+            compression = true;
+        }
+
+        // And we can fallback to normal defalte compression if it is not.
+        if (capabilities.contains("C") && !compression) {
+            LOG.info("Remote station supports deflate compression");
             compression = true;
             response.append("C");
         }
 
+
         // Now we have our responses we can send it to the remote station and consider all of them immediately enabled
         if (response.length() > 0) {
-
             response.insert(0, "[EXTN ");
             response.append("]\r");
             LOG.debug("Sending capabilities response: " + response);
@@ -206,9 +218,24 @@ public class StreamConnectionEstablishmentListener implements ConnectionEstablis
         // Get the capabilities characters from the response
         String capabilities = enabledExtensionsResponse.substring(6, enabledExtensionsResponse.length() - 1);
 
-        // For compression, we wrap the input and output stream in a gzip stream
-        if (capabilities.contains("C")) {
-            LOG.info("Enabling compression");
+
+        // Enable compression - if multiple types are specified then we enable out 'best' if supported.
+        boolean compressionEnabled = false;
+        // Brotli compression, for systems that support it.
+        if (capabilities.contains("Z")) {
+            LOG.info("Enabling brotli compression");
+            BrotliOutputStream out = new BrotliOutputStream(stream.getOutputStream());
+            BrotliInputStream in = new BrotliInputStream(stream.getInputStream());
+            stream.setIOStreams(in, out);
+            commandParser.setDivertStream(out);
+            compressionEnabled = true;
+            Tools.delay(200);
+        }
+
+        // For compression, we wrap the input and output stream in a deflate
+
+        if (capabilities.contains("C") && !compressionEnabled) {
+            LOG.info("Enabling deflate compression");
             // The smaller the block size, the more 'interactive', but less compression.
             // The client should provide some form of interactivity when downloading blocks
             // of compressed data.  calling flush() on the stream will cause the block to be sent
@@ -217,9 +244,10 @@ public class StreamConnectionEstablishmentListener implements ConnectionEstablis
             InflateInputStream in = new InflateInputStream(stream.getInputStream());
             stream.setIOStreams(in, out);
             commandParser.setDivertStream(out);
-
             Tools.delay(200);
         }
+
+
 
         // All done! Negotiation is complete and extensions are enabled
         LOG.info("Enabled station capabilities: " + capabilities);

@@ -71,6 +71,14 @@
 
     <dependencies>
 
+
+        <dependency>
+            <groupId>com.nixxcode.jvmbrotli</groupId>
+            <artifactId>jvmbrotli</artifactId>
+            <version>0.2.0</version>
+            <optional>true</optional>
+        </dependency>
+
         <!--  MQTT-->
         <dependency>
             <groupId>org.eclipse.paho</groupId>
@@ -246,8 +254,14 @@
             <version>5.8.6</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>org.prowl</groupId>
+            <artifactId>kisset</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
 
-<!--        &lt;!&ndash; https://mvnrepository.com/artifact/org.openjfx/javafx-web &ndash;&gt;-->
+
+        <!--        &lt;!&ndash; https://mvnrepository.com/artifact/org.openjfx/javafx-web &ndash;&gt;-->
 <!--        <dependency>-->
 <!--            <groupId>org.openjfx</groupId>-->
 <!--            <artifactId>javafx-web</artifactId>-->
