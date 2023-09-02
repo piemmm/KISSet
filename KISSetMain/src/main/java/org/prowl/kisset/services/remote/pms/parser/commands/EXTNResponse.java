@@ -33,15 +33,11 @@ public class EXTNResponse extends Command {
 
             // Now we can activate compression
             if (extensions.contains("C")) {
-
-
                 // Compression requires is to wrap the input and output streams in a GZIP stream
                 LOG.debug("Compression enabled");
                 client.setOutputStream(new DeflateOutputStream(client.getOutputStream()));
                 client.useNewInputStream(new InflateInputStream(client.getInputStream()));
-
                 Tools.delay(200);
-
             }
             return true;
         }

@@ -1,8 +1,5 @@
 package org.prowl.kisset.services.host.parser.misc;
 
-import com.nixxcode.jvmbrotli.common.BrotliLoader;
-import com.nixxcode.jvmbrotli.dec.BrotliInputStream;
-import com.nixxcode.jvmbrotli.enc.BrotliOutputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.prowl.ax25.ConnState;
@@ -181,12 +178,12 @@ public class StreamConnectionEstablishmentListener implements ConnectionEstablis
 
         boolean compression = false;
 
-        // We support brotli compression, if it is available.
-        if (capabilities.contains("Z") && BrotliLoader.isBrotliAvailable()) {
-            LOG.info("Remote station supports brotli compression");
-            response.append("Z");
-            compression = true;
-        }
+//        // We support brotli compression, if it is available.
+//        if (capabilities.contains("Z") && BrotliLoader.isBrotliAvailable()) {
+//            LOG.info("Remote station supports brotli compression");
+//            response.append("Z");
+//            compression = true;
+//        }
 
         // And we can fallback to normal defalte compression if it is not.
         if (capabilities.contains("C") && !compression) {
@@ -221,16 +218,16 @@ public class StreamConnectionEstablishmentListener implements ConnectionEstablis
 
         // Enable compression - if multiple types are specified then we enable out 'best' if supported.
         boolean compressionEnabled = false;
-        // Brotli compression, for systems that support it.
-        if (capabilities.contains("Z")) {
-            LOG.info("Enabling brotli compression");
-            BrotliOutputStream out = new BrotliOutputStream(stream.getOutputStream());
-            BrotliInputStream in = new BrotliInputStream(stream.getInputStream());
-            stream.setIOStreams(in, out);
-            commandParser.setDivertStream(out);
-            compressionEnabled = true;
-            Tools.delay(200);
-        }
+//        // Brotli compression, for systems that support it.
+//        if (capabilities.contains("Z")) {
+//            LOG.info("Enabling brotli compression");
+//            BrotliOutputStream out = new BrotliOutputStream(stream.getOutputStream());
+//            BrotliInputStream in = new BrotliInputStream(stream.getInputStream());
+//            stream.setIOStreams(in, out);
+//            commandParser.setDivertStream(out);
+//            compressionEnabled = true;
+//            Tools.delay(200);
+//        }
 
         // For compression, we wrap the input and output stream in a deflate
 
@@ -246,7 +243,6 @@ public class StreamConnectionEstablishmentListener implements ConnectionEstablis
             commandParser.setDivertStream(out);
             Tools.delay(200);
         }
-
 
 
         // All done! Negotiation is complete and extensions are enabled
