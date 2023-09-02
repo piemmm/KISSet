@@ -33,7 +33,7 @@ public class ChangeInterface extends Command {
 
         // No parameter? Just list the interfaces then
         if (data.length == 1) {
-            showInterfaces();
+            showInterfaces(this);
             return true;
         }
 
@@ -75,8 +75,8 @@ public class ChangeInterface extends Command {
     }
 
 
-    public void showInterfaces() throws IOException {
-        writeToTerminal(CR + ANSI.BOLD + ANSI.UNDERLINE + "No. State Interface                                      " + ANSI.NORMAL + CR);
+    public static void showInterfaces(Command command) throws IOException {
+        command.writeToTerminal(CR + ANSI.BOLD + ANSI.UNDERLINE + "No. State Interface                                      " + ANSI.NORMAL + CR);
         int i = 0;
         for (Interface anInterface : KISSet.INSTANCE.getInterfaceHandler().getInterfaces()) {
             InterfaceStatus interfaceStatus = anInterface.getInterfaceStatus();
@@ -90,12 +90,12 @@ public class ChangeInterface extends Command {
             } else {
                 statusCol = ANSI.WHITE;
             }
-            writeToTerminal(StringUtils.rightPad(i + ": ", 4) + statusCol + StringUtils.rightPad(interfaceStatus.getState().name(), 6) + ANSI.NORMAL + anInterface + CR);
+            command.writeToTerminal(StringUtils.rightPad(i + ": ", 4) + statusCol + StringUtils.rightPad(interfaceStatus.getState().name(), 6) + ANSI.NORMAL + anInterface + CR);
             if (interfaceStatus.getMessage() != null) {
-                writeToTerminal("      " + statusCol + "\\-" + interfaceStatus.getMessage() + ANSI.NORMAL + CR);
+                command.writeToTerminal("      " + statusCol + "\\-" + interfaceStatus.getMessage() + ANSI.NORMAL + CR);
             }
             i++;
         }
-        writeToTerminal(CR);
+        command.writeToTerminal(CR);
     }
 }

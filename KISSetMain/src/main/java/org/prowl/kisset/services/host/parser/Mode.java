@@ -36,6 +36,7 @@ public class Mode {
 
     public static final Mode CONFIGURE_INTERFACE = new Mode("CONFIGURE_INTERFACE");
 
+
     private final String mode;
 
     /**

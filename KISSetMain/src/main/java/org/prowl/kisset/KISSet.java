@@ -6,6 +6,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.prowl.kisset.config.Conf;
 import org.prowl.kisset.config.Config;
+import org.prowl.kisset.eventbus.SingleThreadBus;
 import org.prowl.kisset.eventbus.events.ConfigurationChangedEvent;
 import org.prowl.kisset.io.InterfaceHandler;
 import org.prowl.kisset.objects.Storage;
@@ -55,6 +56,7 @@ public class KISSet {
     public KISSet() {
         super();
         INSTANCE = this;
+        SingleThreadBus.INSTANCE.register(this);
     }
 
     public static void main(String[] args) {
@@ -94,41 +96,9 @@ public class KISSet {
             }
         }
 
-        // Old check to test if headless is actually active as we don't actually trust isHeadless()
-//        if (!GraphicsEnvironment.isHeadless()) {
-//            try {
-//                JFrame frame = new JFrame("test");
-//                frame.setVisible(true);
-//                frame.setVisible(false);
-//            } catch (Throwable e) {
-//                terminalMode = true;
-//                System.setProperty("java.awt.headless", "true");
-//            }
-//        }
-//
-//
-//        // Also, if we're unable to open any windows, then set terminalMode to true
-//        if (GraphicsEnvironment.isHeadless()) {
-//            if (!terminalMode) {
-//                System.out.println("*** Platform has no accessible GUI so running in terminal mode");
-//            }
-//            terminalMode = true;
-//        }
-
         // Main class holding non-gui stuff.
         KISSet kisset = new KISSet();
-
-        if (!terminalMode) {
-//            kisset.initAll();
-//            KISSetGUI.main(args);
-        } else {
-            System.setProperty("javafx.macosx.embedded", "true");
-
-
-            kisset.initTerminalMode(terminalType);
-            // launchTerminalMode();
-        }
-
+        kisset.initTerminalMode(terminalType);
     }
 
 
@@ -220,8 +190,8 @@ public class KISSet {
         stdIn = System.in;
 
         // Force the logs to a null output
-        System.setErr(new PrintStream(PrintStream.nullOutputStream()));
-        System.setOut(new PrintStream(PrintStream.nullOutputStream()));
+        //System.setErr(new PrintStream(PrintStream.nullOutputStream()));
+        //System.setOut(new PrintStream(PrintStream.nullOutputStream()));
         initAll();
 
         // Our default terminal is ANSI

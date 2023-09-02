@@ -248,7 +248,7 @@ public class TNCHost {
                 send(ANSI.BOLD + "Configured Interfaces:" + ANSI.NORMAL);
                 ChangeInterface changeInterface = new ChangeInterface();
                 changeInterface.setClient(this, null);
-                changeInterface.showInterfaces();
+                changeInterface.showInterfaces(changeInterface);
 
             } else {
                 send(ANSI.YELLOW + "*** No interfaces configured - please set one up in the preferences" + ANSI.NORMAL + CR);

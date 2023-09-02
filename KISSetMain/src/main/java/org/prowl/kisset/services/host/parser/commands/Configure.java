@@ -164,7 +164,7 @@ public class Configure extends Command {
             configurationEntry = new ConfigurationEntry();
             configureState = State.START;
             writeToTerminal(ANSI.YELLOW+"*** "+ ANSI.UNDERLINE+"Interface Configuration"+ANSI.NORMAL+CR);
-            writeToTerminal(ANSI.WHITE+" Abort interface creation by typing '/abort' at any time" + CR);
+            writeToTerminal(ANSI.WHITE+" Abort interface creation by pressing ctrl-c at any time" + CR);
             writeToTerminal(" Choose a driver from the following list: "+CR);
             writeToTerminal(ANSI.CYAN+"  0: KISS via Serial (NinoTNC, Kenwood TH-D74, etc)"+CR);
             writeToTerminal("  1: KISS via Serial TNC (Kantronics, TNC-2, MFJ-1278, PK-232, etc)"+CR);
