@@ -34,6 +34,8 @@ public class Mode {
     // Sending a public/bulletin message mode
     public static final Mode SENDING_PUBLIC_MESSAGE = new Mode("SENDING_PUBLIC_MESSAGE");
 
+    public static final Mode CONFIGURE_INTERFACE = new Mode("CONFIGURE_INTERFACE");
+
     private final String mode;
 
     /**

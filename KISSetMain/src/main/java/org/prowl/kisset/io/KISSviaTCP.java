@@ -94,7 +94,7 @@ public class KISSviaTCP extends Interface {
                 LOG.info("Connected to kiss service at: " + address + ":" + port);
                 break;
             } catch (ConnectException e) {
-                interfaceStatus = new InterfaceStatus(InterfaceStatus.State.WARN, "Waiting 30s to connect due to: " + e.getMessage());
+                interfaceStatus = new InterfaceStatus(InterfaceStatus.State.DOWN, "Waiting 30s to connect due to: " + e.getMessage());
                 LOG.warn("Delaying 30s due to unable to connect to " + address + ":" + port + ": " + e.getMessage());
                 Tools.delay(30000);
             } catch (Exception e) {

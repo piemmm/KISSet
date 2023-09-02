@@ -129,7 +129,9 @@ public class CommandParser {
                     LOG.error(e.getMessage(), e);
                     writeToTerminal("*** Error: " + e.getMessage() + CR);
                 }
-                sendPrompt();
+                if (mode == Mode.CMD) {
+                    sendPrompt();
+                }
             } else if (mode == Mode.CONNECTED_TO_STATION) {
 
                 // Send i/o to/from station

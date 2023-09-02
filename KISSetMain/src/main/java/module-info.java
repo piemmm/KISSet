@@ -16,6 +16,7 @@ module org.prowl.kisset {
     requires jdk.unsupported;
     requires com.googlecode.lanterna;
     requires jvmbrotli;
+    requires java.xml;
 
     exports org.prowl.ax25;
     exports org.prowl.kisset.eventbus.events;

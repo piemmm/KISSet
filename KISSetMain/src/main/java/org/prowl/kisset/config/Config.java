@@ -6,7 +6,12 @@ import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import javax.xml.transform.*;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
 import java.io.File;
+import java.io.Writer;
 
 public class Config {
 
@@ -41,9 +46,30 @@ public class Config {
             return;
         }
 
-        // Load the configuration from disk
+        // Load the configuration from disk - overloaded to stop a commons config bug with blank lines appearing
+        // in the saved config file. The xslt transform nukes them.
         try {
-            configuration = new XMLConfiguration();
+            configuration = new XMLConfiguration() {
+               public void save(Writer writer) throws ConfigurationException
+                {
+                    try
+                    {
+                        Transformer transformer = TransformerFactory.newDefaultInstance().newTransformer(new StreamSource(Config.class.getResourceAsStream("tidy.xslt")));//createTransformer();
+                        Source source = new DOMSource(createDocument());
+                        Result result = new StreamResult(writer);
+                        transformer.transform(source, result);
+                    }
+                    catch (TransformerException e)
+                    {
+                        throw new ConfigurationException("Unable to save the configuration", e);
+                    }
+                    catch (TransformerFactoryConfigurationError e)
+                    {
+                        throw new ConfigurationException("Unable to save the configuration", e);
+                    }
+                }
+            };
+
             configuration.setDelimiterParsingDisabled(true);
             configuration.load(configFile);
         } catch (Throwable e) {
@@ -90,6 +116,7 @@ public class Config {
         File configFile = getConfigFile();
         LOG.info("Saving configuration to: " + configFile);
         try {
+
             configuration.save(configFile);
         } catch (Throwable e) {
             LOG.error("Unable to save configuration file: " + e.getMessage(), e);

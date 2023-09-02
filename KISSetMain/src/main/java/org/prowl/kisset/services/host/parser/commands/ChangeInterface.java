@@ -83,7 +83,7 @@ public class ChangeInterface extends Command {
             String statusCol;
             if (interfaceStatus.getState() == InterfaceStatus.State.OK) {
                 statusCol = ANSI.GREEN;
-            } else if (interfaceStatus.getState() == InterfaceStatus.State.WARN) {
+            } else if (interfaceStatus.getState() == InterfaceStatus.State.DOWN) {
                 statusCol = ANSI.YELLOW;
             } else if (interfaceStatus.getState() == InterfaceStatus.State.ERROR) {
                 statusCol = ANSI.RED;

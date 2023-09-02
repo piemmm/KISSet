@@ -37,6 +37,24 @@ public class Tools {
         }
     }
 
+    /**
+     * Make sure an IP address or hostname is valid
+     * @param output
+     * @return
+     */
+    public static boolean isValidIPorHostname(String ip) {
+        if (ip == null) {
+            return false;
+        }
+        if (ip.matches("\\d+\\.\\d+\\.\\d+\\.\\d+")) {
+            return true;
+        }
+        if (ip.matches("[a-zA-Z0-9\\-\\.]+")) {
+            return true;
+        }
+        return false;
+    }
+
     public static String byteArrayToHexString(byte[] output) {
         StringBuffer hexString = new StringBuffer();
         for (int i = 0; i < output.length; i++) {
@@ -46,6 +64,18 @@ public class Tools {
         return hexString.toString();
     }
 
+    /**
+     * Return an int from a string, or 'defaultValue' if the string is not an int
+     * @param s
+     * @return
+     */
+    public static int getInteger(String s, int defaultValue) {
+        try {
+            return Integer.parseInt(s);
+        } catch (NumberFormatException e) {
+            return defaultValue;
+        }
+    }
 
     public static boolean isValidITUCallsign(String callsignToValidate) {
         return callsignToValidate.matches("\\A\\d?[a-zA-Z]{1,2}\\d{1,4}[a-zA-Z]{1,3}(-\\d+)?\\Z");

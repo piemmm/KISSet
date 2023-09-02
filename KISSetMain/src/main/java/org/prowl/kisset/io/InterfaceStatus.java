@@ -20,7 +20,7 @@ public class InterfaceStatus {
 
     public enum State {
         OK,
-        WARN,
+        DOWN,
         ERROR
     }
 }

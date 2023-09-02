@@ -39,6 +39,8 @@ public class KISSviaSerial extends Interface {
     private final int retries;
     private SerialPort serialPort = null; // The chosen port form our enumerated list.
 
+    public static final int[] VALID_BAUD_RATES = new int[] {300,600,1200,2400,4800,9600,19200,38400,57600,115200};
+
     public KISSviaSerial(HierarchicalConfiguration config) {
         super(config);
 
