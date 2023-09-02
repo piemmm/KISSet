@@ -31,6 +31,7 @@
          https://docs.microsoft.com/en-us/windows/win32/msi/productversion
          https://docs.oracle.com/en/java/javase/15/docs/api/java.base/java/text/SimpleDateFormat.html
          -->
+        <app.arch>${os.arch}</app.arch>
 
         <app.version>0.0.1</app.version>
 
@@ -543,9 +544,10 @@
                 </os>
             </activation>
             <properties>
-                <os.arch>armhf</os.arch>
+                <app.arch>armhf</app.arch>
             </properties>
         </profile>
+
 
 
         <profile>

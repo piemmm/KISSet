@@ -31,7 +31,7 @@
          https://docs.microsoft.com/en-us/windows/win32/msi/productversion
          https://docs.oracle.com/en/java/javase/15/docs/api/java.base/java/text/SimpleDateFormat.html
          -->
-
+        <app.arch>${os.arch}</app.arch>
         <app.version>0.0.1</app.version>
 
         <!-- This property is used to specify the modules included in the (custom) JVM image. -->
@@ -549,10 +549,9 @@
                 </os>
             </activation>
             <properties>
-                <os.arch>armhf</os.arch>
+                <app.arch>armhf</app.arch>
             </properties>
         </profile>
-
 
         <profile>
             <id>GitHub Run</id>
