@@ -528,6 +528,19 @@
     </reporting>
 
     <profiles>
+
+        <profile>
+            <id>archtype</id>
+            <activation>
+                <os>
+                    <arch>aarch64</arch>
+                </os>
+            </activation>
+            <properties>
+                <os.arch>arm64</os.arch>
+            </properties>
+        </profile>
+
         <profile>
             <id>GitHub Run</id>
             <activation>
