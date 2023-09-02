@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=KISSet
+Comment=KISSet
+Exec=/opt/kisset-gui/bin/kisset-gui
+Icon=/opt/kisset-gui/lib/kisset-gui.png
+Terminal=false
+Type=Application
+Categories=Network;HamRadio
+MimeType=
