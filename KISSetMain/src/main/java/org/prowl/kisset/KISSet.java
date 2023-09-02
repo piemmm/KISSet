@@ -57,6 +57,7 @@ public class KISSet {
     }
 
     public static void main(String[] args) {
+        terminalMode = true;
         // Default terminal type for terminal selections.
         Class terminalType = StdANSI.class;
 

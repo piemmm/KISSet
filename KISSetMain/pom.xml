@@ -37,8 +37,7 @@
         <!-- This property is used to specify the modules included in the (custom) JVM image. -->
         <!-- Reminder: javafx.web (the embedded browser component) is not included in this project by default due
         to GitHub template size restrictions. You can download the full SDK from https://openjfx.io -->
-        <jvm.modules>javafx.media,javafx.controls,javafx.fxml,java.sql,java.logging,javafx.web,javafx.swing,java.prefs
-        </jvm.modules>
+        <jvm.modules>java.sql,java.logging,java.prefs</jvm.modules>
 
         <!-- Set the project to UTF-8, avoiding warnings in the build logs -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
