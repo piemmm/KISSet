@@ -542,6 +542,19 @@
         </profile>
 
         <profile>
+            <id>archtype</id>
+            <activation>
+                <os>
+                    <arch>arm</arch>
+                </os>
+            </activation>
+            <properties>
+                <os.arch>armhf</os.arch>
+            </properties>
+        </profile>
+
+
+        <profile>
             <id>GitHub Run</id>
             <activation>
                 <property>
