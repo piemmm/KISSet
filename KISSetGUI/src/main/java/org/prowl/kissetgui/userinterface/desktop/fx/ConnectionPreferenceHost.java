@@ -16,6 +16,7 @@ import org.apache.commons.logging.LogFactory;
 import org.prowl.kisset.KISSet;
 import org.prowl.kisset.annotations.InterfaceDriver;
 import org.prowl.kisset.io.Interface;
+import org.prowl.kissetgui.userinterface.desktop.KISSetGUI;
 import org.reflections.Reflections;
 
 import java.io.IOException;
@@ -155,7 +156,7 @@ public class ConnectionPreferenceHost {
         String uiName = interfaceDriver.uiName();
 
         try {
-            FXMLLoader fxmlLoader = new FXMLLoader(KISSet.class.getResource(uiName));
+            FXMLLoader fxmlLoader = new FXMLLoader(KISSetGUI.class.getResource(uiName));
             Parent root = fxmlLoader.load();
 
             // Get the controller we are using.
