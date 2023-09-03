@@ -82,17 +82,18 @@ public class DeflateOutputStream extends OutputStream {
         }
     }
 
+
     @Override
     public void write(byte[] b, int off, int len) throws IOException {
         for (int i = 0; i < len; i++) {
-            dataToCompress.write(b[off + i]);
+            write(b[off + i]);
         }
     }
 
     @Override
     public void write(byte[] b) throws IOException {
         for (int i = 0; i < b.length; i++) {
-            dataToCompress.write(b[i]);
+            write(b[i]);
         }
     }
 

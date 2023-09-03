@@ -101,14 +101,14 @@ public class DeflateHuffmanOutputStream extends OutputStream {
     @Override
     public void write(byte[] b, int off, int len) throws IOException {
         for (int i = 0; i < len; i++) {
-            dataToCompress.write(b[off + i]);
+           write(b[off + i]);
         }
     }
 
     @Override
     public void write(byte[] b) throws IOException {
         for (int i = 0; i < b.length; i++) {
-            dataToCompress.write(b[i]);
+            write(b[i]);
         }
     }
 
@@ -149,7 +149,7 @@ public class DeflateHuffmanOutputStream extends OutputStream {
         bitOutputStream.close(); // There is a possible byte saving here by simply removing this statement so no padding is done and accepting the EOF
 
         // See which ended up smaller!
-        //LOG.debug("Deflate:" + bytesCompressed + "    Huffman:" + huffmanEncodedOutputStream.size() + "    None:" + dataToCompress.size());
+        LOG.debug("Data Sizes(lower is better):   Deflate:" + bytesCompressed + "    Huffman:" + huffmanEncodedOutputStream.size() + "    None:" + dataToCompress.size());
 
         // Now we check that the data actually compressed - if it didn't then we just send the data uncompressed
         if (huffmanEncodedOutputStream.size() < bytesCompressed && huffmanEncodedOutputStream.size() < dataToCompress.size()) {
