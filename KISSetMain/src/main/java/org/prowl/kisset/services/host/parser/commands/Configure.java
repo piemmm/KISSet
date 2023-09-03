@@ -219,8 +219,8 @@ public class Configure extends Command {
             interfaceNode.addProperty("ipAddress", entry.ipAddress);
             interfaceNode.addProperty("port", entry.port);
         }
-        interfacesNode.addProperty("beaconEvery",0);
-        interfacesNode.addProperty("beaconText","");
+        interfaceNode.addProperty("beaconEvery",0);
+        interfaceNode.addProperty("beaconText","");
 
         config.saveConfig();
 
