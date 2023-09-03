@@ -7,6 +7,8 @@ import org.prowl.kisset.services.remote.pms.parser.Mode;
 import org.prowl.kisset.util.Tools;
 import org.prowl.kisset.util.compression.deflate.DeflateOutputStream;
 import org.prowl.kisset.util.compression.deflate.InflateInputStream;
+import org.prowl.kisset.util.compression.deflatehuffman.DeflateHuffmanOutputStream;
+import org.prowl.kisset.util.compression.deflatehuffman.InflateHuffmanInputStream;
 
 import java.io.IOException;
 
@@ -37,13 +39,13 @@ public class EXTNResponse extends Command {
             write(CR + "[EXTN " + acceptedExtensions + "]" + CR);
             client.flush();
 
-            // Now we can activate compression
+            // Now we can activate compression - Deflate+HuffMan is our best so that takes priority
             boolean compressionEnabled = false;
             if (extensions.contains("Z")) {
                 // Compression requires is to wrap the input and output streams in a GZIP stream
-                LOG.debug("DeflateHuffman Compression enabled");
-                client.setOutputStream(new DeflateOutputStream(client.getOutputStream()));
-                client.useNewInputStream(new InflateInputStream(client.getInputStream()));
+                LOG.debug("Deflate+Huffman Compression enabled");
+                client.setOutputStream(new DeflateHuffmanOutputStream(client.getOutputStream()));
+                client.useNewInputStream(new InflateHuffmanInputStream(client.getInputStream()));
                 compressionEnabled = true;
                 Tools.delay(200);
             }

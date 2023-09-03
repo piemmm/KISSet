@@ -219,11 +219,11 @@ public class StreamConnectionEstablishmentListener implements ConnectionEstablis
         String capabilities = enabledExtensionsResponse.substring(6, enabledExtensionsResponse.length() - 1);
 
 
-        // Enable compression - if multiple types are specified then we enable out 'best' if supported.
+        // Enable compression - if multiple types are specified then we enable our 'best' if supported.
         boolean compressionEnabled = false;
         // DeflateHuffman compression
         if (capabilities.contains("Z")) {
-            LOG.info("Enabling DeflateHuffman compression");
+            LOG.info("Enabling Deflate+Huffman compression");
             DeflateHuffmanOutputStream out = new DeflateHuffmanOutputStream(stream.getOutputStream());
             InflateHuffmanInputStream in = new InflateHuffmanInputStream(stream.getInputStream());
             stream.setIOStreams(in, out);
