@@ -6,6 +6,7 @@ module org.prowl.kissetgui {
     requires org.kordamp.ikonli.javafx;
     requires javafx.swing;
 
+
     requires commons.logging;
     requires commons.configuration;
     requires java.prefs;
@@ -27,7 +28,6 @@ module org.prowl.kissetgui {
     requires jdk.unsupported;
     requires com.googlecode.lanterna;
     requires org.prowl.kisset;
-
 
 
     exports org.prowl.maps;

@@ -72,13 +72,6 @@
     <dependencies>
 
 
-<!--        <dependency>-->
-<!--            <groupId>com.nixxcode.jvmbrotli</groupId>-->
-<!--            <artifactId>jvmbrotli</artifactId>-->
-<!--            <version>0.2.0</version>-->
-<!--            <optional>true</optional>-->
-<!--        </dependency>-->
-
         <!--  MQTT-->
         <dependency>
             <groupId>org.eclipse.paho</groupId>

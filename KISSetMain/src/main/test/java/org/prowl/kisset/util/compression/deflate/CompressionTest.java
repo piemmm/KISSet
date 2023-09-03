@@ -1,9 +1,11 @@
-package org.prowl.util.compression.deflate;
+package org.prowl.kisset.util.compression.deflate;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.prowl.kisset.util.compression.deflate.DeflateOutputStream;
 import org.prowl.kisset.util.compression.deflate.InflateInputStream;
+import org.prowl.kisset.util.compression.deflatehuffman.DeflateHuffmanOutputStream;
+import org.prowl.kisset.util.compression.deflatehuffman.InflateHuffmanInputStream;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -23,7 +25,7 @@ public class CompressionTest {
     public static final String ALL_DATA = TEST_STRING1 + TEST_STRING2 + TEST_STRING3 + TEST_STRING4 + TEST_STRING5 + TEST_STRING6 + TEST_STRING7;
 
     @Test
-    public void testCompression() {
+    public void testDeflateCompression() {
 
         try {
 
@@ -55,6 +57,8 @@ public class CompressionTest {
             // Stats for junkies and improving the compressor/dictionary test
             double compressedSize = bos.size();
             double uncompressedSize = ALL_DATA.length();
+            System.out.println("\nDeflate compressor stats:");
+            System.out.println("-----------------------------------");
             System.out.println("Compressed size (488 current lowest): " + compressedSize);
             System.out.println("Uncompressed size(should be 912): " + uncompressedSize);
             System.out.println("Compression(46.4912%): " + (100 - (compressedSize * 100 / uncompressedSize)) + "%");
@@ -69,5 +73,55 @@ public class CompressionTest {
         }
     }
 
+    @Test
+    public void testDeflateHuffmanCompression() {
+
+        try {
+
+            // Compress a string
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            DeflateHuffmanOutputStream dos = new DeflateHuffmanOutputStream(bos);
+            dos.write(TEST_STRING1.getBytes());
+            dos.flush();
+            dos.write(TEST_STRING2.getBytes());
+            dos.flush();
+            dos.write(TEST_STRING3.getBytes());
+            dos.flush();
+            dos.write(TEST_STRING4.getBytes());
+            dos.flush();
+            dos.write(TEST_STRING5.getBytes());
+            dos.flush();
+            dos.write(TEST_STRING6.getBytes());
+            dos.flush();
+            dos.write(TEST_STRING7.getBytes()); // This should reduce to only 16 bytes as it is repeated 3 times
+            dos.flush();
+
+
+            // Now decompress it and check
+            ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
+            InflateHuffmanInputStream iis = new InflateHuffmanInputStream(bis);
+            byte[] data = iis.readAllBytes();
+            Assert.assertEquals(ALL_DATA, new String(data));
+
+            // Stats for junkies and improving the compressor/dictionary test
+            double compressedSize = bos.size();
+            double uncompressedSize = ALL_DATA.length();
+
+
+            System.out.println("\nDeflate+Huffman compressor stats:");
+            System.out.println("-----------------------------------");
+            System.out.println("Compressed size (454 current lowest): " + compressedSize);
+            System.out.println("Uncompressed size(should be 912): " + uncompressedSize);
+            System.out.println("Compression(50.2192%): " + (100 - (compressedSize * 100 / uncompressedSize)) + "%");
+
+            // Ensure minimum compression size is met
+            Assert.assertTrue(compressedSize <= 454);
+            Assert.assertEquals(912, uncompressedSize, 0.0);
+
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
 }

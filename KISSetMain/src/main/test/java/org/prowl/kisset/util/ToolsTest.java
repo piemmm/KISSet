@@ -1,4 +1,4 @@
-package org.prowl.util;
+package org.prowl.kisset.util;
 
 import org.junit.jupiter.api.Test;
 import org.prowl.kisset.util.Tools;

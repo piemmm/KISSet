@@ -302,9 +302,8 @@ public class KISSet {
     public String getStationCapabilities() {
         StringBuilder sb = new StringBuilder();
         sb.append("AC");
-//        if (BrotliLoader.isBrotliAvailable()) {
-//            sb.append("Z");
-//        }
+
+
         if (configuration.getConfig(Conf.pmsEnabled, Conf.pmsEnabled.boolDefault())) {
             sb.append("P");
         }

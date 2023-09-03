@@ -17,6 +17,7 @@ module org.prowl.kisset {
     requires com.googlecode.lanterna;
     requires java.xml;
 
+
     exports org.prowl.ax25;
     exports org.prowl.kisset.eventbus.events;
     exports org.prowl.kisset.protocols.mqtt;
@@ -42,6 +43,8 @@ module org.prowl.kisset {
     exports org.prowl.kisset.services;
     exports org.prowl.kisset.objects.dxcluster;
     exports org.prowl.kisset.protocols.core;
+    exports org.prowl.kisset.util.compression.deflate;
+    exports org.prowl.kisset.util.compression.deflatehuffman;
 
 }
 

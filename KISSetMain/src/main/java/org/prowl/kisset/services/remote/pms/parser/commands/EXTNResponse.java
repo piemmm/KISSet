@@ -22,7 +22,14 @@ public class EXTNResponse extends Command {
             LOG.debug("Client has requested EXTN extensions to be enabled: " + extensions);
 
             // We will accept compression
-            if (extensions.contains("C")) {
+            boolean compressionAccepted = false;
+            if (extensions.contains("Z")) {
+                acceptedExtensions.append("Z");
+                compressionAccepted = true;
+            }
+
+            // We will accept compression
+            if (extensions.contains("C") && !compressionAccepted) {
                 acceptedExtensions.append("C");
             }
 
@@ -30,9 +37,20 @@ public class EXTNResponse extends Command {
             write(CR + "[EXTN " + acceptedExtensions + "]" + CR);
             client.flush();
 
+            // Now we can activate compression
+            boolean compressionEnabled = false;
+            if (extensions.contains("Z")) {
+                // Compression requires is to wrap the input and output streams in a GZIP stream
+                LOG.debug("DeflateHuffman Compression enabled");
+                client.setOutputStream(new DeflateOutputStream(client.getOutputStream()));
+                client.useNewInputStream(new InflateInputStream(client.getInputStream()));
+                compressionEnabled = true;
+                Tools.delay(200);
+            }
+
 
             // Now we can activate compression
-            if (extensions.contains("C")) {
+            if (extensions.contains("C") && !compressionEnabled) {
                 // Compression requires is to wrap the input and output streams in a GZIP stream
                 LOG.debug("Compression enabled");
                 client.setOutputStream(new DeflateOutputStream(client.getOutputStream()));

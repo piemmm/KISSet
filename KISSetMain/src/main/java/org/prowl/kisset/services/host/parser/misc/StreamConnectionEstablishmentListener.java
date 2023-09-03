@@ -1,5 +1,6 @@
 package org.prowl.kisset.services.host.parser.misc;
 
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.prowl.ax25.ConnState;
@@ -12,6 +13,8 @@ import org.prowl.kisset.services.host.parser.Mode;
 import org.prowl.kisset.util.Tools;
 import org.prowl.kisset.util.compression.deflate.DeflateOutputStream;
 import org.prowl.kisset.util.compression.deflate.InflateInputStream;
+import org.prowl.kisset.util.compression.deflatehuffman.DeflateHuffmanOutputStream;
+import org.prowl.kisset.util.compression.deflatehuffman.InflateHuffmanInputStream;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -178,12 +181,12 @@ public class StreamConnectionEstablishmentListener implements ConnectionEstablis
 
         boolean compression = false;
 
-//        // We support brotli compression, if it is available.
-//        if (capabilities.contains("Z") && BrotliLoader.isBrotliAvailable()) {
-//            LOG.info("Remote station supports brotli compression");
-//            response.append("Z");
-//            compression = true;
-//        }
+        // We support brotli compression, if it is available.
+        if (capabilities.contains("Z")) {
+            LOG.info("Remote station supports brotli compression");
+            response.append("Z");
+            compression = true;
+        }
 
         // And we can fallback to normal defalte compression if it is not.
         if (capabilities.contains("C") && !compression) {
@@ -218,16 +221,16 @@ public class StreamConnectionEstablishmentListener implements ConnectionEstablis
 
         // Enable compression - if multiple types are specified then we enable out 'best' if supported.
         boolean compressionEnabled = false;
-//        // Brotli compression, for systems that support it.
-//        if (capabilities.contains("Z")) {
-//            LOG.info("Enabling brotli compression");
-//            BrotliOutputStream out = new BrotliOutputStream(stream.getOutputStream());
-//            BrotliInputStream in = new BrotliInputStream(stream.getInputStream());
-//            stream.setIOStreams(in, out);
-//            commandParser.setDivertStream(out);
-//            compressionEnabled = true;
-//            Tools.delay(200);
-//        }
+        // DeflateHuffman compression
+        if (capabilities.contains("Z")) {
+            LOG.info("Enabling DeflateHuffman compression");
+            DeflateHuffmanOutputStream out = new DeflateHuffmanOutputStream(stream.getOutputStream());
+            InflateHuffmanInputStream in = new InflateHuffmanInputStream(stream.getInputStream());
+            stream.setIOStreams(in, out);
+            commandParser.setDivertStream(out);
+            compressionEnabled = true;
+            Tools.delay(200);
+        }
 
         // For compression, we wrap the input and output stream in a deflate
 
