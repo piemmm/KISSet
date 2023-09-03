@@ -309,6 +309,7 @@ public class ANSITerminal extends HBox implements Terminal {
                     Platform.runLater(() -> {
                         redrawThread = null;
                         draw();
+                        System.out.println("Redraw");
                     });
                 }
 
