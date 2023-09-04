@@ -1,13 +1,18 @@
 package org.prowl.kisset.services.host.parser;
 
+import com.google.common.eventbus.Subscribe;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.prowl.kisset.KISSet;
 import org.prowl.kisset.Messages;
 import org.prowl.kisset.annotations.TNCCommand;
+import org.prowl.kisset.eventbus.SingleThreadBus;
+import org.prowl.kisset.eventbus.events.ConfigurationChangeCompleteEvent;
+import org.prowl.kisset.eventbus.events.ConfigurationChangedEvent;
 import org.prowl.kisset.io.Interface;
 import org.prowl.kisset.io.Stream;
 import org.prowl.kisset.services.host.TNCHost;
+import org.prowl.kisset.services.host.parser.commands.ChangeInterface;
 import org.prowl.kisset.services.host.parser.commands.Command;
 import org.prowl.kisset.util.ANSI;
 import org.reflections.Reflections;
@@ -49,6 +54,7 @@ public class CommandParser {
         this.tncHost = tncHost;
         makeCommands();
         finishInit();
+        SingleThreadBus.INSTANCE.register(this);
     }
 
     public void updateStatus() {
@@ -85,6 +91,28 @@ public class CommandParser {
         // Default to getting the first interface
         if (interfaces.size() > 0) {
             currentInterface = interfaces.get(0);
+        } else {
+            currentInterface = null;
+        }
+
+
+    }
+
+    @Subscribe
+    public void refreshConfiguraton(ConfigurationChangeCompleteEvent event) {
+        try {
+            if (currentInterface == null || !currentInterface.isRunning()) {
+                List<Interface> interfaces = KISSet.INSTANCE.getInterfaceHandler().getInterfaces();
+                if (interfaces.size() > 0) {
+                    currentInterface = interfaces.get(0);
+                    writeToTerminal(CR+ANSI.YELLOW+"*** Current KISS interface has been changed due to a configuration change"+ANSI.NORMAL+CR);
+                } else {
+                    writeToTerminal(CR+ANSI.RED+"*** There is no available KISS interface due to a configuration change"+ANSI.NORMAL+CR);
+                    currentInterface = null;
+                }
+            }
+        } catch(Throwable e) {
+            LOG.error(e.getMessage(), e);
         }
     }
 

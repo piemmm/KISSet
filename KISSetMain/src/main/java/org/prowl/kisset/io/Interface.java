@@ -48,6 +48,10 @@ public abstract class Interface {
 
     public abstract void stop();
 
+    public boolean isRunning() {
+        return running;
+    }
+
     public abstract boolean connect(String to, String from, ConnectionEstablishmentListener connectionEstablishmentListener) throws IOException;
 
     public abstract void disconnect(Stream currentStream);

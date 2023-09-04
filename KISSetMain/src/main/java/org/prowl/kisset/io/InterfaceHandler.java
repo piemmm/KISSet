@@ -14,9 +14,9 @@ public class InterfaceHandler {
 
     private static final Log LOG = LogFactory.getLog("InterfaceHandler");
 
-    private final SubnodeConfiguration configuration;
+    private SubnodeConfiguration configuration;
 
-    private final List<Interface> interfaces = new ArrayList<>();
+    private List<Interface> interfaces = new ArrayList<>();
 
     private List<Service> services = new ArrayList<>();
 
@@ -76,6 +76,9 @@ public class InterfaceHandler {
 
     /**
      * Stop this interface handler (as we may be loading a new configuration)
+     *
+     * As we can't call start again, we deconstruct everything just to make absolutely sure
+     * trying to use it again results in very visible breakage.
      */
     public void stop() {
         LOG.info("Stoppig interfaces...");
@@ -83,10 +86,18 @@ public class InterfaceHandler {
             try {
                 LOG.info("Stopping: " + iface.toString());
                 iface.stop();
+                iface.setServices(null);
             } catch (Throwable e) {
                 LOG.error("Unable to stop interface: " + iface.toString(), e);
             }
+
         }
+
+        interfaces.clear();
+        services.clear();
+        interfaces = null;
+        services = null;
+        configuration = null;
     }
 
     /**

@@ -20,6 +20,7 @@ import org.prowl.kisset.Messages;
 import org.prowl.kisset.config.Conf;
 import org.prowl.kisset.config.Config;
 import org.prowl.kisset.eventbus.SingleThreadBus;
+import org.prowl.kisset.eventbus.events.ConfigurationChangeCompleteEvent;
 import org.prowl.kisset.eventbus.events.ConfigurationChangedEvent;
 import org.prowl.kissetgui.guiconfig.GUIConf;
 import org.prowl.kisset.io.Interface;
@@ -161,7 +162,9 @@ public class PreferencesController {
         ((Stage) saveButton.getScene().getWindow()).close();
 
         // Notify anything interested
-        SingleThreadBus.INSTANCE.post(new ConfigurationChangedEvent());
+        SingleThreadBus.INSTANCE.post(new ConfigurationChangedEvent()); // Causes updates for our single dispatch
+        SingleThreadBus.INSTANCE.post(new ConfigurationChangeCompleteEvent()); // Sent after the previous dispatch
+
     }
 
     /**

@@ -85,7 +85,7 @@ public class KISSviaTCP extends Interface {
         OutputStream out = null;
         // Always try to connect until we are reconfigured or stopped.
         while (running) {
-            Tools.delay(1000);
+            Tools.delay(100);
             try {
                 LOG.info("Connecting to kiss service at: " + address + ":" + port);
                 socketConnection = new Socket(InetAddress.getByName(address), port);
