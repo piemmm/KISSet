@@ -19,6 +19,7 @@ import org.prowl.kisset.eventbus.SingleThreadBus;
 import org.prowl.kisset.eventbus.events.ConfigurationChangedEvent;
 import org.prowl.kisset.eventbus.events.HeardNodeEvent;
 import org.prowl.kisset.eventbus.events.InvalidFrameEvent;
+import org.prowl.kisset.statistics.types.MHeard;
 import org.prowl.kissetgui.guiconfig.GUIConf;
 import org.prowl.kissetgui.userinterface.desktop.terminals.ANSITerminal;
 import org.prowl.kisset.io.Interface;
@@ -98,7 +99,11 @@ public class MonitorController {
                         setText(null);
                     } else {
                         int interfaceNumber = KISSet.INSTANCE.getInterfaceHandler().getInterfaces().indexOf(node.getInterface());
-                        setText(interfaceNumber + ": " + node.getCallsign());
+                        String isDigipeated = "*";
+                        if (MHeard.isDirectHeard(node)) {
+                            isDigipeated = "";
+                        }
+                        setText(interfaceNumber + ": " + node.getCallsign()+isDigipeated);
                     }
                 }
             });

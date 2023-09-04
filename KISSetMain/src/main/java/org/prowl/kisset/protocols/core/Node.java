@@ -86,6 +86,7 @@ public class Node {
         this.callsign = toCopy.callsign;
         this.lastHeard = toCopy.lastHeard;
         this.rssi = toCopy.rssi;
+        this.frame = toCopy.frame;
         this.anInterface = toCopy.getInterface();
         this.capabilities = new ArrayList<>(toCopy.capabilities);
         this.destination = toCopy.destination;
@@ -168,6 +169,10 @@ public class Node {
 
     public AX25Frame getFrame() {
         return frame;
+    }
+
+    public void setFrame(AX25Frame frame) {
+        this.frame = frame;
     }
 
     @Override

@@ -1,6 +1,8 @@
 package org.prowl.kisset.statistics.types;
 
 import com.google.common.eventbus.Subscribe;
+import org.prowl.ax25.AX25Callsign;
+import org.prowl.ax25.AX25Frame;
 import org.prowl.kisset.eventbus.SingleThreadBus;
 import org.prowl.kisset.eventbus.events.HeardNodeEvent;
 import org.prowl.kisset.protocols.core.Capability;
@@ -56,11 +58,14 @@ public class MHeard {
     private void updateNode(Node oldNode, Node newNode) {
         oldNode.setLastHeard(newNode.getLastHeard());
         oldNode.setRssi(newNode.getRSSI());
+        oldNode.setFrame(newNode.getFrame());
         oldNode.setAnInterface(newNode.getInterface());
         for (Capability c : newNode.getCapabilities()) {
             oldNode.addCapabilityOrUpdate(c);
         }
     }
+
+
 
     @Subscribe
     public void heardNode(HeardNodeEvent heardNode) {
@@ -73,4 +78,29 @@ public class MHeard {
         addToFront(new Node(heardNode.getNode()));
     }
 
+    /**
+     * Is this via a digipeater? or directly heard?
+     * @return true if heard direct, false if via a digipeater
+     */
+    public static boolean isDirectHeard(Node node) {
+        AX25Frame frame = node.getFrame();
+
+        AX25Callsign[] digipeaters = frame.digipeaters;
+
+        if (digipeaters == null) {
+            return true;
+        }
+
+        boolean isDirectHeard = true;
+        for(AX25Callsign c: digipeaters) {
+            if (!c.getBaseCallsign().startsWith("WIDE") &&
+                    !c.getBaseCallsign().startsWith("RELAY") &&
+                    !c.getBaseCallsign().startsWith("TRACE")) {
+                isDirectHeard = false;
+                break;
+            }
+        }
+
+        return isDirectHeard;
+    }
 }
