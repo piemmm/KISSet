@@ -1,6 +1,7 @@
 package org.prowl.kisset.config;
 
 import org.apache.commons.configuration.ConfigurationException;
+import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.SubnodeConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.logging.Log;
@@ -12,6 +13,7 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import java.io.File;
 import java.io.Writer;
+import java.util.List;
 
 public class Config {
 
@@ -131,6 +133,25 @@ public class Config {
         } catch (ConfigurationException e) {
             LOG.error(e.getMessage(), e);
         }
+    }
+
+    /**
+     * Convenience method to get an interface given a uuid
+     */
+    public HierarchicalConfiguration getInterfaceConfig(String uuid) {
+        // Get the UUID of the interface to remove
+        HierarchicalConfiguration interfacesNode = getConfig("interfaces");
+        // Get a list of all interfaces
+        List<HierarchicalConfiguration> interfaceList = interfacesNode.configurationsAt("interface");
+        // Get the one with the correct UUID
+        for (HierarchicalConfiguration interfaceNode : interfaceList) {
+            if (interfaceNode.getString("uuid").equals(uuid)) {
+                return interfaceNode;
+            }
+        }
+
+        // Interface was not found
+        return null;
     }
 
 }

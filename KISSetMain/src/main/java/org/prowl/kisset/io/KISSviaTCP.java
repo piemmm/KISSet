@@ -6,6 +6,7 @@ import org.apache.commons.logging.LogFactory;
 import org.prowl.ax25.*;
 import org.prowl.kisset.KISSet;
 import org.prowl.kisset.annotations.InterfaceDriver;
+import org.prowl.kisset.config.Conf;
 import org.prowl.kisset.eventbus.SingleThreadBus;
 import org.prowl.kisset.eventbus.events.HeardNodeEvent;
 import org.prowl.kisset.protocols.core.Node;
@@ -90,7 +91,7 @@ public class KISSviaTCP extends Interface {
                 socketConnection = new Socket(InetAddress.getByName(address), port);
                 in = new BufferedInputStream(socketConnection.getInputStream());
                 out = new BufferedOutputStream(socketConnection.getOutputStream());
-                interfaceStatus = new InterfaceStatus(InterfaceStatus.State.OK, null);
+                interfaceStatus = new InterfaceStatus(InterfaceStatus.State.UP, null);
                 LOG.info("Connected to kiss service at: " + address + ":" + port);
                 break;
             } catch (ConnectException e) {
@@ -104,7 +105,7 @@ public class KISSviaTCP extends Interface {
         }
 
         if (in == null || out == null) {
-            interfaceStatus = new InterfaceStatus(InterfaceStatus.State.ERROR, "Could not connect to remote KISS service at: " + address + ":" + port);
+            interfaceStatus = new InterfaceStatus(InterfaceStatus.State.FAULTED, "Could not connect to remote KISS service at: " + address + ":" + port);
             LOG.error("Unable to connect to kiss service at: " + address + ":" + port + " - this connector is stopping.");
             running = false;
             return;
@@ -160,6 +161,13 @@ public class KISSviaTCP extends Interface {
                 SingleThreadBus.INSTANCE.post(new HeardNodeEvent(node));
             }
         });
+
+        // Setup the KISS config for the transmitter
+        anInterface.setKISSParameter(KissParameterType.TXDELAY, config.getInt(Conf.txDelay.name(), Conf.txDelay.intDefault()));
+        anInterface.setKISSParameter(KissParameterType.PERSISTENCE, config.getInt(Conf.persistence.name(), Conf.persistence.intDefault()));
+        anInterface.setKISSParameter(KissParameterType.SLOT_TIME, config.getInt(Conf.slotTime.name(), Conf.slotTime.intDefault()));
+        anInterface.setKISSParameter(KissParameterType.TX_TAIL, config.getInt(Conf.txTail.name(), Conf.txTail.intDefault()));
+        anInterface.setKISSParameter(KissParameterType.FULL_DUPLEX, config.getInt(Conf.fullDuplex.name(), Conf.fullDuplex.boolDefault() ? 1 : 0));
 
     }
 

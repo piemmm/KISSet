@@ -33,7 +33,7 @@ public class BasicTransmittingConnector extends Connector implements Transmittin
     private final AX25Stack stack;
     private final ArrayList<AX25FrameSource> queue = new ArrayList<>();
     private final int retransmitCount;
-    private List<KISSParameter> kissParameters = new ArrayList<>();
+    private List<KissParameter> kissParameters = new ArrayList<>();
     /**
      * This is the default callsign this connector will use for transmitting things like UI frames.
      * <p>
@@ -75,11 +75,11 @@ public class BasicTransmittingConnector extends Connector implements Transmittin
         // Set our default KISS parameters, quite lenient to cover most radios
         // if the user doesn't configure anything. These will be sent when the
         // first packet is output.
-        kissParameters.add(new KISSParameter(KISSParameterType.TXDELAY, 22));
-        kissParameters.add(new KISSParameter(KISSParameterType.PERSISTENCE, 63));
-        kissParameters.add(new KISSParameter(KISSParameterType.SLOT_TIME, 100));
-        kissParameters.add(new KISSParameter(KISSParameterType.TX_TAIL, 10));
-        kissParameters.add(new KISSParameter(KISSParameterType.FULL_DUPLEX, 0));
+        kissParameters.add(new KissParameter(KissParameterType.TXDELAY, 22));
+        kissParameters.add(new KissParameter(KissParameterType.PERSISTENCE, 63));
+        kissParameters.add(new KissParameter(KissParameterType.SLOT_TIME, 100));
+        kissParameters.add(new KissParameter(KissParameterType.TX_TAIL, 10));
+        kissParameters.add(new KissParameter(KissParameterType.FULL_DUPLEX, 0));
 
         kos = new KissEscapeOutputStream(out);
         stack = new AX25Stack(pacLen, maxFrames, baudRateInBitsPerSecond);
@@ -676,7 +676,7 @@ public class BasicTransmittingConnector extends Connector implements Transmittin
      * @param value
      */
     public void setKISSTXDelay(int value) {
-        setKISSParameter(KISSParameterType.TXDELAY, new int[]{value});
+        setKISSParameter(KissParameterType.TXDELAY, new int[]{value});
     }
 
     /**
@@ -685,7 +685,7 @@ public class BasicTransmittingConnector extends Connector implements Transmittin
      * @param value
      */
     public void setKISSPersistence(int value) {
-        setKISSParameter(KISSParameterType.PERSISTENCE, new int[]{value});
+        setKISSParameter(KissParameterType.PERSISTENCE, new int[]{value});
     }
 
     /**
@@ -694,7 +694,7 @@ public class BasicTransmittingConnector extends Connector implements Transmittin
      * @param value
      */
     public void setKISSSlotTime(int value) {
-        setKISSParameter(KISSParameterType.SLOT_TIME, new int[]{value});
+        setKISSParameter(KissParameterType.SLOT_TIME, new int[]{value});
     }
 
     /***
@@ -702,21 +702,21 @@ public class BasicTransmittingConnector extends Connector implements Transmittin
      * @param value
      */
     public void setKISSTXTail(int value) {
-        setKISSParameter(KISSParameterType.TX_TAIL, new int[]{value});
+        setKISSParameter(KissParameterType.TX_TAIL, new int[]{value});
     }
 
     /**
      * Sets the full duplex mode
      */
     public void setKISSFullDuplex(boolean fullDuplex) {
-        setKISSParameter(KISSParameterType.FULL_DUPLEX, new int[]{fullDuplex ? 1 : 0});
+        setKISSParameter(KissParameterType.FULL_DUPLEX, new int[]{fullDuplex ? 1 : 0});
     }
 
     /**
      * Sets the hardware parameter - this isn't well defined so we will simply send the data.
      */
     public void setKISSHardware(int[] data) {
-        setKISSParameter(KISSParameterType.SET_HARDWARE, data);
+        setKISSParameter(KissParameterType.SET_HARDWARE, data);
     }
 
     /**
@@ -725,7 +725,7 @@ public class BasicTransmittingConnector extends Connector implements Transmittin
      * different state (like command mode on a traditional TNC)
      */
     public void exitKISSMode() {
-        setKISSParameter(KISSParameterType.RETURN, new int[]{});
+        setKISSParameter(KissParameterType.RETURN, new int[]{});
     }
 
     /**
@@ -738,10 +738,27 @@ public class BasicTransmittingConnector extends Connector implements Transmittin
      * @param parameter
      * @param value
      */
-    public void setKISSParameter(KISSParameterType parameter, int[] value) {
-        KISSParameter newParameter = new KISSParameter(parameter, value);
+    public void setKISSParameter(KissParameterType parameter, int[] value) {
+        KissParameter newParameter = new KissParameter(parameter, value);
         kissParameters.remove(newParameter);
         kissParameters.add(newParameter);
+        nextKISSParameterSend = 0; // Force update on next packet send.
+    }
+
+    public void setKISSParameter(KissParameterType parameter, int value) {
+        KissParameter newParameter = new KissParameter(parameter, value);
+        kissParameters.remove(newParameter);
+        kissParameters.add(newParameter);
+        nextKISSParameterSend = 0; // Force update on next packet send.
+    }
+
+    public KissParameter getKISSParameter(KissParameterType parameterType) {
+        for (KissParameter kissParameter : kissParameters) {
+            if (kissParameter.parameter == parameterType) {
+                return kissParameter;
+            }
+        }
+        return null;
     }
 
 
@@ -752,7 +769,7 @@ public class BasicTransmittingConnector extends Connector implements Transmittin
      */
     public void sendKISSParameters() throws IOException {
         LOG.debug("Sending KISS Parameters");
-        for (KISSParameter parameter : kissParameters) {
+        for (KissParameter parameter : kissParameters) {
             synchronized (kos) {
                 try {
                     kos.resetByteCount();
@@ -774,59 +791,6 @@ public class BasicTransmittingConnector extends Connector implements Transmittin
     }
 
 
-    /**
-     * Enum containing a list of KISS parameters
-     */
-    public enum KISSParameterType {
-        TXDELAY(0x01),
-        PERSISTENCE(0x02),
-        SLOT_TIME(0x03),
-        TX_TAIL(0x04),
-        FULL_DUPLEX(0x05),
-        SET_HARDWARE(0x06),
-        RETURN(0xFF);
-        private final int value;
-
-        KISSParameterType(int value) {
-            this.value = value;
-        }
-
-        public int getValue() {
-            return value;
-        }
-    }
-
-    /**
-     * Holds a KISS parameter and it's data
-     */
-    public class KISSParameter {
-
-        int[] data;
-        KISSParameterType parameter;
-
-        public KISSParameter(KISSParameterType parameter, int[] data) {
-            this.parameter = parameter;
-            this.data = data;
-        }
-
-        public KISSParameter(KISSParameterType parameter, int data) {
-            this.parameter = parameter;
-            this.data = new int[]{data};
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            KISSParameter that = (KISSParameter) o;
-            return parameter == that.parameter;
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(parameter);
-        }
-    }
 
 }
 

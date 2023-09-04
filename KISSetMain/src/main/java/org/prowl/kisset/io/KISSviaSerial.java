@@ -7,6 +7,7 @@ import org.apache.commons.logging.LogFactory;
 import org.prowl.ax25.*;
 import org.prowl.kisset.KISSet;
 import org.prowl.kisset.annotations.InterfaceDriver;
+import org.prowl.kisset.config.Conf;
 import org.prowl.kisset.eventbus.SingleThreadBus;
 import org.prowl.kisset.eventbus.events.HeardNodeEvent;
 import org.prowl.kisset.protocols.core.Node;
@@ -39,7 +40,7 @@ public class KISSviaSerial extends Interface {
     private final int retries;
     private SerialPort serialPort = null; // The chosen port form our enumerated list.
 
-    public static final int[] VALID_BAUD_RATES = new int[] {300,600,1200,2400,4800,9600,19200,38400,57600,115200};
+    public static final int[] VALID_BAUD_RATES = new int[]{300, 600, 1200, 2400, 4800, 9600, 19200, 38400, 57600, 115200};
 
     public KISSviaSerial(HierarchicalConfiguration config) {
         super(config);
@@ -95,7 +96,7 @@ public class KISSviaSerial extends Interface {
         }
 
         if (serialPort == null) {
-            interfaceStatus = new InterfaceStatus(InterfaceStatus.State.ERROR, "Could not find serial port: " + port);
+            interfaceStatus = new InterfaceStatus(InterfaceStatus.State.FAULTED, "Could not find serial port: " + port);
             LOG.warn(interfaceStatus.getMessage());
             return;
         }
@@ -184,6 +185,13 @@ public class KISSviaSerial extends Interface {
                 SingleThreadBus.INSTANCE.post(new HeardNodeEvent(node));
             }
         });
+
+        // Setup the KISS config for the transmitter
+        anInterface.setKISSParameter(KissParameterType.TXDELAY, config.getInt(Conf.txDelay.name(), Conf.txDelay.intDefault()));
+        anInterface.setKISSParameter(KissParameterType.PERSISTENCE, config.getInt(Conf.persistence.name(), Conf.persistence.intDefault()));
+        anInterface.setKISSParameter(KissParameterType.SLOT_TIME, config.getInt(Conf.slotTime.name(), Conf.slotTime.intDefault()));
+        anInterface.setKISSParameter(KissParameterType.TX_TAIL, config.getInt(Conf.txTail.name(), Conf.txTail.intDefault()));
+        anInterface.setKISSParameter(KissParameterType.FULL_DUPLEX, config.getInt(Conf.fullDuplex.name(), Conf.fullDuplex.boolDefault() ? 1 : 0));
 
     }
 

@@ -3,15 +3,22 @@ package org.prowl.kissetgui.userinterface.desktop.fx;
 import com.fazecast.jSerialComm.SerialPort;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.TextField;
 import javafx.scene.control.cell.ComboBoxListCell;
 import org.apache.commons.configuration.HierarchicalConfiguration;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.prowl.kisset.config.Conf;
 import org.prowl.kisset.io.KISSviaSerial;
 
 import java.util.Arrays;
+import java.util.Deque;
 import java.util.List;
 
 public class SerialPortConnectionPreference extends ConnectionPreferenceInterface {
+    private static final Log LOG = LogFactory.getLog("SerialPortConnectionPreference");
 
     // A list of common baud rates
     private static final Integer[] BAUD_RATES = {300, 600, 1200, 2400, 4800, 9600, 19200, 38400, 57600, 115200};
@@ -19,21 +26,35 @@ public class SerialPortConnectionPreference extends ConnectionPreferenceInterfac
     private ComboBox<SerialPort> serialPortComboBox;
     @FXML
     private ComboBox<Integer> baudRateComboBox;
-
-
-    private PreferencesController preferencesController;
-    private HierarchicalConfiguration configInterfaceNode;
-    private ConnectionPreferenceHost connectionPreferenceHost;
+    @FXML
+    private TextField txDelayTextField;
+    @FXML
+    private TextField txTailTextField;
+    @FXML
+    private TextField persistenceTextField;
+    @FXML
+    private TextField slotTimeTextField;
+    @FXML
+    private TextField maxFramesTextField;
+    @FXML
+    private TextField pacLenTextField;
+    @FXML
+    private CheckBox ackModeCheckBox;
 
     @FXML
     private void serialPortChanged() {
         connectionPreferenceHost.setValidation(validate());
     }
-
     @FXML
     private void baudRateChanged() {
         connectionPreferenceHost.setValidation(validate());
     }
+
+    private PreferencesController preferencesController;
+    private HierarchicalConfiguration configInterfaceNode;
+    private ConnectionPreferenceHost connectionPreferenceHost;
+
+
 
     @Override
     public void init(HierarchicalConfiguration configInterfaceNode, PreferencesController preferencesController, ConnectionPreferenceHost host) {
@@ -79,7 +100,7 @@ public class SerialPortConnectionPreference extends ConnectionPreferenceInterfac
         if (configInterfaceNode == null) {
             return;
         }
-        String port = configInterfaceNode.getString("serialPort");
+        String port = configInterfaceNode.getString(Conf.serialPort.name());
         if (port != null) {
             for (SerialPort serialPort : serialPortComboBox.getItems()) {
                 if (serialPort.getSystemPortPath().equals(port)) {
@@ -88,8 +109,16 @@ public class SerialPortConnectionPreference extends ConnectionPreferenceInterfac
                 }
             }
         }
-        Integer baudRate = configInterfaceNode.getInteger("baudRate", 9600);
+        Integer baudRate = configInterfaceNode.getInteger(Conf.baudRate.name(), Conf.baudRate.intDefault());
         baudRateComboBox.getSelectionModel().select(baudRate);
+
+        txDelayTextField.setText(configInterfaceNode.getInteger(Conf.txDelay.name(), Conf.txDelay.intDefault()).toString());
+        txTailTextField.setText(configInterfaceNode.getInteger(Conf.txTail.name(), Conf.txTail.intDefault()).toString());
+        persistenceTextField.setText(configInterfaceNode.getInteger(Conf.persistence.name(),Conf.persistence.intDefault()).toString());
+        slotTimeTextField.setText(configInterfaceNode.getInteger(Conf.slotTime.name(), Conf.slotTime.intDefault()).toString());
+        maxFramesTextField.setText(configInterfaceNode.getInteger(Conf.maxFrames.name(), Conf.maxFrames.intDefault()).toString());
+        pacLenTextField.setText(configInterfaceNode.getInteger(Conf.pacLen.name(), Conf.pacLen.intDefault()).toString());
+        ackModeCheckBox.setSelected(configInterfaceNode.getBoolean(Conf.ackMode.name(), Conf.ackMode.boolDefault()));
 
         super.applyFromConfig(configInterfaceNode);
     }
@@ -97,8 +126,19 @@ public class SerialPortConnectionPreference extends ConnectionPreferenceInterfac
     @Override
     public void applyToConfig(HierarchicalConfiguration configuration) {
         SerialPort serialPort = serialPortComboBox.getSelectionModel().getSelectedItem();
-        configuration.setProperty("serialPort", serialPort.getSystemPortPath());
-        configuration.setProperty("baudRate", baudRateComboBox.getSelectionModel().getSelectedItem().intValue());
+
+        configuration.setProperty(Conf.serialPort.name(), serialPort.getSystemPortPath());
+        configuration.setProperty(Conf.baudRate.name(), baudRateComboBox.getSelectionModel().getSelectedItem().intValue());
+
+        // TNC Settings
+        configuration.setProperty(Conf.txDelay.name(), Integer.parseInt(txDelayTextField.getText()));
+        configuration.setProperty(Conf.txTail.name(), Integer.parseInt(txTailTextField.getText()));
+        configuration.setProperty(Conf.persistence.name(), Integer.parseInt(persistenceTextField.getText()));
+        configuration.setProperty(Conf.slotTime.name(), Integer.parseInt(slotTimeTextField.getText()));
+        configuration.setProperty(Conf.maxFrames.name(), Integer.parseInt(maxFramesTextField.getText()));
+        configuration.setProperty(Conf.pacLen.name(), Integer.parseInt(pacLenTextField.getText()));
+        configuration.setProperty(Conf.ackMode.name(), ackModeCheckBox.isSelected());
+
         super.applyToConfig(configuration);
 
     }
@@ -109,7 +149,36 @@ public class SerialPortConnectionPreference extends ConnectionPreferenceInterfac
         if (serialPortComboBox.getSelectionModel().getSelectedItem() == null) {
             return false;
         }
-        return baudRateComboBox.getSelectionModel().getSelectedItem() != null && super.validate();
+
+        if (baudRateComboBox.getSelectionModel().getSelectedItem() == null) {
+            return false;
+        }
+
+        if (!txDelayTextField.getText().matches("\\d+")) {
+            return false;
+        }
+
+        if (!txTailTextField.getText().matches("\\d+")) {
+            return false;
+        }
+
+        if (!persistenceTextField.getText().matches("\\d+")) {
+            return false;
+        }
+
+        if (!slotTimeTextField.getText().matches("\\d+")) {
+            return false;
+        }
+
+        if (!maxFramesTextField.getText().matches("\\d+")) {
+            return false;
+        }
+
+        if (!pacLenTextField.getText().matches("\\d+")) {
+            return false;
+        }
+
+        return super.validate();
     }
 
 }

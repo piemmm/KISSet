@@ -17,6 +17,19 @@ public enum Conf {
     dxTransparency(0),
     fbbTransparency(0),
 
+    // TNC Settings
+    ipAddress(""),
+    port(8001),
+    serialPort(""),
+    baudRate(9600),
+    txDelay(22),
+    txTail(10),
+    persistence(64),
+    fullDuplex(false),
+    slotTime(10),
+    maxFrames(3),
+    pacLen(128),
+    ackMode(false), // Not all KISS devices support this
 
     // These settings are set per-interface
     uuid(""),

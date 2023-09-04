@@ -36,6 +36,10 @@ public abstract class ConnectionPreferenceInterface {
         return true;
     }
 
+    @FXML
+    public void validateAll() {
+        connectionPreferenceHost.setValidation(validate());
+    }
 
     protected void applyToConfig(HierarchicalConfiguration configuration) {
         configuration.setProperty(Conf.beaconText.name(), beaconText.getText());

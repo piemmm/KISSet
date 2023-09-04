@@ -25,7 +25,7 @@ public abstract class Interface {
     protected boolean running = true;
     protected List<Service> services = new ArrayList<>();
     // If the interface fails to start, the reason will be logged here.
-    InterfaceStatus interfaceStatus = new InterfaceStatus(InterfaceStatus.State.OK, null);
+    InterfaceStatus interfaceStatus = new InterfaceStatus(InterfaceStatus.State.UP, null);
     private int currentStream = 0;
     private final List<Stream> streams = new ArrayList<>();
     private String uuid;
@@ -204,4 +204,25 @@ public abstract class Interface {
         };
     }
 
+    /**
+     * Get a kiss parameter from the interface
+     * @param type
+     * @return
+     */
+    public KissParameter getKissParameter(KissParameterType type) {
+        return anInterface.getKISSParameter(type);
+    }
+
+    /**
+     * Set a kiss parameter on the interface
+     * @param type
+     * @param data
+     */
+    public void setKissParameter(KissParameterType type, int[] data) {
+        anInterface.setKISSParameter(type, data);
+    }
+
+    public void setKissParameter(KissParameterType type, int data) {
+        anInterface.setKISSParameter(type, new int[] { data  });
+    }
 }

@@ -81,11 +81,11 @@ public class ChangeInterface extends Command {
         for (Interface anInterface : KISSet.INSTANCE.getInterfaceHandler().getInterfaces()) {
             InterfaceStatus interfaceStatus = anInterface.getInterfaceStatus();
             String statusCol;
-            if (interfaceStatus.getState() == InterfaceStatus.State.OK) {
+            if (interfaceStatus.getState() == InterfaceStatus.State.UP) {
                 statusCol = ANSI.GREEN;
             } else if (interfaceStatus.getState() == InterfaceStatus.State.DOWN) {
                 statusCol = ANSI.YELLOW;
-            } else if (interfaceStatus.getState() == InterfaceStatus.State.ERROR) {
+            } else if (interfaceStatus.getState() == InterfaceStatus.State.FAULTED) {
                 statusCol = ANSI.RED;
             } else {
                 statusCol = ANSI.WHITE;

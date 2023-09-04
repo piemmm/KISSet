@@ -19,8 +19,8 @@ public class InterfaceStatus {
     }
 
     public enum State {
-        OK,
+        UP,
         DOWN,
-        ERROR
+        FAULTED;
     }
 }
