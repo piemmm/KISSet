@@ -10,10 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.SocketException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 public class BasicTransmittingConnector extends Connector implements TransmittingConnector, Transmitting {
     public static final int PROTOCOL_AX25 = 4;
@@ -36,6 +33,7 @@ public class BasicTransmittingConnector extends Connector implements Transmittin
     private final AX25Stack stack;
     private final ArrayList<AX25FrameSource> queue = new ArrayList<>();
     private final int retransmitCount;
+    private List<KISSParameter> kissParameters = new ArrayList<>();
     /**
      * This is the default callsign this connector will use for transmitting things like UI frames.
      * <p>
@@ -52,13 +50,39 @@ public class BasicTransmittingConnector extends Connector implements Transmittin
     private transient TimedQueueEntry delayQueueHead = null;
     private final String uuid;
 
-    public BasicTransmittingConnector(String uuid, int pacLen, int maxFrames, int baudRateInBits, int retransmitCount, AX25Callsign defaultCallsign, InputStream in, OutputStream out, ConnectionRequestListener connectionRequestListener) {
+    private long nextKISSParameterSend = 0;
+    private static final long KISS_PARAMETERS_SEND_INTERVAL = 1000 * 60 * 5; // 5 minutes
+
+    /**
+     *  Create a new BasicTransmittingConnector
+     *
+     * @param uuid a unique identifier for this connector
+     * @param pacLen the maximum packet length
+     * @param maxFrames the maximum number of frames to buffer
+     * @param baudRateInBitsPerSecond this is used for T1 timeout calculations
+     * @param retransmitCount the number of retries before giving up
+     * @param defaultCallsign the default callsign to use for this connector
+     * @param in InputStream to read KISS-encoded frames from
+     * @param out OutputStream to write KISS-encoded frames to
+     * @param connectionRequestListener the listener to be notified of incoming connections
+     */
+    public BasicTransmittingConnector(String uuid, int pacLen, int maxFrames, int baudRateInBitsPerSecond, int retransmitCount, AX25Callsign defaultCallsign, InputStream in, OutputStream out, ConnectionRequestListener connectionRequestListener) {
         this.defaultCallsign = defaultCallsign;
         this.retransmitCount = retransmitCount;
         this.in = in;
         this.uuid = uuid;
+
+        // Set our default KISS parameters, quite lenient to cover most radios
+        // if the user doesn't configure anything. These will be sent when the
+        // first packet is output.
+        kissParameters.add(new KISSParameter(KISSParameterType.TXDELAY, 22));
+        kissParameters.add(new KISSParameter(KISSParameterType.PERSISTENCE, 63));
+        kissParameters.add(new KISSParameter(KISSParameterType.SLOT_TIME, 100));
+        kissParameters.add(new KISSParameter(KISSParameterType.TX_TAIL, 10));
+        kissParameters.add(new KISSParameter(KISSParameterType.FULL_DUPLEX, 0));
+
         kos = new KissEscapeOutputStream(out);
-        stack = new AX25Stack(pacLen, maxFrames, baudRateInBits);
+        stack = new AX25Stack(pacLen, maxFrames, baudRateInBitsPerSecond);
         startRxThread();
         startTxThread();
         stack.setTransmitting(this);
@@ -224,6 +248,17 @@ public class BasicTransmittingConnector extends Connector implements Transmittin
 
     // Actually write the frame to the outputStream
     public final boolean sendFrame(AX25FrameSource entry, long now, AX25Frame frame, TransmittingConnector p) {
+
+        // Check if we need to send our KISS parameters
+        if (System.currentTimeMillis() > nextKISSParameterSend) {
+            nextKISSParameterSend = System.currentTimeMillis()+KISS_PARAMETERS_SEND_INTERVAL;
+            try {
+                sendKISSParameters();
+            } catch (IOException e) {
+                LOG.error(e.getMessage(), e);
+            }
+        }
+
         // TX frames must also be passed to the stack for processing
         stack.fireConsumeAX25Frame(frame, this);
 
@@ -235,13 +270,15 @@ public class BasicTransmittingConnector extends Connector implements Transmittin
                 frame.sender.h_c = !frame.dest.h_c;
             }
             synchronized (frame) {
-                kos.resetByteCount();
-                kos.writeRaw(KissEscapeOutputStream.FEND);
-                kos.write(getKISSDeviceIDInCorrectBitsFromConfig()); // data frame to selected TNC port (KISS device ID)
-                frame.write(kos);
-                kos.writeRaw(KissEscapeOutputStream.FEND);
-                kos.flush();
-                byteCount = kos.getByteCount();
+                synchronized (kos) {
+                    kos.resetByteCount();
+                    kos.writeRaw(KissEscapeOutputStream.FEND);
+                    kos.write(getKISSDeviceIDInCorrectBitsFromConfig()); // data frame to selected TNC port (KISS device ID)
+                    frame.write(kos);
+                    kos.writeRaw(KissEscapeOutputStream.FEND);
+                    kos.flush();
+                    byteCount = kos.getByteCount();
+                }
                 stats.numXmtBytes += byteCount;
                 stats.numXmtFrames++;
             }
@@ -631,6 +668,166 @@ public class BasicTransmittingConnector extends Connector implements Transmittin
             return "TimedQueueEntry[@" + dueTime + ',' + frameSource + ']';
         }
     }
+
+
+    /**
+     * Sets the TXDelay in value*10ms increments
+     *
+     * @param value
+     */
+    public void setKISSTXDelay(int value) {
+        setKISSParameter(KISSParameterType.TXDELAY, new int[]{value});
+    }
+
+    /**
+     * Sets the persistence parameter - persistence=data*256-1 used for CSMA
+     *
+     * @param value
+     */
+    public void setKISSPersistence(int value) {
+        setKISSParameter(KISSParameterType.PERSISTENCE, new int[]{value});
+    }
+
+    /**
+     * Sets the slot time in value*10ms increments
+     *
+     * @param value
+     */
+    public void setKISSSlotTime(int value) {
+        setKISSParameter(KISSParameterType.SLOT_TIME, new int[]{value});
+    }
+
+    /***
+     * Sets the TX tail in value*10ms increments
+     * @param value
+     */
+    public void setKISSTXTail(int value) {
+        setKISSParameter(KISSParameterType.TX_TAIL, new int[]{value});
+    }
+
+    /**
+     * Sets the full duplex mode
+     */
+    public void setKISSFullDuplex(boolean fullDuplex) {
+        setKISSParameter(KISSParameterType.FULL_DUPLEX, new int[]{fullDuplex ? 1 : 0});
+    }
+
+    /**
+     * Sets the hardware parameter - this isn't well defined so we will simply send the data.
+     */
+    public void setKISSHardware(int[] data) {
+        setKISSParameter(KISSParameterType.SET_HARDWARE, data);
+    }
+
+    /**
+     * This exits KISS mode - you probably don't want to call this unless you are taking the stream away from the stack
+     * to do something else and need whatever device (that might *not* support coming out of KISS mode) to be in a
+     * different state (like command mode on a traditional TNC)
+     */
+    public void exitKISSMode() {
+        setKISSParameter(KISSParameterType.RETURN, new int[]{});
+    }
+
+    /**
+     * Set a KISS parameter - the parameter may be one or more bytes long and if it already exists in our
+     * stored list, should be replaced/updated
+     * <p>
+     * This parameter is stored and periodically sent to the TNC, as well upon
+     * the initial connection to the TNC. Some TNCs like the Nino may ignore the TXDelay setting
+     *
+     * @param parameter
+     * @param value
+     */
+    public void setKISSParameter(KISSParameterType parameter, int[] value) {
+        KISSParameter newParameter = new KISSParameter(parameter, value);
+        kissParameters.remove(newParameter);
+        kissParameters.add(newParameter);
+    }
+
+
+    /**
+     * Actually send a KISS parameter to the TNC from our list of settings.
+     *
+     * @throws IOException
+     */
+    public void sendKISSParameters() throws IOException {
+        LOG.debug("Sending KISS Parameters");
+        for (KISSParameter parameter : kissParameters) {
+            synchronized (kos) {
+                try {
+                    kos.resetByteCount();
+                    kos.writeRaw(KissEscapeOutputStream.FEND);
+                    kos.write(getKISSDeviceIDInCorrectBitsFromConfig()); // data frame to selected TNC port (KISS device ID)
+                    kos.writeRaw(parameter.parameter.getValue());
+                    for (int i = 0; i < parameter.data.length; i++) {
+                        kos.writeRaw(parameter.data[i]);
+                    }
+                    kos.writeRaw(KissEscapeOutputStream.FEND);
+                    kos.flush();
+                    stats.numXmtBytes += kos.getByteCount();
+                    stats.numXmtFrames++;
+                } catch (IOException e) {
+                    LOG.error(e.getMessage(), e);
+                }
+            }
+        }
+    }
+
+
+    /**
+     * Enum containing a list of KISS parameters
+     */
+    public enum KISSParameterType {
+        TXDELAY(0x01),
+        PERSISTENCE(0x02),
+        SLOT_TIME(0x03),
+        TX_TAIL(0x04),
+        FULL_DUPLEX(0x05),
+        SET_HARDWARE(0x06),
+        RETURN(0xFF);
+        private final int value;
+
+        KISSParameterType(int value) {
+            this.value = value;
+        }
+
+        public int getValue() {
+            return value;
+        }
+    }
+
+    /**
+     * Holds a KISS parameter and it's data
+     */
+    public class KISSParameter {
+
+        int[] data;
+        KISSParameterType parameter;
+
+        public KISSParameter(KISSParameterType parameter, int[] data) {
+            this.parameter = parameter;
+            this.data = data;
+        }
+
+        public KISSParameter(KISSParameterType parameter, int data) {
+            this.parameter = parameter;
+            this.data = new int[]{data};
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            KISSParameter that = (KISSParameter) o;
+            return parameter == that.parameter;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(parameter);
+        }
+    }
+
 }
 
 

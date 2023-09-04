@@ -171,7 +171,7 @@ public class ANSITerminal extends HBox implements Terminal {
                         sb.append("\n");
                     }
                 }
-                LOG.debug("Copied: " + sb);
+                //LOG.debug("Copied: " + sb);
                 content.putString(sb.toString());
                 clipboard.setContent(content);
             }
@@ -309,7 +309,6 @@ public class ANSITerminal extends HBox implements Terminal {
                     Platform.runLater(() -> {
                         redrawThread = null;
                         draw();
-                        System.out.println("Redraw");
                     });
                 }
 
