@@ -195,6 +195,7 @@ public class APRSController {
                         updateNode(node);
                         aprsLayer.getChildren().add(icon);
                         if (node.getTrack() != null) {
+                            aprsLayer.getChildren().remove(node.getTrack());
                             aprsLayer.getChildren().add(node.getTrack());
                         }
                     });

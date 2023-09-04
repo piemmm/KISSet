@@ -9,6 +9,7 @@ import org.prowl.kisset.KISSet;
 import org.prowl.kisset.annotations.TNCCommand;
 import org.prowl.kisset.config.Config;
 import org.prowl.kisset.eventbus.SingleThreadBus;
+import org.prowl.kisset.eventbus.events.ConfigurationChangeCompleteEvent;
 import org.prowl.kisset.eventbus.events.ConfigurationChangedEvent;
 import org.prowl.kisset.io.Interface;
 import org.prowl.kisset.io.KISSviaSerial;
@@ -123,6 +124,8 @@ public class DeConfigure extends Command {
 
         // Tell everything the config just changed
         SingleThreadBus.INSTANCE.post(new ConfigurationChangedEvent());
+        SingleThreadBus.INSTANCE.post(new ConfigurationChangeCompleteEvent(true)); // Sent after the previous dispatch
+
     }
 
     @Override

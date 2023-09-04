@@ -342,7 +342,7 @@
                                             </rowConstraints>
                                             <children>
                                                 <CheckBox fx:id="enableAPRSDecoderKISS" mnemonicParsing="false" text="Enable APRS decoder on all KISS interfaces" GridPane.columnIndex="1" />
-                                                <CheckBox fx:id="connectToAPRSIS" disable="true" mnemonicParsing="false" text="Connect to APRS-IS over Internet" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                                <CheckBox fx:id="connectToAPRSIS" mnemonicParsing="false" text="Connect to APRS-IS over Internet" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                                                 <Label text="APRS-IS Server Address:" GridPane.halignment="RIGHT" GridPane.rowIndex="2">
                                                     <GridPane.margin>
                                                         <Insets right="5.0" />
@@ -363,12 +363,12 @@
                                                         <Insets right="5.0" />
                                                     </GridPane.margin>
                                                 </Label>
-                                                <TextField GridPane.columnIndex="1" GridPane.rowIndex="3">
+                                                <TextField promptText="Usually your callsign" GridPane.columnIndex="1" GridPane.rowIndex="3">
                                                     <GridPane.margin>
                                                         <Insets right="10.0" />
                                                     </GridPane.margin>
                                                 </TextField>
-                                                <PasswordField GridPane.columnIndex="1" GridPane.rowIndex="4">
+                                                <PasswordField promptText="Leave blank if not forwarding to APRS-IS" GridPane.columnIndex="1" GridPane.rowIndex="4">
                                                     <GridPane.margin>
                                                         <Insets right="10.0" />
                                                     </GridPane.margin>

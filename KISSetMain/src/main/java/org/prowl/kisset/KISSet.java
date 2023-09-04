@@ -120,7 +120,11 @@ public class KISSet {
             }
 
             // Load configuration and initialise everything needed.
-            configuration = new Config();
+            if (configuration == null) {
+                configuration = new Config();
+            } else {
+                configuration.loadConfig();
+            }
 
             // Create our storage handler
             storage = new Storage();

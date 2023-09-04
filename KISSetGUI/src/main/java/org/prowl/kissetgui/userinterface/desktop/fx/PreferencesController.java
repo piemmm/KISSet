@@ -108,6 +108,7 @@ public class PreferencesController {
 
     private final int[] MAILBOX_SSID = {-1, -2, -3, -4, -5, -6, -7};
 
+    private boolean interfacesChanged = false;
 
     @FXML
     public void onCancelButtonClicked() {
@@ -163,7 +164,7 @@ public class PreferencesController {
 
         // Notify anything interested
         SingleThreadBus.INSTANCE.post(new ConfigurationChangedEvent()); // Causes updates for our single dispatch
-        SingleThreadBus.INSTANCE.post(new ConfigurationChangeCompleteEvent()); // Sent after the previous dispatch
+        SingleThreadBus.INSTANCE.post(new ConfigurationChangeCompleteEvent(interfacesChanged)); // Sent after the previous dispatch
 
     }
 
@@ -183,11 +184,14 @@ public class PreferencesController {
 
     @FXML
     public void removeInterfaceButtonClicked() {
+        interfacesChanged = true;
         removeInterface((Interface) interfaceList.getSelectionModel().getSelectedItem());
+
     }
 
     @FXML
     public void editInterfaceButtonClicked() {
+        interfacesChanged = true;
         showAddInterfaceScreen((Interface) interfaceList.getSelectionModel().getSelectedItem());
     }
 
@@ -353,6 +357,7 @@ public class PreferencesController {
                         Interface interfaceInstance = (Interface) constructor.newInstance(interfaceConfig);
                         //   Interface interfaceInstance = (Interface) interfaceClass.newInstance();
                         interfaces.add(interfaceInstance);
+
                     } else {
                         LOG.error("Could not find interface class " + className);
                         removeInterface(uuid);
@@ -383,7 +388,7 @@ public class PreferencesController {
 
 
     public void showAddInterfaceScreen(Interface interfaceToEditOrNull) {
-
+        interfacesChanged =true;
         try {
             // Create the GUI.
             Stage stage = new Stage();

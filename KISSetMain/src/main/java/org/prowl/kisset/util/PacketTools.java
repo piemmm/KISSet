@@ -197,8 +197,7 @@ public class PacketTools {
                 if (pid == AX25Frame.PID_NOLVL3) {
                     boolean isAprs = false;
                     try {
-                        String aprsString = frame.sender.toString() + ">" + frame.dest.toString() + ":" + frame.getAsciiFrame();
-                        APRSPacket packet = Parser.parse(aprsString);
+                        APRSPacket packet = Parser.parseAX25(frame.getRawPacket());
                         if (packet.isAprs()) {
                             InformationField informationField = packet.getAprsInformation();
                             if (informationField != null) {
@@ -285,7 +284,7 @@ public class PacketTools {
     public static String readableTextFromAPRSFrame(APRSPacket packet) {
         StringBuilder builder = new StringBuilder();
         builder.append(ANSI.MAGENTA);
-        builder.append("APRS Packet:");
+        builder.append("APRS Packet:"+CR);
         //builder.append(" Type:" + packet.getType() + CR);
         InformationField info = packet.getAprsInformation();
         if (info != null) {

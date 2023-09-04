@@ -47,33 +47,30 @@ public class Config {
             makeDefaultConfig();
             return;
         }
-
         // Load the configuration from disk - overloaded to stop a commons config bug with blank lines appearing
         // in the saved config file. The xslt transform nukes them.
         try {
-            configuration = new XMLConfiguration() {
-               public void save(Writer writer) throws ConfigurationException
-                {
-                    try
-                    {
-                        Transformer transformer = TransformerFactory.newDefaultInstance().newTransformer(new StreamSource(Config.class.getResourceAsStream("tidy.xslt")));//createTransformer();
-                        Source source = new DOMSource(createDocument());
-                        Result result = new StreamResult(writer);
-                        transformer.transform(source, result);
+            if (configuration == null) {
+                configuration = new XMLConfiguration() {
+                    public void save(Writer writer) throws ConfigurationException {
+                        try {
+                            Transformer transformer = TransformerFactory.newDefaultInstance().newTransformer(new StreamSource(Config.class.getResourceAsStream("tidy.xslt")));//createTransformer();
+                            Source source = new DOMSource(createDocument());
+                            Result result = new StreamResult(writer);
+                            transformer.transform(source, result);
+                        } catch (TransformerException e) {
+                            throw new ConfigurationException("Unable to save the configuration", e);
+                        } catch (TransformerFactoryConfigurationError e) {
+                            throw new ConfigurationException("Unable to save the configuration", e);
+                        }
                     }
-                    catch (TransformerException e)
-                    {
-                        throw new ConfigurationException("Unable to save the configuration", e);
-                    }
-                    catch (TransformerFactoryConfigurationError e)
-                    {
-                        throw new ConfigurationException("Unable to save the configuration", e);
-                    }
-                }
-            };
-
-            configuration.setDelimiterParsingDisabled(true);
-            configuration.load(configFile);
+                };
+            }
+            synchronized (configuration) {
+                configuration.clear();
+                configuration.setDelimiterParsingDisabled(true);
+                configuration.load(configFile);
+            }
         } catch (Throwable e) {
 
             e.printStackTrace();

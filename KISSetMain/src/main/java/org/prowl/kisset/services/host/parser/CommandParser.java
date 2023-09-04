@@ -104,8 +104,17 @@ public class CommandParser {
             if (currentInterface == null || !currentInterface.isRunning()) {
                 List<Interface> interfaces = KISSet.INSTANCE.getInterfaceHandler().getInterfaces();
                 if (interfaces.size() > 0) {
-                    currentInterface = interfaces.get(0);
-                    writeToTerminal(CR+ANSI.YELLOW+"*** Current KISS interface has been changed due to a configuration change"+ANSI.NORMAL+CR);
+                    if (event.interfacesWereChanged()) {
+                        currentInterface = interfaces.get(0);
+                        writeToTerminal(CR + ANSI.YELLOW + "*** Current KISS interface has been changed due to an interface reconfiguration" + ANSI.NORMAL + CR);
+                    } else {
+                        // Existing interfaces, so should always be present so just select the new instance again.
+                        if (currentInterface != null) {
+                            currentInterface = KISSet.INSTANCE.getInterfaceHandler().getInterfaceByUUID(currentInterface.getUUID());
+                        } else {
+                            currentInterface = interfaces.get(0);
+                        }
+                    }
                 } else {
                     writeToTerminal(CR+ANSI.RED+"*** There is no available KISS interface due to a configuration change"+ANSI.NORMAL+CR);
                     currentInterface = null;
