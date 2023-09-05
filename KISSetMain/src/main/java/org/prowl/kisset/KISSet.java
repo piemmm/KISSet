@@ -221,6 +221,7 @@ public class KISSet {
             public void setStatus(String statusText, int currentStream) {
             }
         }, terminal.getInputStream(), terminal.getOutputStream());
+        tncHost.setLocalEcho(false);
 
 
         // Catch ctrl-c and set the TNC to command mode. This uses the sun.misc.Signal class which is deprecated, but

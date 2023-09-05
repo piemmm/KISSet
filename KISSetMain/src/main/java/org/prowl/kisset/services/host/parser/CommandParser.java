@@ -50,11 +50,18 @@ public class CommandParser {
 
     private OutputStream divertStream;
 
+    // Local echo defaults to on
+    private boolean localEchoEnabled = true;
+
     public CommandParser(TNCHost tncHost) {
         this.tncHost = tncHost;
         makeCommands();
         finishInit();
         SingleThreadBus.INSTANCE.register(this);
+    }
+
+    public void setLocalEcho(boolean enable) {
+        this.localEchoEnabled = enable;
     }
 
     public void updateStatus() {
@@ -129,7 +136,9 @@ public class CommandParser {
 
         try {
             // Local echo
-            writeToTerminal(c + CR);
+            if (localEchoEnabled) {
+                writeToTerminal(c + CR);
+            }
             String[] arguments = c.split(" "); // Arguments[0] is the command used.
 
             if (mode == Mode.CMD || mode == Mode.MESSAGE_LIST_PAGINATION || mode == Mode.MESSAGE_READ_PAGINATION) {

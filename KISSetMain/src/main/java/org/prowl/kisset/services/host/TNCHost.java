@@ -103,6 +103,10 @@ public class TNCHost {
         host.setStatus(status, currentStream);
     }
 
+    public void setLocalEcho(boolean enabled) {
+        parser.setLocalEcho(enabled);
+    }
+
     public void setMode(Mode mode, boolean sendPrompt) {
         parser.setMode(mode, sendPrompt);
     }
