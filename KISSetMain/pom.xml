@@ -17,6 +17,7 @@
 
     <packaging>jar</packaging>
 
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <junit.version>5.10.0</junit.version>
@@ -66,11 +67,30 @@
             <url>https://jitpack.io</url>
         </repository>
 
+        <repository>
+            <id>local</id>
+            <name>LocalRepo</name>
+            <url>file://${project.basedir}/lib</url>
+            <releases>
+                <enabled>true</enabled>
+                <checksumPolicy>ignore</checksumPolicy>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+
 
     </repositories>
 
     <dependencies>
 
+        <!-- Our modified (and unit tested) aprslib -->
+        <dependency>
+            <groupId>org.prowl</groupId>
+            <artifactId>aprslib</artifactId>
+            <version>1.0.0</version>
+        </dependency>
 
         <!--  MQTT-->
         <dependency>
@@ -118,8 +138,6 @@
         <!--        </dependency>-->
 
 
-
-
         <!--        Logging support-->
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -143,14 +161,7 @@
             <version>32.1.2-jre</version>
         </dependency>
 
-        <!-- Our modified (and unit tested) aprslib -->
-        <dependency>
-            <groupId>org.prowl</groupId>
-            <artifactId>aprslib</artifactId>
-            <version>2.0</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/aprslib-1.0.0-SNAPSHOT.jar</systemPath>
-        </dependency>
+
 
         <!-- Reflections, for finding classes in the classpath -->
         <dependency>
@@ -207,7 +218,6 @@
         </dependency>
 
 
-
         <!--        &lt;!&ndash; https://mvnrepository.com/artifact/org.apache.commons/commons-configuration2 &ndash;&gt;-->
         <!--        <dependency>-->
         <!--            <groupId>org.apache.commons</groupId>-->
@@ -249,13 +259,12 @@
         </dependency>
 
 
-
         <!--        &lt;!&ndash; https://mvnrepository.com/artifact/org.openjfx/javafx-web &ndash;&gt;-->
-<!--        <dependency>-->
-<!--            <groupId>org.openjfx</groupId>-->
-<!--            <artifactId>javafx-web</artifactId>-->
-<!--            <version>18.0.2</version>-->
-<!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>org.openjfx</groupId>-->
+        <!--            <artifactId>javafx-web</artifactId>-->
+        <!--            <version>18.0.2</version>-->
+        <!--        </dependency>-->
 
     </dependencies>
 
@@ -290,6 +299,21 @@
         </resources>
 
         <plugins>
+
+            <!-- exec plugin -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.1.0</version>
+                <configuration>
+                    <mainClass>org.prowl.kisset.KISSet</mainClass>
+                    <arguments>
+                        <argument>-classpath</argument>
+                        <argument>%classpath</argument>
+                    </arguments>
+                </configuration>
+
+            </plugin>
             <!-- Install the terminal library because maven made it difficult for no good reason. -->
             <!--                <plugin>-->
             <!--                    <groupId>org.apache.maven.plugins</groupId>-->
@@ -300,26 +324,26 @@
             <!--                        <target>17</target>-->
             <!--                    </configuration>-->
             <!--                </plugin>-->
-<!--            <plugin>-->
-<!--                <groupId>org.openjfx</groupId>-->
-<!--                <artifactId>javafx-maven-plugin</artifactId>-->
-<!--                <version>0.0.8</version>-->
-<!--                <executions>-->
-<!--                    <execution>-->
-<!--                        &lt;!&ndash; Default configuration for running with: mvn clean javafx:run &ndash;&gt;-->
-<!--                        <id>default-cli</id>-->
-<!--                        <configuration>-->
-<!--                            <mainClass>org.prowl.kisset/org.prowl.kisset.KISSet</mainClass>-->
-<!--                            <launcher>app</launcher>-->
-<!--                            <jlinkZipName>app</jlinkZipName>-->
-<!--                            <jlinkImageName>app</jlinkImageName>-->
-<!--                            <noManPages>true</noManPages>-->
-<!--                            <stripDebug>true</stripDebug>-->
-<!--                            <noHeaderFiles>true</noHeaderFiles>-->
-<!--                        </configuration>-->
-<!--                    </execution>-->
-<!--                </executions>-->
-<!--            </plugin>-->
+            <!--            <plugin>-->
+            <!--                <groupId>org.openjfx</groupId>-->
+            <!--                <artifactId>javafx-maven-plugin</artifactId>-->
+            <!--                <version>0.0.8</version>-->
+            <!--                <executions>-->
+            <!--                    <execution>-->
+            <!--                        &lt;!&ndash; Default configuration for running with: mvn clean javafx:run &ndash;&gt;-->
+            <!--                        <id>default-cli</id>-->
+            <!--                        <configuration>-->
+            <!--                            <mainClass>org.prowl.kisset/org.prowl.kisset.KISSet</mainClass>-->
+            <!--                            <launcher>app</launcher>-->
+            <!--                            <jlinkZipName>app</jlinkZipName>-->
+            <!--                            <jlinkImageName>app</jlinkImageName>-->
+            <!--                            <noManPages>true</noManPages>-->
+            <!--                            <stripDebug>true</stripDebug>-->
+            <!--                            <noHeaderFiles>true</noHeaderFiles>-->
+            <!--                        </configuration>-->
+            <!--                    </execution>-->
+            <!--                </executions>-->
+            <!--            </plugin>-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-install-plugin</artifactId>
@@ -359,15 +383,15 @@
                     <outputDirectory>${project.build.directory}/dependency</outputDirectory>
                 </configuration>
             </plugin>
-<!--            <plugin>-->
-<!--                &lt;!&ndash; Plugin to make working with JavaFX nicer. See https://github.com/openjfx/javafx-maven-plugin &ndash;&gt;-->
-<!--                <groupId>org.openjfx</groupId>-->
-<!--                <artifactId>javafx-maven-plugin</artifactId>-->
-<!--                <version>0.0.8</version>-->
-<!--                <configuration>-->
-<!--                    <mainClass>${main-class}</mainClass>-->
-<!--                </configuration>-->
-<!--            </plugin>-->
+            <!--            <plugin>-->
+            <!--                &lt;!&ndash; Plugin to make working with JavaFX nicer. See https://github.com/openjfx/javafx-maven-plugin &ndash;&gt;-->
+            <!--                <groupId>org.openjfx</groupId>-->
+            <!--                <artifactId>javafx-maven-plugin</artifactId>-->
+            <!--                <version>0.0.8</version>-->
+            <!--                <configuration>-->
+            <!--                    <mainClass>${main-class}</mainClass>-->
+            <!--                </configuration>-->
+            <!--            </plugin>-->
             <plugin>
                 <!-- https://github.com/wiverson/jtoolprovider-plugin -->
                 <groupId>io.github.wiverson</groupId>
@@ -569,7 +593,6 @@
                 <app.version>1.1.0</app.version>
             </properties>
         </profile>
-
 
 
         <!-- We use the built-in Maven profile activation system to set the platform property.

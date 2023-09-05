@@ -17,6 +17,11 @@ public class StdTeletext extends StdTerminal {
 
     private static boolean running = false;
 
+    // Current cursor position
+    private int xPos = 0;
+    private int yPos = 0;
+
+
     public StdTeletext(InputStream stdIn, OutputStream stdOut) {
         super(stdIn, stdOut);
     }
