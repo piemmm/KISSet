@@ -56,6 +56,14 @@ public class ANSI {
 
     public static final String BG_NORMAL = "\u001B[49m";
 
+    // Double height
+    public static final String DOUBLE_HEIGHT_TOP = "\u001B#3";
+    public static final String DOUBLE_HEIGHT_BOT = "\u001B#4";
+
+    // Width
+    public static final String DOUBLE_WIDTH = ANSI.NORMAL;// "\u001B#6";
+    public static final String DOUBLE_WIDTH_OFF = "\u001B#5";
+
 
     private static final String[] tokens = new String[]{"%NORMAL%", "%BOLD%", "%UNDERLINE%", "%RED%", "%MAGENTA%", "%YELLOW%", "%GREEN%", "%BLUE%", "%CYAN%", "%WHITE%", "%ORANGE%", "%PURPLE%", "%BLACK%", "%PINK%", "%INDIGO%", "%BOLD_RED%", "%BOLD_YELLOW%", "%BOLD_GREEN%", "%BOLD_BLUE%", "%BOLD_CYAN%, %BOLD_WHITE%"};
     private static final String[] colours = new String[]{

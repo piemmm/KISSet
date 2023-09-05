@@ -102,10 +102,11 @@ public class StdTeletext extends StdTerminal {
         bgcolor = ANSI.BLACK;
         graphics = false;
         flash = false;
+        inEscape = false;
         underLine = false;
         bold = false;
         lining = false;
-        write(ANSI.NORMAL + ANSI.BG_NORMAL);
+        write(ANSI.NORMAL+ANSI.BG_NORMAL);
     }
 
     private void decodeTeletextChar(int b) throws IOException {
@@ -113,7 +114,7 @@ public class StdTeletext extends StdTerminal {
 
         if (inEscape) {
             inEscape = false;
-            b = 128 + (b % 64);
+            b = 128 + (b % 32);
         }
         //  LOG.debug("Append:" + b + "(" + Integer.toString(b, 16) + ")"+(ob & 0xFF)+": " + (char) b + "   charX:" + charXPos+"   charY:"+charYPos);
         // Not implemented yet - causes us to consume more bytes.
@@ -128,9 +129,24 @@ public class StdTeletext extends StdTerminal {
         }
 
 
+        if (charXPos >= 40) {
+
+            charXPos = 0;
+            if (charYPos < 24) {
+                charYPos++; // This'll do for the moment.
+            } else {
+                charYPos = 0;
+            }
+            clearAttributes();
+      //  } else {
+          //
+        }
+
+
         // Store the byte in the buffer.
         if (b == 30) {
             // Return cursor to initial position
+            clearAttributes();
             charXPos = -1;
             charYPos = 0;
         } else if (b == 8) {
@@ -150,12 +166,12 @@ public class StdTeletext extends StdTerminal {
             charXPos = -1;
             charYPos = 0;
         } else if (b == 10) {
-            clearAttributes();
             if (charYPos < 24) {
                 charYPos++;
             } else {
                 charYPos = 0;
             }
+            clearAttributes();
             charXPos -= 1;
         } else if (b == 11) {
             if (charYPos > 0) {
@@ -179,6 +195,7 @@ public class StdTeletext extends StdTerminal {
         } else if (b == 31) {
             // Position cursor
             inPosition = 2;
+            clearAttributes();
         } else {
             // Overwrite char at X,Y
             if (b != 9 && b < 128) {
@@ -195,25 +212,15 @@ public class StdTeletext extends StdTerminal {
             }
         }
 
+        charXPos++;
 
-        if (charXPos >= 39) {
-
-            charXPos = 0;
-            if (charYPos < 24) {
-                charYPos++; // This'll do for the moment.
-            } else {
-                charYPos = 0;
-            }
-            clearAttributes();
-        } else {
-            charXPos++;
+        if (inEscape) {
+            return;
         }
+        // Now set the cursor position
+        setCursorPosition(charXPos, charYPos);
 
 
-//
-//        if (!inEscape) {
-//            return;
-//        }
 
         int code = b;
         if (b >= 127 || b < 32) {
@@ -307,11 +314,13 @@ public class StdTeletext extends StdTerminal {
                     break;
                 case 140:
                     // Normal Height
+                   // write(ANSI.DOUBLE_WIDTH);
                     write(" ");
 
                     break;
                 case 141:
                     // Double Height
+                    //write(ANSI.DOUBLE_HEIGHT_TOP);
                     write(" ");
 
                     break;
@@ -402,6 +411,7 @@ public class StdTeletext extends StdTerminal {
                 case 154:
                     lining = true;
                     // start lining
+
                     // Separated Graphics
                     write(" ");
 
@@ -411,15 +421,15 @@ public class StdTeletext extends StdTerminal {
                     bgcolor = ANSI.BG_BLACK;
                     write(ANSI.BG_NORMAL);
                     write(bgcolor);
-                    write(" ");
-
+                   // write(" ");
+                    fillToTheRight();
                     break;
                 case 157: // ]
                     // Set background as current foreground color
                     // Change foregrount to background the easy way
                     bgcolor = color.replace("[3", "[4");
                     write(bgcolor);
-                    write(" ");
+                    //write(" ");
                     fillToTheRight();
                     break;
                 case 158:
@@ -431,6 +441,7 @@ public class StdTeletext extends StdTerminal {
                 case 159:
                     // Release Graphics
                     graphics = false;
+                    write(" ");
                     break;
                 // 160 and above are block graphics characters
                 default:
@@ -439,8 +450,8 @@ public class StdTeletext extends StdTerminal {
             }
 
         }
-        // Now set the cursor position
-        setCursorPosition(charXPos, charYPos);
+
+
     }
 
     /**
@@ -475,6 +486,7 @@ public class StdTeletext extends StdTerminal {
         write(ANSI.BG_NORMAL);
         clearAttributes();
         cursorHome();
+        write("\u001b[2J");
         for (int y = 0; y < 25; y++) {
             for (int x = 0; x < 40; x++) {
                 write(" ");
@@ -483,6 +495,7 @@ public class StdTeletext extends StdTerminal {
             write("\n");
         }
         cursorHome();
+
     }
 
     /**
@@ -496,7 +509,7 @@ public class StdTeletext extends StdTerminal {
     }
 
     public void setCursorPosition(int x, int y) throws IOException {
-        write("\u001b[" + (y + 1) + ";" + x + "f");
+        write("\u001b[" + (y + 1) + ";" + (x+1) + "f");
         // re-apply attributes on this line.
         //readAttributesUntilArriveAtX(x);
     }
@@ -573,7 +586,7 @@ public class StdTeletext extends StdTerminal {
             case 27:
                 return "▜"; // 187
             case 28:
-                return "▚"; // 188
+                return "▄"; // 188 // was ▚
             case 29:
                 return "▞"; // 189
             case 30:
@@ -582,7 +595,7 @@ public class StdTeletext extends StdTerminal {
                 return "█"; // 191  // was ▛
 
             default:
-                return " ";
+                return "?";
         }
 
     }
