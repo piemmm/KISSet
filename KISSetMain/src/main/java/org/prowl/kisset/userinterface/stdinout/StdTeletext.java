@@ -89,6 +89,7 @@ public class StdTeletext extends StdTerminal {
     public boolean underLine;
     public boolean bold;
     public boolean lining;
+    public boolean flash;
     // Current cursor position
     private int charXPos = 0;
     private int charYPos = 0;
@@ -97,6 +98,7 @@ public class StdTeletext extends StdTerminal {
         color = ANSI.WHITE;
         bgcolor = ANSI.BLACK;
         graphics = false;
+        flash = false;
         underLine = false;
         bold = false;
         lining = false;
@@ -265,10 +267,14 @@ public class StdTeletext extends StdTerminal {
 
                     break;
                 case 136:
-                    // Flash (not supported yet)
+                    // Flash
+                    flash= true;
+                    write(ANSI.FLASHING_ON);
                     break;
                 case 137:
-                    // Steady (not supported yet)
+                    // Steady
+                    flash = false;
+                    write(ANSI.FLASHING_OFF);
                     break;
                 case 138:
                     // Normal size / end box
@@ -349,11 +355,14 @@ public class StdTeletext extends StdTerminal {
                     break;
                 case 156:
                     // Black Background
-                    bgcolor = ANSI.BLACK;
+                    bgcolor = ANSI.BG_BLACK;
+                    write(bgcolor);
                     break;
                 case 157:
-                    // Set backgroun as current foreground color
-                    bgcolor = color;
+                    // Set background as current foreground color
+                    // Change foregrount to background the easy way
+                    bgcolor = color.replace("[3", "[4");
+                    write(bgcolor);
                     break;
                 case 158:
                     // Hold Graphics - image stored as the last received mosaic(graphics) character
