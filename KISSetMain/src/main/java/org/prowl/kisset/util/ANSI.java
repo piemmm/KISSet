@@ -54,6 +54,8 @@ public class ANSI {
     public static final String FLASHING_ON = "\u001B[5m";
     public static final String FLASHING_OFF = "\u001B[25m";
 
+    public static final String BG_NORMAL = "\u001B[49m";
+
 
     private static final String[] tokens = new String[]{"%NORMAL%", "%BOLD%", "%UNDERLINE%", "%RED%", "%MAGENTA%", "%YELLOW%", "%GREEN%", "%BLUE%", "%CYAN%", "%WHITE%", "%ORANGE%", "%PURPLE%", "%BLACK%", "%PINK%", "%INDIGO%", "%BOLD_RED%", "%BOLD_YELLOW%", "%BOLD_GREEN%", "%BOLD_BLUE%", "%BOLD_CYAN%, %BOLD_WHITE%"};
     private static final String[] colours = new String[]{

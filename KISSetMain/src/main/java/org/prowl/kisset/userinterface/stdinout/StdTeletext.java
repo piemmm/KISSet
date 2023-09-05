@@ -54,6 +54,7 @@ public class StdTeletext extends StdTerminal {
         // Take output from TNC host and pass to stdout
         Tools.runOnThread(() -> {
             try {
+                setTerminalSize(24,80);
                 while (running) {
                     if (tncOut.available() == 0) {
                         stdOut.flush();
@@ -217,18 +218,21 @@ public class StdTeletext extends StdTerminal {
                     // Black foreground alphabetic - different spec so we ignore
                     // color = ANSI.BLACK;
                     graphics = false;
+                    write(" ");
                     break;
                 case 129:
                     // Alphanumeric red
                     color = ANSI.RED;
                     write(ANSI.RED);
                     graphics = false;
+                    write(" ");
                     break;
                 case 130:
                     // Alphanumeric green
                     color = ANSI.GREEN;
                     write(ANSI.GREEN);
                     graphics = false;
+                    write(" ");
 
                     break;
                 case 131:
@@ -236,6 +240,7 @@ public class StdTeletext extends StdTerminal {
                     color = ANSI.YELLOW;
                     write(ANSI.YELLOW);
                     graphics = false;
+                    write(" ");
 
                     break;
                 case 132:
@@ -243,6 +248,7 @@ public class StdTeletext extends StdTerminal {
                     color = ANSI.BLUE;
                     write(ANSI.BLUE);
                     graphics = false;
+                    write(" ");
 
                     break;
                 case 133:
@@ -250,6 +256,7 @@ public class StdTeletext extends StdTerminal {
                     color = ANSI.MAGENTA;
                     write(ANSI.MAGENTA);
                     graphics = false;
+                    write(" ");
 
                     break;
                 case 134:
@@ -257,6 +264,7 @@ public class StdTeletext extends StdTerminal {
                     color = ANSI.CYAN;
                     write(ANSI.CYAN);
                     graphics = false;
+                    write(" ");
 
                     break;
                 case 135:
@@ -264,109 +272,155 @@ public class StdTeletext extends StdTerminal {
                     color = ANSI.WHITE;
                     write(ANSI.WHITE);
                     graphics = false;
+                    write(" ");
 
                     break;
                 case 136:
                     // Flash
                     flash= true;
                     write(ANSI.FLASHING_ON);
+                    write(" ");
+
                     break;
                 case 137:
                     // Steady
                     flash = false;
                     write(ANSI.FLASHING_OFF);
+                    write(" ");
+
                     break;
                 case 138:
                     // Normal size / end box
+                    write(" ");
+
                     break;
                 case 139:
                     // size control/medium/start box
+                    write(" ");
+
                     break;
                 case 140:
                     // Normal Height
+                    write(" ");
+
                     break;
                 case 141:
                     // Double Height
+                    write(" ");
+
                     break;
                 case 142:
                     // cursor visible
+                    write(" ");
+
                     break;
                 case 143:
                     // invisible cursor
+                    write(" ");
+
                     break;
                 case 144:
                     // Black graphics (not in older spec)
                     color = ANSI.BLACK;
                     graphics = true;
+                    write(" ");
+break;
                 case 145:
                     // Graphics Red
                     color = ANSI.RED;
                     write(ANSI.RED);
                     graphics = true;
+                    write(" ");
+
                     break;
                 case 146:
                     // Graphics Green
                     color = ANSI.GREEN;
                     write(ANSI.GREEN);
                     graphics = true;
+                    write(" ");
+
                     break;
                 case 147:
                     // Graphics Yellow
                     color = ANSI.YELLOW;
                     write(ANSI.YELLOW);
                     graphics = true;
+                    write(" ");
+
                     break;
                 case 148:
                     // Graphics Blue
                     color = ANSI.BLUE;
                     write(ANSI.BLUE);
                     graphics = true;
+                    write(" ");
+
                     break;
                 case 149:
                     // Graphics Magenta
                     color = ANSI.MAGENTA;
                     write(ANSI.MAGENTA);
                     graphics = true;
+                    write(" ");
+
                     break;
                 case 150:
                     // Graphics Cyan
                     color = ANSI.CYAN;
                     write(ANSI.CYAN);
                     graphics = true;
+                    write(" ");
+
                     break;
                 case 151:
                     // Graphics White
                     color = ANSI.WHITE;
                     write(ANSI.WHITE);
                     graphics = true;
+                    write(" ");
+
                     break;
                 case 152:
                     // Conceal
+                    write(" ");
+
                     break;
                 case 153:
                     // Stop lining
                     lining = false;
                     // Contiguous Graphics
+                    write(" ");
+
                     break;
                 case 154:
                     lining = true;
                     // start lining
                     // Separated Graphics
+                    write(" ");
+
                     break;
                 case 156:
                     // Black Background
                     bgcolor = ANSI.BG_BLACK;
+                    write(ANSI.BG_NORMAL);
                     write(bgcolor);
+                    write(" ");
+
                     break;
-                case 157:
+                case 157: // ]
                     // Set background as current foreground color
                     // Change foregrount to background the easy way
                     bgcolor = color.replace("[3", "[4");
                     write(bgcolor);
+                    write(" ");
+
                     break;
                 case 158:
                     // Hold Graphics - image stored as the last received mosaic(graphics) character
                     // basically switching colours without gaps. remembering the next used character going forward
+                    write(" ");
+
                     break;
                 case 159:
                     // Release Graphics
@@ -377,15 +431,31 @@ public class StdTeletext extends StdTerminal {
                     //LOG.warn("Unknown Teletext/SAA5050 character code: " + code);
                     break;
             }
+
         }
         // Now set the cursor position
         setCursorPosition(charXPos, charYPos);
     }
 
     /**
+     * Set the terminal size via ANSI
+     * @param rows
+     * @param cols
+     */
+    public void setTerminalSize(int rows, int cols) {
+        try {
+            write("\u001b[8;" + rows + ";" + cols + "t");
+        } catch (IOException e) {
+            LOG.debug(e.getMessage(), e);
+        }
+    }
+
+    /**
      * Send ansi codes to clear screen
      */
     public void clearScreen() throws IOException {
+        write(ANSI.BG_NORMAL);
+        clearAttributes();
         cursorHome();
         for (int y = 0; y < 25; y++) {
             for (int x = 0; x < 80; x++) {
