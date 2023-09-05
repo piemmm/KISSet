@@ -36,8 +36,10 @@ public class StdPlainText extends StdTerminal {
             }
         });
 
+
         // Take output from TNC host and pass to stdout
         Tools.runOnThread(() -> {
+            int lastNewlineByte = 0;
             try {
                 while (running) {
                     if (tncOut.available() == 0) {
@@ -46,13 +48,23 @@ public class StdPlainText extends StdTerminal {
                     int b = tncOut.read();
                     if (b == -1)
                         break;
-                    stdOut.write(b);
+                    if (b == 0x0a && lastNewlineByte != 0x0d) {
+                        stdOut.write(System.lineSeparator().getBytes());
+                        lastNewlineByte = b;
+                    } else if (b == 0x0d && lastNewlineByte != 0x0a) {
+                        stdOut.write(System.lineSeparator().getBytes());
+                        lastNewlineByte = b;
+                    } else if (b != 0x0d && b != 0x0a) {
+                        stdOut.write(b);
+                        lastNewlineByte = b;
+                    }
                 }
                 running = false;
             } catch (Throwable e) {
                 LOG.debug(e.getMessage(), e);
             }
         });
+
 
     }
     public void stop() {

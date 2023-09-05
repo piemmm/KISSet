@@ -52,7 +52,7 @@ public class StdANSI extends StdTerminal {
                     } else if (b == 0x0d && lastNewlineByte != 0x0a) {
                         stdOut.write(System.lineSeparator().getBytes());
                         lastNewlineByte = b;
-                    } else {
+                    } else if (b != 0x0d && b != 0x0a) {
                         stdOut.write(b);
                         lastNewlineByte = b;
                     }
