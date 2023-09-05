@@ -20,8 +20,10 @@ public class StdTeletext extends StdTerminal {
     private static boolean running = false;
 
 
-
     OutputStream stdOut;
+
+    // Basic screen buffer for visible characters only
+    int[][] buffer = new int[25][40];
 
     public StdTeletext(InputStream stdIn, OutputStream stdOut) {
         super(stdIn, stdOut);
@@ -54,7 +56,7 @@ public class StdTeletext extends StdTerminal {
         // Take output from TNC host and pass to stdout
         Tools.runOnThread(() -> {
             try {
-                setTerminalSize(24,80);
+                setTerminalSize(24, 80);
                 while (running) {
                     if (tncOut.available() == 0) {
                         stdOut.flush();
@@ -64,9 +66,9 @@ public class StdTeletext extends StdTerminal {
                     if (b == -1) break;
                     b = b & 0xFF;
                     //if (b >= 127 || b < 32) {
-                        decodeTeletextChar(b);
+                    decodeTeletextChar(b);
                     //} else {
-                     //   stdOut.write(b);
+                    //   stdOut.write(b);
                     //}
                 }
                 running = false;
@@ -95,7 +97,7 @@ public class StdTeletext extends StdTerminal {
     private int charXPos = 0;
     private int charYPos = 0;
 
-    public void clearAttributes() {
+    public void clearAttributes() throws IOException {
         color = ANSI.WHITE;
         bgcolor = ANSI.BLACK;
         graphics = false;
@@ -103,6 +105,7 @@ public class StdTeletext extends StdTerminal {
         underLine = false;
         bold = false;
         lining = false;
+        write(ANSI.NORMAL + ANSI.BG_NORMAL);
     }
 
     private void decodeTeletextChar(int b) throws IOException {
@@ -147,7 +150,7 @@ public class StdTeletext extends StdTerminal {
             charXPos = -1;
             charYPos = 0;
         } else if (b == 10) {
-
+            clearAttributes();
             if (charYPos < 24) {
                 charYPos++;
             } else {
@@ -163,6 +166,7 @@ public class StdTeletext extends StdTerminal {
                 charXPos--;
             }
         } else if (b == 13) {
+            clearAttributes();
 //            // ignore unprintable CR (but we let escape through)
 //            updateCurrentLine();
             charXPos = -1;
@@ -181,16 +185,19 @@ public class StdTeletext extends StdTerminal {
                 //  byte[] line = buffer.get(charYPos);
                 //  line[charXPos] = (byte) b;
                 setCursorPosition(charXPos, charYPos);
-                if (graphics) {
+                if (graphics && (b < 0x40 || b > 0x5F)) {
                     write(getSixelChar(b % 32));
+                    buffer[charYPos][charXPos] = b % 32;
                 } else {
                     write(b);
+                    buffer[charYPos][charXPos] = b;
                 }
             }
         }
 
 
         if (charXPos >= 39) {
+
             charXPos = 0;
             if (charYPos < 24) {
                 charYPos++; // This'll do for the moment.
@@ -201,7 +208,6 @@ public class StdTeletext extends StdTerminal {
         } else {
             charXPos++;
         }
-
 
 
 //
@@ -277,7 +283,7 @@ public class StdTeletext extends StdTerminal {
                     break;
                 case 136:
                     // Flash
-                    flash= true;
+                    flash = true;
                     write(ANSI.FLASHING_ON);
                     write(" ");
 
@@ -324,7 +330,7 @@ public class StdTeletext extends StdTerminal {
                     color = ANSI.BLACK;
                     graphics = true;
                     write(" ");
-break;
+                    break;
                 case 145:
                     // Graphics Red
                     color = ANSI.RED;
@@ -414,7 +420,7 @@ break;
                     bgcolor = color.replace("[3", "[4");
                     write(bgcolor);
                     write(" ");
-
+                    fillToTheRight();
                     break;
                 case 158:
                     // Hold Graphics - image stored as the last received mosaic(graphics) character
@@ -439,6 +445,7 @@ break;
 
     /**
      * Set the terminal size via ANSI
+     *
      * @param rows
      * @param cols
      */
@@ -450,6 +457,17 @@ break;
         }
     }
 
+
+    /**
+     * Fill the screen to the right of the cursor with the current character in the buffer
+     * @param line
+     */
+    public void fillToTheRight() throws IOException{
+        for (int x = charXPos; x < 40; x++) {
+            write(buffer[charYPos][x]);
+        }
+    }
+
     /**
      * Send ansi codes to clear screen
      */
@@ -458,8 +476,9 @@ break;
         clearAttributes();
         cursorHome();
         for (int y = 0; y < 25; y++) {
-            for (int x = 0; x < 80; x++) {
+            for (int x = 0; x < 40; x++) {
                 write(" ");
+                buffer[y][x] = 32; // Space
             }
             write("\n");
         }
@@ -477,7 +496,7 @@ break;
     }
 
     public void setCursorPosition(int x, int y) throws IOException {
-        write("\u001b["+(y+1)+";"+x+"f");
+        write("\u001b[" + (y + 1) + ";" + x + "f");
         // re-apply attributes on this line.
         //readAttributesUntilArriveAtX(x);
     }
