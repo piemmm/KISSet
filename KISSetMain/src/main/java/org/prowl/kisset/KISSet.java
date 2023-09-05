@@ -22,12 +22,14 @@ import org.prowl.kisset.statistics.Statistics;
 import org.prowl.kisset.userinterface.TerminalHost;
 import org.prowl.kisset.userinterface.stdinout.StdANSI;
 import org.prowl.kisset.userinterface.stdinout.StdANSIWindowed;
+import org.prowl.kisset.userinterface.stdinout.StdTeletext;
 import org.prowl.kisset.userinterface.stdinout.StdTerminal;
 import sun.misc.Signal;
 
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.lang.reflect.Constructor;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
@@ -80,15 +82,19 @@ public class KISSet {
                 }
             } else {
                 // just a seting like --terminal or something like that
-                if (setting.equalsIgnoreCase("terminal")) {
+                if (setting.equalsIgnoreCase("ansi")) {
                     terminalMode = true;
-                } else if (setting.equalsIgnoreCase("terminal-curses")) {
+                } else if (setting.equalsIgnoreCase("curses")) {
                     terminalType = StdANSIWindowed.class;
+                    terminalMode = true;
+                } else if (setting.equalsIgnoreCase("teletext")) {
+                    terminalType = StdTeletext.class;
                     terminalMode = true;
                 } else if (setting.equalsIgnoreCase("help") || setting.equalsIgnoreCase("h") || setting.equalsIgnoreCase("?")) {
                     System.out.println("KISSet command line options:");
-                    System.out.println("--terminal - Runs in terminal mode");
-                    System.out.println("--terminal-curses - Runs in curses terminal mode");
+                    System.out.println("--ansi - Runs in ANSI terminal mode (default)");
+                    System.out.println("--curses - Runs in curses terminal mode");
+                    System.out.println("--teletext - Runs in teletext/prestel terminal mode");
                     System.out.println("--help - Show this help");
                     System.exit(0);
                 }
@@ -197,14 +203,17 @@ public class KISSet {
         System.setOut(new PrintStream(PrintStream.nullOutputStream()));
         initAll();
 
-        // Our default terminal is ANSI
-        StdTerminal terminal;
-        if (terminalType.equals(StdANSIWindowed.class)) {
-            terminal = new StdANSIWindowed(stdIn, stdOut);
-        } else {
-            terminal = new StdANSI(stdIn, stdOut);
+        // Instantiate the chosen terminal via reflection
+        StdTerminal terminal = null;
+        Constructor constructor = null;
+        try {
+            constructor = terminalType.getConstructor(InputStream.class, OutputStream.class);
+            terminal = (StdTerminal) constructor.newInstance(stdIn, stdOut);
+            terminal.start();
+        } catch (Throwable e) {
+            LOG.error(e.getMessage(), e);
+            System.exit(1);
         }
-        terminal.start();
 
         // TNC hosts provides host functions that emulate a TNC
         TNCHost tncHost = new TNCHost(new TerminalHost() {

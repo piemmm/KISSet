@@ -22,6 +22,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.prowl.kisset.KISSet;
 import org.prowl.kisset.util.Tools;
+import org.prowl.kissetgui.userinterface.desktop.KISSetGUI;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -203,12 +204,7 @@ public class TeletextTerminal extends HBox implements Terminal {
 
     public void setFont(Font font) {
         //this.font = Font.loadFont(KISSet.class.getResource("/fonts/galax/MODE7GX3.TTF").toExternalForm(), 44);
-        this.font = Font.loadFont(KISSet.class.getResourceAsStream("/fonts/bedstead/bedstead.otf"), font.getSize() + 4);
-
-
-        LOG.debug("FONT NAME:" + this.font);
-        //  this.font = Font.loadFont(getClass().getResourceAsStream("/fonts/bedstead/bedstead.otf"), 55);//font.getSize());
-
+        this.font = Font.loadFont(KISSetGUI.class.getResourceAsStream("/fonts/bedstead/bedstead.otf"), font.getSize() + 4);
 
         recalculateFontMetrics();
         queueRedraw();
@@ -321,10 +317,14 @@ public class TeletextTerminal extends HBox implements Terminal {
             // Moves cursor one position backwards
             if (charXPos > 0) {
                 charXPos--;
+                charXPos--;
             } else if (charXPos == 0) {
                 charYPos--;
                 charXPos = 38;
+
             }
+        } else if (b == 9) {
+            // One position forward
         } else if (b == 12) {
             clearScreen();
             charXPos = -1;
@@ -340,6 +340,10 @@ public class TeletextTerminal extends HBox implements Terminal {
         } else if (b == 11) {
             if (charYPos > 0) {
                 charYPos--;
+                charXPos--;
+            } else {
+                charYPos = 23;
+                charXPos--;
             }
         } else if (b == 13) {
 //            // ignore unprintable CR (but we let escape through)
@@ -357,7 +361,7 @@ public class TeletextTerminal extends HBox implements Terminal {
         } else {
 
 
-            if (b != 9) {
+            if (b != 9 ) {
                 byte[] line = buffer.get(charYPos);
                 line[charXPos] = (byte) b;
             }
