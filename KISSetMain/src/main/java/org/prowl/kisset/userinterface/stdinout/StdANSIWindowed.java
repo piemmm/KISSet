@@ -39,6 +39,7 @@ public class StdANSIWindowed extends StdTerminal implements TerminalResizeListen
 
     private TextBox output = new TextBox();
 
+
     public StdANSIWindowed(InputStream stdIn, OutputStream stdOut) {
         super(stdIn, stdOut);
 
@@ -63,8 +64,10 @@ public class StdANSIWindowed extends StdTerminal implements TerminalResizeListen
         } catch (Throwable e) {
             LOG.error(e.getMessage(), e);
         }
+    }
 
-
+    public StdANSIWindowed() {
+        super();
     }
 
     public void buildDesktop() {

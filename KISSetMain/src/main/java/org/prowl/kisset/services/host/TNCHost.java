@@ -15,14 +15,12 @@ import org.prowl.kisset.services.host.parser.CommandParser;
 import org.prowl.kisset.services.host.parser.Mode;
 import org.prowl.kisset.services.host.parser.commands.ChangeInterface;
 import org.prowl.kisset.userinterface.TerminalHost;
-
 import org.prowl.kisset.util.ANSI;
 import org.prowl.kisset.util.LoopingCircularBuffer;
 import org.prowl.kisset.util.PacketTools;
 import org.prowl.kisset.util.Tools;
 
 import java.io.*;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,7 +42,7 @@ public class TNCHost {
 
     static {
         // TELSTAR
-        terminalTypes.put(new String(new byte[]{0x11, 0x0c, 0x1b, 'B', 'T', 0x1b, 'A', 'E', 0x1b, 'F', 'L', 0x1b, 'D', 'S', 0x1b, 'G', 'T', 0x1b, 'E', 'A', 0x1b, 'C', 'R'}), new String[] { "org.prowl.kisset.userinterface.stdinout.StdTeletext","org.prowl.kissetgui.userinterface.desktop.terminals.TeletextTerminal"});
+        terminalTypes.put(new String(new byte[]{0x11, 0x0c, 0x1b, 'B', 'T', 0x1b, 'A', 'E', 0x1b, 'F', 'L', 0x1b, 'D', 'S', 0x1b, 'G', 'T', 0x1b, 'E', 'A', 0x1b, 'C', 'R'}), new String[]{"org.prowl.kisset.userinterface.stdinout.StdTeletext", "org.prowl.kissetgui.userinterface.desktop.terminals.TeletextTerminal"});
     }
 
     // The command parser
@@ -172,14 +170,9 @@ public class TNCHost {
     public void send(String data) throws IOException {
         data = data.replaceAll("[^\\x04-\\xFF]", "?");
 
-
         // Colourise
         data = ANSI.convertTokensToANSIColours(data);
 
-//        // If we're not using an ANSI terminal, then strip our hard colour codes.
-//        if (getTerminalType() instanceof PlainTextTerminal) {
-//            data = ANSI.stripAnsiCodes(data);
-//        }
 
         byte[] bytes = data.getBytes();
         for (byte b : bytes) {
@@ -210,10 +203,15 @@ public class TNCHost {
             if (toCompareAgainst.contains(searchArray)) {
                 try {
                     // Only switch if needed
-                    Class terminalClass = Class.forName(entry.getValue()[1]);
+                    Class terminalClass;
                     if (KISSet.INSTANCE.isTerminalMode()) {
+                        // TTY mode is active
                         terminalClass = Class.forName(entry.getValue()[0]);
+                    } else {
+                        // GUI mode is active
+                        terminalClass = Class.forName(entry.getValue()[1]);
                     }
+
                     if (!host.getTerminal().getClass().equals(terminalClass)) {
                         host.setTerminal(terminalClass.getConstructor().newInstance());
                     }

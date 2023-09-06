@@ -24,8 +24,12 @@ import org.prowl.kisset.userinterface.stdinout.StdANSI;
 import org.prowl.kisset.userinterface.stdinout.StdANSIWindowed;
 import org.prowl.kisset.userinterface.stdinout.StdTeletext;
 import org.prowl.kisset.userinterface.stdinout.StdTerminal;
+import org.prowl.kisset.util.LoopingCircularBuffer;
+import org.prowl.kisset.util.PipedIOStream;
+import org.prowl.kisset.util.Tools;
 import sun.misc.Signal;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -48,6 +52,14 @@ public class KISSet {
     private Storage storage;
     private OutputStream stdOut;
     private InputStream stdIn;
+    private StdTerminal terminal = null;
+
+    // Breakout for our connection incoming data so we can intercept it for our buffer.
+    private PipedIOStream inpis;
+
+
+    // Buffer data incoming so we can replay it on a different terminal when there is a change.
+    private final LoopingCircularBuffer dataBuffer = new LoopingCircularBuffer(10240);
 
     /**
      * If this is true, then we are running in a terminal
@@ -189,6 +201,7 @@ public class KISSet {
 
     /**
      * If we are running in terminal mode, then this will be trus
+     *
      * @return false for GUI mode, true for terminal mode
      */
     public boolean isTerminalMode() {
@@ -206,13 +219,22 @@ public class KISSet {
         stdOut = System.out;
         stdIn = System.in;
 
+//        // We need to intercept the stdout for our buffer.
+//        System.setOut(new PrintStream(new OutputStream() {
+//            @Override
+//            public void write(int b) throws IOException {
+//                dataBuffer.put((byte) b);
+//                stdOut.write(b);
+//            }
+//        }));
+
         // Force the logs to a null output
         System.setErr(new PrintStream(PrintStream.nullOutputStream()));
         System.setOut(new PrintStream(PrintStream.nullOutputStream()));
         initAll();
 
-        // Instantiate the chosen terminal via reflection
-        StdTerminal terminal = null;
+        // Instantiate the chosen defaultTerminal via reflection
+
         Constructor constructor = null;
         try {
             constructor = terminalType.getConstructor(InputStream.class, OutputStream.class);
@@ -223,23 +245,60 @@ public class KISSet {
             System.exit(1);
         }
 
+        // Text output from the TNC host to the GUI
+        inpis = new PipedIOStream();
+        OutputStream inpos = inpis.getOutputStream();
+
         // TNC hosts provides host functions that emulate a TNC
         TNCHost tncHost = new TNCHost(new TerminalHost() {
             @Override
             public Object getTerminal() {
-                return null;
+                return terminal;
             }
 
             @Override
-            public void setTerminal(Object terminal) {
+            public void setTerminal(Object newTerminal) {
+                // Stop the old terminal
+                terminal.stop();
+
+                // Start the new terminal
+                terminal = (StdTerminal) newTerminal;
+                terminal.setIOStreams(stdIn, stdOut);
+                terminal.start();
+
+                // Pre populate the terminal with our data 'frame' buffer
+                byte[] data = dataBuffer.getBytes();
+                for (byte b : data) {
+                    try {
+                        terminal.getOutputStream().write(b & 0xFF);
+                    } catch (IOException e) {
+                        LOG.debug(e.getMessage(), e);
+                    }
+                }
+
             }
 
             @Override
             public void setStatus(String statusText, int currentStream) {
             }
-        }, terminal.getInputStream(), terminal.getOutputStream());
+        }, terminal.getInputStream(), inpos);
         tncHost.setLocalEcho(false);
 
+        // Intercept the incoming data to the terminal and feed it to the TNC host, storing it in our buffer as well.
+        Tools.runOnThread(() -> {
+            try {
+                while (true) {
+                    int b = inpis.read();
+                    if (b == -1) {
+                        break;
+                    }
+                    dataBuffer.put((byte) b);
+                    terminal.getOutputStream().write(b);
+                }
+            } catch (Exception e) {
+                LOG.debug(e.getMessage(), e);
+            }
+        });
 
         // Catch ctrl-c and set the TNC to command mode. This uses the sun.misc.Signal class which is deprecated, but
         // there is no other way to do this at present without relying on someone else to compile some JNI for each platform

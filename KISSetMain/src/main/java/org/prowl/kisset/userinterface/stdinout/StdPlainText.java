@@ -18,6 +18,10 @@ public class StdPlainText extends StdTerminal {
         super(stdIn, stdOut);
     }
 
+    public StdPlainText() {
+        super();
+    }
+
     // Default std terminal is just a passthrough.
     public void start() {
         running = true;

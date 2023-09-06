@@ -17,6 +17,10 @@ public class StdANSI extends StdTerminal {
         super(stdIn, stdOut);
     }
 
+    public StdANSI() {
+        super();
+    }
+
     // Default std terminal is just a passthrough.
     public void start() {
         running = true;

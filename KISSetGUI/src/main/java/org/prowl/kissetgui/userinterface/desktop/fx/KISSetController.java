@@ -252,20 +252,26 @@ public class KISSetController implements TerminalHost {
 
     public void startTerminal() {
 
-        // Create our pipes for streams
+        // Text output from the TNC host to the GUI
         inpis = new PipedIOStream();
+        OutputStream inpos = inpis.getOutputStream();
+
+        // Text input from the GUI to the TNC host
         PipedIOStream outpis = new PipedIOStream();
         outpos = outpis.getOutputStream();
-        OutputStream inpos = inpis.getOutputStream();
 
         // Command processor host
         tncHost = new TNCHost(this, outpis, inpos);
 
-        // Start feeding the terminal responses from it
+        // Start feeding the terminal responses from it - this allows us to intercept the stream
+        // we'll get rid of this thread way at a later date.
         Tools.runOnThread(() -> {
             try {
                 while (true) {
                     int b = inpis.read();
+                    if (b == -1) {
+                        break;
+                    }
                     dataBuffer.put((byte) b);
                     terminal.append(b);
 

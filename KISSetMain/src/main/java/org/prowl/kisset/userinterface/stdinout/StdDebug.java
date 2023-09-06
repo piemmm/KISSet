@@ -17,6 +17,10 @@ public class StdDebug extends StdANSI {
         super(stdIn, stdOut);
     }
 
+    public StdDebug() {
+        super();
+    }
+
     // Default std terminal is just a passthrough.
     public void start() {
         running = true;

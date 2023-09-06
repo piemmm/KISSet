@@ -20,24 +20,28 @@ public class StdTeletext extends StdTerminal {
     private static boolean running = false;
 
 
-    OutputStream stdOut;
+    //OutputStream stdOut;
 
     // Basic screen buffer for visible characters only
     int[][] buffer = new int[25][40];
 
     public StdTeletext(InputStream stdIn, OutputStream stdOut) {
         super(stdIn, stdOut);
-        this.stdOut = stdOut;
+       // this.stdOut = stdOut;
+    }
 
+    public StdTeletext() {
+        super();
+    }
+
+    // Default std terminal is just a passthrough.
+    public void start() {
         try {
             clearScreen();
         } catch (IOException e) {
             LOG.debug(e.getMessage(), e);
         }
-    }
 
-    // Default std terminal is just a passthrough.
-    public void start() {
         running = true;
         // Take std input and pass to TNC host
         Tools.runOnThread(() -> {
@@ -471,7 +475,6 @@ public class StdTeletext extends StdTerminal {
 
     /**
      * Fill the screen to the right of the cursor with the current character in the buffer
-     * @param line
      */
     public void fillToTheRight() throws IOException{
         for (int x = charXPos; x < 40; x++) {

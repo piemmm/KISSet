@@ -40,6 +40,23 @@ public abstract class StdTerminal {
 
     }
 
+    public StdTerminal() {
+
+        this.tncIn = new PipedIOStream();
+        this.tncOut = new PipedIOStream();
+
+    }
+
+    public void setIOStreams(InputStream stdIn, OutputStream stdOut) {
+        this.stdIn = stdIn;
+        this.stdOut = stdOut;
+
+        LOG.debug("Setting stdIn to " + stdIn);
+        LOG.debug("Setting stdOut to " + stdOut);
+
+    }
+
+
     /**
      * Start the terminal this should deal with filtering any data
      */
