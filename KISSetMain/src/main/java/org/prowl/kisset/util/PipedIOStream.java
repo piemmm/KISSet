@@ -80,6 +80,11 @@ public class PipedIOStream extends InputStream {
         }
     }
 
+    @Override
+    public int available() throws IOException {
+        return queue.size();
+    }
+
     public OutputStream getOutputStream() {
         return out;
     }

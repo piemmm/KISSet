@@ -51,9 +51,6 @@ public abstract class StdTerminal {
         this.stdIn = stdIn;
         this.stdOut = stdOut;
 
-        LOG.debug("Setting stdIn to " + stdIn);
-        LOG.debug("Setting stdOut to " + stdOut);
-
     }
 
 

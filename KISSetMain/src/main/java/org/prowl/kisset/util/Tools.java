@@ -39,7 +39,6 @@ public class Tools {
 
     /**
      * Make sure an IP address or hostname is valid
-     * @param output
      * @return
      */
     public static boolean isValidIPorHostname(String ip) {

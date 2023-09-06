@@ -57,6 +57,7 @@ public class KISSet {
     // Breakout for our connection incoming data so we can intercept it for our buffer.
     private PipedIOStream inpis;
 
+    private TNCHost tncHost;
 
     // Buffer data incoming so we can replay it on a different terminal when there is a change.
     private final LoopingCircularBuffer dataBuffer = new LoopingCircularBuffer(10240);
@@ -250,7 +251,7 @@ public class KISSet {
         OutputStream inpos = inpis.getOutputStream();
 
         // TNC hosts provides host functions that emulate a TNC
-        TNCHost tncHost = new TNCHost(new TerminalHost() {
+        tncHost = new TNCHost(new TerminalHost() {
             @Override
             public Object getTerminal() {
                 return terminal;
@@ -265,6 +266,7 @@ public class KISSet {
                 terminal = (StdTerminal) newTerminal;
                 terminal.setIOStreams(stdIn, stdOut);
                 terminal.start();
+                tncHost.setNewInputStream(terminal.getInputStream());
 
                 // Pre populate the terminal with our data 'frame' buffer
                 byte[] data = dataBuffer.getBytes();
@@ -305,14 +307,6 @@ public class KISSet {
         // (then keep it up-to-date forever)
         Signal.handle(new Signal("INT"),  // SIGINT
                 signal -> tncHost.setMode(Mode.CMD, true));
-    }
-
-    public InputStream getStdIn() {
-        return stdIn;
-    }
-
-    public OutputStream getStdOut() {
-        return stdOut;
     }
 
     public Statistics getStatistics() {

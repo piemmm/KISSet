@@ -27,7 +27,7 @@ public class StdANSIWindowed extends StdTerminal implements TerminalResizeListen
 
     private static final Log LOG = LogFactory.getLog("StdANSIWindowed");
 
-    private static boolean running = false;
+    private boolean running = false;
 
     private TextBox inputPanel;
     private TextBox outputPanel;
@@ -143,6 +143,12 @@ public class StdANSIWindowed extends StdTerminal implements TerminalResizeListen
         Tools.runOnThread(() -> {
             try {
                 while (running) {
+                    while (stdIn.available() == 0 && running) {
+                        Thread.sleep(100);
+                    }
+                    if (!running) {
+                        break;
+                    }
                     int b = stdIn.read();
                     if (b == -1)
                         break;
@@ -162,6 +168,12 @@ public class StdANSIWindowed extends StdTerminal implements TerminalResizeListen
                 while (running) {
                     if (tncOut.available() == 0) {
                         stdOut.flush();
+                    }
+                    while (tncOut.available() == 0 && running) {
+                        Thread.sleep(100);
+                    }
+                    if (!running) {
+                        break;
                     }
                     int b = tncOut.read();
                     if (b == -1)

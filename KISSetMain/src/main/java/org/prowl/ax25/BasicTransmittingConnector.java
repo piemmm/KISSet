@@ -401,7 +401,7 @@ public class BasicTransmittingConnector extends Connector implements Transmittin
             } catch (Throwable e) {
 
                 //    stats.numBadRcvFrames++;
-                LOG.error("unhandled exception in KissOverTcpConnector:" + e.getMessage(), e);
+                //LOG.error("unhandled exception in connector:" + e.getMessage(), e);
                 // discard this frame
                 curState = KissEscapeOutputStream.RcvState.IDLE;
                 in = null;

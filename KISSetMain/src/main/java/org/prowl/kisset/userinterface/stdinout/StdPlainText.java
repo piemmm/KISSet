@@ -12,7 +12,7 @@ public class StdPlainText extends StdTerminal {
 
     private static final Log LOG = LogFactory.getLog("StdANSI");
 
-    private static boolean running = false;
+    private boolean running = false;
 
     public StdPlainText(InputStream stdIn, OutputStream stdOut) {
         super(stdIn, stdOut);
@@ -29,6 +29,18 @@ public class StdPlainText extends StdTerminal {
         Tools.runOnThread(() -> {
             try {
                 while (running) {
+                    while (stdIn.available() == 0 && running) {
+                        Thread.sleep(100);
+                    }
+                    if (!running) {
+                        break;
+                    }
+                    while (tncOut.available() == 0 && running) {
+                        Thread.sleep(100);
+                    }
+                    if (!running) {
+                        break;
+                    }
                     int b = stdIn.read();
                     if (b == -1)
                         break;
@@ -71,6 +83,7 @@ public class StdPlainText extends StdTerminal {
 
 
     }
+
     public void stop() {
         running = false;
     }

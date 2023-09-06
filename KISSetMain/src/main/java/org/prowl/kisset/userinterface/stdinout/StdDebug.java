@@ -11,7 +11,7 @@ public class StdDebug extends StdANSI {
 
     private static final Log LOG = LogFactory.getLog("StdANSI");
 
-    private static boolean running = false;
+    private boolean running = false;
 
     public StdDebug(InputStream stdIn, OutputStream stdOut) {
         super(stdIn, stdOut);
@@ -28,6 +28,12 @@ public class StdDebug extends StdANSI {
         Tools.runOnThread(() -> {
             try {
                 while (running) {
+                    while (stdIn.available() == 0 && running) {
+                        Thread.sleep(100);
+                    }
+                    if (!running) {
+                        break;
+                    }
                     int b = stdIn.read();
                     if (b == -1)
                         break;
@@ -47,6 +53,12 @@ public class StdDebug extends StdANSI {
                 while (running) {
                     if (tncOut.available() == 0) {
                         stdOut.flush();
+                    }
+                    while (tncOut.available() == 0 && running) {
+                        Thread.sleep(100);
+                    }
+                    if (!running) {
+                        break;
                     }
                     int b = tncOut.read();
                     if (b == -1)

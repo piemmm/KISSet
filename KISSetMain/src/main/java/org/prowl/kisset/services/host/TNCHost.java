@@ -48,7 +48,7 @@ public class TNCHost {
     // The command parser
     private final CommandParser parser;
     // Terminal window input stream
-    private final InputStream in;
+    private InputStream in;
     // Terminal window output stream
     private final OutputStream out;
     // The controller for this terminal (the host class)
@@ -75,6 +75,10 @@ public class TNCHost {
 
         SingleThreadBus.INSTANCE.register(this);
         start();
+    }
+
+    public void setNewInputStream(InputStream in) {
+        this.in = in;
     }
 
     public Object getTerminalType() {
@@ -112,8 +116,7 @@ public class TNCHost {
     }
 
     // Start the TNC host
-    public void
-    start() {
+    public void start() {
         Tools.runOnThread(new Runnable() {
             @Override
             public void run() {
@@ -147,12 +150,27 @@ public class TNCHost {
         // Start the reader thread for the client.
         Tools.runOnThread(() -> {
             try {
-                InputStreamReader reader = new InputStreamReader(in);
-                BufferedReader bin = new BufferedReader(reader);
-                String inLine;
-                while ((inLine = bin.readLine()) != null) {
-                    parser.parse(inLine);
+                StringBuilder lastLine = new StringBuilder();
+                while (true) {
+                    // Unfortunately because stdin can't be closed and reopened, we will instead do a simple loop that
+                    // we can avoid blocking on.
+                    while (in.available() == 0) {
+                        Tools.delay(100);
+                    }
+                    // Read in the waiting byte
+                    int b = in.read();
+                    if (b == -1) {
+                        break;
+                    }
+                    // Build up a line until we hit a newline character (like BufferedReader.readLine())
+                    if (b == 0x0a) {
+                        parser.parse(lastLine.toString());
+                        lastLine.delete(0, lastLine.length());
+                    } else if (b != 0x0d) {
+                        lastLine.append((char)(b & 0xFF));
+                    }
                 }
+
             } catch (Exception e) {
                 LOG.error(e.getMessage(), e);
             }

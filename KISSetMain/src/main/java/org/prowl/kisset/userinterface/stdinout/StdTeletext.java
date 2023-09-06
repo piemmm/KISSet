@@ -17,7 +17,7 @@ public class StdTeletext extends StdTerminal {
 
     private static final Log LOG = LogFactory.getLog("StdTeletext");
 
-    private static boolean running = false;
+    private boolean running = false;
 
 
     //OutputStream stdOut;
@@ -47,6 +47,12 @@ public class StdTeletext extends StdTerminal {
         Tools.runOnThread(() -> {
             try {
                 while (running) {
+                    while (stdIn.available() == 0 && running) {
+                        Thread.sleep(100);
+                    }
+                    if (!running) {
+                        break;
+                    }
                     int b = stdIn.read();
                     if (b == -1) break;
                     tncIn.getOutputStream().write(b);
@@ -65,9 +71,17 @@ public class StdTeletext extends StdTerminal {
                     if (tncOut.available() == 0) {
                         stdOut.flush();
                     }
+                    while (tncOut.available() == 0 && running) {
+                        Thread.sleep(100);
+                    }
+                    if (!running) {
+                        break;
+                    }
                     int b = tncOut.read();
                     //stdOut.write("MOOSE".getBytes());//println("STD TELETEXT");
-                    if (b == -1) break;
+                    if (!running || b == -1) {
+                        break;
+                    }
                     b = b & 0xFF;
                     //if (b >= 127 || b < 32) {
                     decodeTeletextChar(b);
