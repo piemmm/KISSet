@@ -7,6 +7,7 @@ import org.prowl.kisset.annotations.TNCCommand;
 import org.prowl.kisset.io.Stream;
 import org.prowl.kisset.io.StreamState;
 import org.prowl.kisset.services.host.parser.Mode;
+import org.prowl.kisset.util.ANSI;
 import org.prowl.kisset.util.Tools;
 
 import java.io.IOException;
@@ -17,6 +18,9 @@ import java.net.Socket;
 
 /**
  * Connect to a remote IP address and port
+ *
+ * This isn't an advertised command as it's used for internal testing and doesn't clear the
+ * state properly when it's done.
  */
 @TNCCommand
 public class Telnet extends Command {
@@ -72,8 +76,9 @@ public class Telnet extends Command {
 
             // Now connect the streams to our terminal
             commandParser.writeToTerminal("*** Connected to " + hostname + ":" + port + CR);
-            commandParser.setModeIfCurrentStream(Mode.CONNECTED_TO_STATION, stream);
-            commandParser.getCurrentInterface().getCurrentStream().setStreamState(StreamState.CONNECTED);
+            commandParser.setMode(Mode.CONNECTED_TO_INTERNET);
+
+            //commandParser.getCurrentInterface().getCurrentStream().setStreamState(StreamState.CONNECTED);
 
             // Now setup the streams so we talk to the station instead of the command parser
             stream.setIOStreams(s.getInputStream(), s.getOutputStream());
@@ -88,26 +93,36 @@ public class Telnet extends Command {
             // Look for any terminal changing teletext (etc) stuff
             Tools.runOnThread(() -> {
                 try {
-                    StringBuffer responseString = new StringBuffer();
-                    while (true) {
-                        InputStream in = stream.getInputStream();
-                        if (in.available() > 0) {
-                            int b = in.read();
-                            if (b == -1) {
-                                break;
-                            }
+                    try {
+                        StringBuffer responseString = new StringBuffer();
+                        while (true) {
+                            InputStream in = stream.getInputStream();
+                            if (in.available() > 0) {
+                                int b = in.read();
+                                // Check for EOF
+                                if (b == -1) {
+                                    break;
+                                }
 
-                            commandParser.writeRawToTerminal(b);
-                        } else {
-                            // Crude.
-                            Tools.delay(100);
+                                commandParser.writeRawToTerminal(b);
+                            } else {
+                                // Crude.
+                                Tools.delay(100);
+                            }
                         }
+
+                        writeToTerminal(ANSI.YELLOW + "*** Disconnected from " + hostname + ":" + port + ANSI.NORMAL + CR);
+                    } catch (IOException e) {
+                        writeToTerminal(ANSI.YELLOW + "*** Disconnected from " + hostname + ":" + port + "(" + e.getMessage() + ")" + ANSI.NORMAL + CR);
+                        LOG.error("Error reading from client:" + e.getMessage(), e);
                     }
+                    writeToTerminal(ANSI.YELLOW + "*** Disconnected from " + hostname + ":" + port + ANSI.NORMAL + CR);
+                    commandParser.setDivertStream(null);
+                    commandParser.setModeIfCurrentStream(Mode.CMD, stream);
                 } catch (IOException e) {
-                    LOG.error("Error reading from client:" + e.getMessage(), e);
+                    // This is just for the writeToTerminal stuff
+                    LOG.error("Error writing to screen:" + e.getMessage(), e);
                 }
-                commandParser.setDivertStream(null);
-                commandParser.setModeIfCurrentStream(Mode.CMD, stream);
             });
         } catch (Throwable e) {
             writeToTerminal("*** Unable to connect to " + hostname + ":" + port + " - " + e.getMessage() + CR);

@@ -30,6 +30,7 @@ module org.prowl.kissetgui {
     requires org.prowl.kisset;
 
 
+    exports org.prowl.kissetgui.userinterface.desktop.terminals;
     exports org.prowl.maps;
     exports org.prowl.kissetgui.userinterface.desktop.fx;
     opens org.prowl.kissetgui.userinterface.desktop.fx to javafx.fxml;

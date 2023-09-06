@@ -187,6 +187,14 @@ public class KISSet {
         }
     }
 
+    /**
+     * If we are running in terminal mode, then this will be trus
+     * @return false for GUI mode, true for terminal mode
+     */
+    public boolean isTerminalMode() {
+        return terminalMode;
+    }
+
 
     public void initTerminalMode(Class terminalType) {
         INSTANCE = KISSet.this;

@@ -28,6 +28,9 @@ public class Mode {
     // Connected to a station mode
     public static final Mode CONNECTED_TO_STATION = new Mode("CONNECTED_TO_STATION");
 
+    // Connected to a internet station (telnet)
+    public static final Mode CONNECTED_TO_INTERNET = new Mode("CONNECTED_TO_INTERNET");
+
     // Sending a private message mode
     public static final Mode SENDING_PRIVATE_MESSAGE = new Mode("SENDING_PRIVATE_MESSAGE");
 

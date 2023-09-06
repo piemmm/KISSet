@@ -22,6 +22,7 @@ import org.prowl.kisset.util.PacketTools;
 import org.prowl.kisset.util.Tools;
 
 import java.io.*;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,12 +38,13 @@ public class TNCHost {
     /**
      * List of strings to look for and their counterpart terminal types that can best display them
      * we use this as a hacky way to automatically switch to the best terminal type for the data given
+     * // String[0] = ansi terminal class, String[1] = GUI terminal class
      */
-    private static final Map<String, String> terminalTypes = new HashMap<>();
+    private static final Map<String, String[]> terminalTypes = new HashMap<>();
 
     static {
         // TELSTAR
-        terminalTypes.put(new String(new byte[]{0x11, 0x0c, 0x1b, 'B', 'T', 0x1b, 'A', 'E', 0x1b, 'F', 'L', 0x1b, 'D', 'S', 0x1b, 'G', 'T', 0x1b, 'E', 'A', 0x1b, 'C', 'R'}), "org.prowl.kisset.userinterface.desktop.terminals.TeletextTerminal");
+        terminalTypes.put(new String(new byte[]{0x11, 0x0c, 0x1b, 'B', 'T', 0x1b, 'A', 'E', 0x1b, 'F', 'L', 0x1b, 'D', 'S', 0x1b, 'G', 'T', 0x1b, 'E', 'A', 0x1b, 'C', 'R'}), new String[] { "org.prowl.kisset.userinterface.stdinout.StdTeletext","org.prowl.kissetgui.userinterface.desktop.terminals.TeletextTerminal"});
     }
 
     // The command parser
@@ -188,10 +190,10 @@ public class TNCHost {
 
     public void addByteToLastLine(byte b) {
         if (b == 10 || b == 13) {
-            checkForTerminalSwitch();
             lastLine.clear();
         } else {
             lastLine.put(b);
+            checkForTerminalSwitch();
         }
     }
 
@@ -200,7 +202,7 @@ public class TNCHost {
 
 
         // Iterate through the entry set, match the bytes, if there's a match, switch to the terminal type
-        for (Map.Entry<String, String> entry : terminalTypes.entrySet()) {
+        for (Map.Entry<String, String[]> entry : terminalTypes.entrySet()) {
 
             // Compare the array from our buffer to our search array
             String toCompareAgainst = new String(lastLine.getBytes());
@@ -208,7 +210,10 @@ public class TNCHost {
             if (toCompareAgainst.contains(searchArray)) {
                 try {
                     // Only switch if needed
-                    Class terminalClass = Class.forName(entry.getValue());
+                    Class terminalClass = Class.forName(entry.getValue()[1]);
+                    if (KISSet.INSTANCE.isTerminalMode()) {
+                        terminalClass = Class.forName(entry.getValue()[0]);
+                    }
                     if (!host.getTerminal().getClass().equals(terminalClass)) {
                         host.setTerminal(terminalClass.getConstructor().newInstance());
                     }

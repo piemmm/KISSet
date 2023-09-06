@@ -178,7 +178,7 @@ public class CommandParser {
                 if (mode == Mode.CMD) {
                     sendPrompt();
                 }
-            } else if (mode == Mode.CONNECTED_TO_STATION) {
+            } else if (mode == Mode.CONNECTED_TO_STATION || mode == Mode.CONNECTED_TO_INTERNET) {
 
                 // Send i/o to/from station
                 if (divertStream != null) {
