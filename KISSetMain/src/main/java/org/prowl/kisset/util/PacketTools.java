@@ -284,7 +284,7 @@ public class PacketTools {
     public static String readableTextFromAPRSFrame(APRSPacket packet) {
         StringBuilder builder = new StringBuilder();
         builder.append(ANSI.MAGENTA);
-        builder.append("APRS Packet:"+CR);
+        builder.append("APRS Packet:" + CR);
         //builder.append(" Type:" + packet.getType() + CR);
         InformationField info = packet.getAprsInformation();
         if (info != null) {
@@ -382,4 +382,28 @@ public class PacketTools {
         return sb.toString();
     }
 
+    /**
+     * Return the base callsign (no ssid)
+     * @param callsign
+     * @return
+     */
+    public static String getBaseCall(String callsign) {
+        if (!callsign.contains("-")) {
+            return callsign;
+        }
+        return callsign.substring(0, callsign.indexOf('-'));
+    }
+
+
+    /**
+     * Return the SSID (including -) part of the callsign.
+     *
+     * returns -0 if no ssid was specified
+     */
+    public static String getSSID(String callsign) {
+        if (!callsign.contains("-")) {
+            return "-0";
+        }
+        return callsign.substring(callsign.indexOf('-'));
+    }
 }

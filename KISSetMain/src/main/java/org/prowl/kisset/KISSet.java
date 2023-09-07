@@ -213,9 +213,6 @@ public class KISSet {
     public void initTerminalMode(Class terminalType) {
         INSTANCE = KISSet.this;
 
-        // Platform line separator
-        System.lineSeparator();
-
         // Redirect stdout/err
         stdOut = System.out;
         stdIn = System.in;
