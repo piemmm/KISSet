@@ -191,7 +191,6 @@ public class TNCHost {
         // Colourise
         data = ANSI.convertTokensToANSIColours(data);
 
-
         byte[] bytes = data.getBytes();
         for (byte b : bytes) {
             addByteToLastLine(b);

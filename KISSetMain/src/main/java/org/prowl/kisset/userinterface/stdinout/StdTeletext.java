@@ -111,9 +111,11 @@ public class StdTeletext extends StdTerminal {
     public boolean bold;
     public boolean lining;
     public boolean flash;
+    private boolean inAnsiEscape = false;
     // Current cursor position
     private int charXPos = 0;
     private int charYPos = 0;
+    private StringBuffer ansiBuffer = new StringBuffer();
 
     public void clearAttributes() throws IOException {
         color = ANSI.WHITE;
@@ -124,16 +126,38 @@ public class StdTeletext extends StdTerminal {
         underLine = false;
         bold = false;
         lining = false;
+        inAnsiEscape = false;
+        ansiBuffer = new StringBuffer();
         write(ANSI.NORMAL+ANSI.BG_NORMAL);
     }
 
     private void decodeTeletextChar(int b) throws IOException {
 
 
+        // Strangely enough, esc[ is semi shared with ansi codes.
+        if (inAnsiEscape) {
+            ansiBuffer.append((char)b);
+            if (b == 'm') {
+                stdOut.write(ansiBuffer.toString().getBytes());
+                ansiBuffer.delete(0, ansiBuffer.length());
+                inAnsiEscape = false;
+            }
+
+            return;
+        }
+
+
         if (inEscape) {
             inEscape = false;
+            if (b == '[') {
+                ansiBuffer.append('\u001b');
+                ansiBuffer.append((char)b);
+                inAnsiEscape = true;
+                return;
+            }
             b = 128 + (b % 32);
         }
+
         //  LOG.debug("Append:" + b + "(" + Integer.toString(b, 16) + ")"+(ob & 0xFF)+": " + (char) b + "   charX:" + charXPos+"   charY:"+charYPos);
         // Not implemented yet - causes us to consume more bytes.
         if (inPosition == 2) {

@@ -20,7 +20,6 @@ import javafx.scene.text.Text;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.prowl.kisset.KISSet;
 import org.prowl.kisset.util.Tools;
 import org.prowl.kissetgui.userinterface.desktop.KISSetGUI;
 
@@ -68,6 +67,7 @@ public class TeletextTerminal extends HBox implements Terminal {
     private BufferPosition endSelect;
     private boolean inEscape = false;
     private int inPosition = 0;
+    private boolean inAnsiEscape = false;
 
     public TeletextTerminal() {
 
@@ -199,6 +199,7 @@ public class TeletextTerminal extends HBox implements Terminal {
     public void clearSelection() {
         startSelect = null;
         endSelect = null;
+        inAnsiEscape = false;
         queueRedraw();
     }
 
@@ -290,11 +291,25 @@ public class TeletextTerminal extends HBox implements Terminal {
     public synchronized final void append(int ob) {
         int b = ob & 0xFF;
 
+        // Strangely enough, esc[ is semi shared with ansi codes.
+        if (inAnsiEscape) {
+            if (b == 'm') {
+                inAnsiEscape = false;
+            }
+            return;
+        }
+
 
         if (inEscape) {
             inEscape = false;
+            if (b == '[') {
+                inAnsiEscape = true;
+                return;
+            }
             b = 128 + (b % 32);
         }
+
+
         //  LOG.debug("Append:" + b + "(" + Integer.toString(b, 16) + ")"+(ob & 0xFF)+": " + (char) b + "   charX:" + charXPos+"   charY:"+charYPos);
         // Not implemented yet
         if (inPosition == 2) {
@@ -361,7 +376,7 @@ public class TeletextTerminal extends HBox implements Terminal {
         } else {
 
 
-            if (b != 9 ) {
+            if (b != 9) {
                 byte[] line = buffer.get(charYPos);
                 line[charXPos] = (byte) b;
             }
