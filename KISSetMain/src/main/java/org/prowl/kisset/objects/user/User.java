@@ -12,7 +12,7 @@ import java.io.DataOutputStream;
 /**
  * This represents a user.
  * <p>
- * A user has a name, priviliges, and a callsign.
+ * A user object holds attributes about a user, such as their name, callsign, location, priviliges and password.
  */
 public class User {
 
@@ -24,6 +24,9 @@ public class User {
     private String location;
     private String passwordHash; // This is used for things like telnet remote access (not over radio) or sysop acces
 
+
+    private transient String sourceCallsign; // The callsign the user is currently using to connect as (for connection tracking)
+    private transient String destinationCallsign; // Our destination callsign (for connection tracking and in case of reconfiguration we can still terminate)
     /**
      * Create an empty user
      */
@@ -39,12 +42,13 @@ public class User {
      * @param privFlags
      * @param hashPassword
      */
-    public User(String name, String baseCallsign, String privFlags, String hashPassword) {
-
+    public User(String name, String baseCallsign, String connectingCallsign, String destinationCallsign, String privFlags, String hashPassword) {
         this.name = name;
         this.baseCallsign = baseCallsign;
         this.privFlags = privFlags;
         this.passwordHash = hashPassword;
+        this.sourceCallsign = connectingCallsign;
+        this.destinationCallsign = destinationCallsign;
     }
 
     /**
@@ -72,6 +76,22 @@ public class User {
 
     public void setBaseCallsign(String baseCallsign) {
         this.baseCallsign = baseCallsign;
+    }
+
+    public String getSourceCallsign() {
+        return sourceCallsign;
+    }
+
+    public void setSourceCallsign(String connectingCallsign) {
+        this.sourceCallsign = connectingCallsign;
+    }
+
+    public String getDestinationCallsign() {
+        return destinationCallsign;
+    }
+
+    public void setDestinationCallsign(String destinationCallsign) {
+        this.destinationCallsign = destinationCallsign;
     }
 
     public boolean hasPriv(String priv) {

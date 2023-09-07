@@ -376,8 +376,8 @@ public class KISSet {
      */
     public String getStationCapabilities() {
         StringBuilder sb = new StringBuilder();
-        sb.append("AC");
-
+        // We suppoer ANSI (A), Deflate(C) and Deflate+Huffman(Z)
+        sb.append("ACZ");
 
         if (configuration.getConfig(Conf.pmsEnabled, Conf.pmsEnabled.boolDefault())) {
             sb.append("P");

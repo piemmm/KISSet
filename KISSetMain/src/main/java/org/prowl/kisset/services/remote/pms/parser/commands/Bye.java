@@ -2,6 +2,7 @@ package org.prowl.kisset.services.remote.pms.parser.commands;
 
 import org.prowl.kisset.Messages;
 import org.prowl.kisset.annotations.PMSCommand;
+import org.prowl.kisset.io.Stream;
 import org.prowl.kisset.services.remote.pms.parser.Mode;
 
 import java.io.IOException;
@@ -20,11 +21,14 @@ public class Bye extends Command {
         // Possibly save user at this point?
 
 
+
         // Now say goodbye and close the connection
         write(CR);
-        write(Messages.get("userDisconnecting") + CR);
+        write(Messages.get(client.getUser(), "userDisconnecting") + CR);
         client.flush();
+        // Disconnect the client.
         client.close();
+
 
         return true;
     }

@@ -1,19 +1,34 @@
 package org.prowl.kisset.util;
 
 import org.prowl.kisset.KISSet;
+import org.prowl.kisset.config.Conf;
+import org.prowl.kisset.config.Config;
+import org.prowl.kisset.objects.user.User;
 
 /**
  * This class takes %TOKENS% that are used in the message.properties file and detokenizes them with the values from
- * various sources.  For example, %PMSNAME% is replaced with the name of the BBS.
+ * various sources.  For example, %PMSCALLSIGN% is replaced with the name of the BBS.
  */
 public class UnTokenize {
 
     public static String str(String tokenizedStringToDetokenise) {
 
-        tokenizedStringToDetokenise = tokenizedStringToDetokenise.replace("%PMSCALLSIGN%", KISSet.INSTANCE.getMyCallNoSSID());
+        // Global stuff
+        Config config = KISSet.INSTANCE.getConfig();
+        String pmsSSID = config.getConfig(Conf.pmsSSID, Conf.pmsSSID.stringDefault());
+
+        tokenizedStringToDetokenise = tokenizedStringToDetokenise.replace("%PMSCALLSIGN%", KISSet.INSTANCE.getMyCallNoSSID()+pmsSSID);
 
         return tokenizedStringToDetokenise;
     }
 
+    public static String str(User user, String tokenizedStringToDetokenise) {
+        tokenizedStringToDetokenise = str(tokenizedStringToDetokenise);
+
+        // User stuff
+        tokenizedStringToDetokenise = tokenizedStringToDetokenise.replace("%USERCALLSIGN%", user.getBaseCallsign());
+
+        return tokenizedStringToDetokenise;
+    }
 
 }

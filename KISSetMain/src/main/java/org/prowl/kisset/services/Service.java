@@ -1,5 +1,6 @@
 package org.prowl.kisset.services;
 
+import org.prowl.kisset.io.Interface;
 import org.prowl.kisset.objects.user.User;
 
 import java.io.InputStream;
@@ -31,6 +32,6 @@ public abstract class Service {
      */
     public abstract String getCallsign();
 
-    public abstract void acceptedConnection(User user, InputStream in, OutputStream out);
+    public abstract void acceptedConnection(Interface anInterface, User user, InputStream in, OutputStream out);
 
 }

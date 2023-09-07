@@ -3,6 +3,7 @@ package org.prowl.kisset.services.remote.pms;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.prowl.kisset.io.Interface;
 import org.prowl.kisset.objects.user.User;
 import org.prowl.kisset.services.Service;
 
@@ -28,8 +29,8 @@ public class PMSService extends Service {
         this.callsign = callsign;
     }
 
-    public void acceptedConnection(User user, InputStream in, OutputStream out) {
-        PMSClientHandler client = new PMSClientHandler(user, in, out);
+    public void acceptedConnection(Interface anInterface, User user, InputStream in, OutputStream out) {
+        PMSClientHandler client = new PMSClientHandler(anInterface, user, in, out);
         client.start();
     }
 

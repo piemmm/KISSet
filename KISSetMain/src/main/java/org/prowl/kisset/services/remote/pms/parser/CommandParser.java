@@ -143,7 +143,7 @@ public class CommandParser {
 
     public String getPrompt() {
         String name = Messages.get(mode.toString().toLowerCase());
-        return ANSI.BOLD_YELLOW + UnTokenize.str(name) + ANSI.BOLD_WHITE + PROMPT + ANSI.NORMAL + " ";
+        return ANSI.BOLD_YELLOW + name + ANSI.BOLD_WHITE + PROMPT + ANSI.NORMAL + " ";
     }
 
     /**

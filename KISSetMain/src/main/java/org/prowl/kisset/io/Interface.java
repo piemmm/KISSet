@@ -56,6 +56,21 @@ public abstract class Interface {
 
     public abstract void disconnect(Stream currentStream);
 
+    public void disconnect(String ourCall, String remoteCall) {
+
+        // Check this isn't in our steams.
+        for (Stream s: getStreams()) {
+            if (remoteCall.equals(s.getRemoteCall())) {
+                disconnect(s);
+                return;
+            }
+        }
+
+        // Not in our streams, then do it this way.
+        anInterface.disconnect(ourCall, remoteCall);
+    }
+
+
     public abstract void cancelConnection(Stream stream);
 
     public Stream getStream(int stream) {
@@ -169,6 +184,8 @@ public abstract class Interface {
                     try {
                         User user = new User();//KISSet.INSTANCE.getStorage().loadUser(conn.getSrc().getBaseCallsign());
                         user.setBaseCallsign(conn.getSrc().getBaseCallsign());
+                        user.setSourceCallsign(conn.getSrc().getBaseCallsign()+"-"+conn.getSrc().getSSID());
+                        user.setDestinationCallsign(conn.getDst().getBaseCallsign()+"-"+conn.getSrc().getSSID());
                         InputStream in = state.getInputStream();
                         OutputStream out = state.getOutputStream();
 
@@ -182,7 +199,7 @@ public abstract class Interface {
 
                         };
 
-                        service.acceptedConnection(user, in, wrapped);
+                        service.acceptedConnection(Interface.this, user, in, wrapped);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }

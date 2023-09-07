@@ -17,7 +17,7 @@ import java.util.Objects;
 public class Mode {
 
     // Command mode
-    public static final Mode CMD = new Mode("CMD");
+    public static final Mode CMD = new Mode("PMS_CMD");
 
     // Reading a message mode (for pagination handling)
     public static final Mode MESSAGE_READ_PAGINATION = new Mode("MESSAGE_READ_PAGINATION");

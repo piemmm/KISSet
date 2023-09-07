@@ -4,6 +4,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.prowl.kisset.KISSet;
 import org.prowl.kisset.Messages;
+import org.prowl.kisset.io.Interface;
 import org.prowl.kisset.objects.user.User;
 import org.prowl.kisset.services.ClientHandler;
 import org.prowl.kisset.services.remote.pms.parser.CommandParser;
@@ -23,14 +24,16 @@ public class PMSClientHandler implements ClientHandler {
     private InputStream in;
     private OutputStream out;
     private final User user;
+    private final Interface anInterface;
     private final CommandParser parser;
     private boolean colourEnabled = true;
     private BufferedReader bin;
 
-    public PMSClientHandler(User user, InputStream in, OutputStream out) {
+    public PMSClientHandler(Interface anInterface, User user, InputStream in, OutputStream out) {
         this.in = in;
         this.out = out;
         this.user = user;
+        this.anInterface = anInterface;
         parser = new CommandParser(this);
     }
 
@@ -83,13 +86,17 @@ public class PMSClientHandler implements ClientHandler {
 
             // Everything else is just part of our standard welcome message
             send(ANSI.BOLD_CYAN + Messages.get("usesColour") + CR + ANSI.NORMAL + CR);
-            send(Messages.get("welcomeNewUser") + CR);
+            send(Messages.get(user, "welcomeNewUser") + CR);
             parser.sendPrompt();
 
         } catch (Throwable e) {
             LOG.error(e.getMessage(), e);
         }
 
+    }
+
+    public User getUser() {
+        return user;
     }
 
     public void useNewInputStream(InputStream in) {
@@ -105,6 +112,9 @@ public class PMSClientHandler implements ClientHandler {
             out.close();
         } catch (Throwable e) {
         }
+
+        // Now terminate the connection.
+        anInterface.disconnect(user.getDestinationCallsign(), user.getSourceCallsign());
     }
 
     public boolean getColourEnabled() {
