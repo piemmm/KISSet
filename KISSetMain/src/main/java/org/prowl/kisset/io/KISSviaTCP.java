@@ -39,7 +39,6 @@ public class KISSviaTCP extends Interface {
     private final int retries;
     private Socket socketConnection;
 
-    private BasicTransmittingConnector anInterface;
 
 
     public KISSviaTCP(HierarchicalConfiguration config) {
