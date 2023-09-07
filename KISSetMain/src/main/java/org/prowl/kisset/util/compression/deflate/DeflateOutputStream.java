@@ -165,4 +165,11 @@ public class DeflateOutputStream extends OutputStream {
         // Write a log about the compression
         LOG.debug("Compressed in=" + dataToCompress.size() + " bytes, out=" + bytesCompressed + ", reduction(%): " + (100 - (bytesCompressed * 100 / dataToCompress.size())));
     }
+
+    @Override
+    public void close() throws IOException {
+        out.flush();
+        out.close();
+    }
+
 }

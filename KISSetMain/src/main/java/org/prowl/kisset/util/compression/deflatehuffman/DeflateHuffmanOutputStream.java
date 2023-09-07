@@ -222,4 +222,10 @@ public class DeflateHuffmanOutputStream extends OutputStream {
             return type;
         }
     }
+
+    @Override
+    public void close() throws IOException {
+        out.flush();
+        out.close();
+    }
 }

@@ -56,19 +56,6 @@ public abstract class Interface {
 
     public abstract void disconnect(Stream currentStream);
 
-    public void disconnect(String ourCall, String remoteCall) {
-
-        // Check this isn't in our steams.
-        for (Stream s: getStreams()) {
-            if (remoteCall.equals(s.getRemoteCall())) {
-                disconnect(s);
-                return;
-            }
-        }
-
-        // Not in our streams, then do it this way.
-        anInterface.disconnect(ourCall, remoteCall);
-    }
 
 
     public abstract void cancelConnection(Stream stream);

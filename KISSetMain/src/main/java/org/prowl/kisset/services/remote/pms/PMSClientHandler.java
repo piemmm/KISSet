@@ -114,7 +114,7 @@ public class PMSClientHandler implements ClientHandler {
         }
 
         // Now terminate the connection.
-        anInterface.disconnect(user.getDestinationCallsign(), user.getSourceCallsign());
+      //  anInterface.disconnect(user.getDestinationCallsign(), user.getSourceCallsign());
     }
 
     public boolean getColourEnabled() {

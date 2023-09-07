@@ -615,7 +615,10 @@ public class BasicTransmittingConnector extends Connector implements Transmittin
     public void disconnect(String from, String to) {
         ConnState state = stack.getConnState(new AX25Callsign(from), new AX25Callsign(to), false);
         if (state != null) {
-            stack.transmitDISC(this, state.getSrc(), state.getDst(), new AX25Callsign[]{}, true);
+            state.close();
+        //    stack.transmitDISC(this, state.getSrc(), state.getDst(), new AX25Callsign[]{}, true);
+        } else {
+            LOG.debug("Could not locate state for:" +from+"/"+to);
         }
     }
 
