@@ -578,7 +578,7 @@ public class ANSITerminal extends HBox implements Terminal {
                         decodeQA.color = Color.WHITE;
                         break;
                     case "40":
-                        decodeQA.color = Color.BLACK;
+                        decodeQA.bgcolor = Color.BLACK;
                         break;
                     case "41":
                         // Background
