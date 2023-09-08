@@ -17,6 +17,7 @@ import org.prowl.kisset.protocols.mqtt.MQTTClient;
 import org.prowl.kisset.services.Service;
 import org.prowl.kisset.services.host.TNCHost;
 import org.prowl.kisset.services.host.parser.Mode;
+import org.prowl.kisset.services.remote.netrom.NetROMService;
 import org.prowl.kisset.services.remote.pms.PMSService;
 import org.prowl.kisset.statistics.Statistics;
 import org.prowl.kisset.userinterface.TerminalHost;
@@ -196,7 +197,7 @@ public class KISSet {
         // Net/ROM
         boolean netROMEnabled = configuration.getConfig(Conf.netromEnabled, Conf.netromEnabled.boolDefault());
         if (netROMEnabled) {
-            //serviceList.add(new NetROMService("NETROM", getMyCallNoSSID()+configuration.getConfig(Conf.netromSSID, Conf.netromSSID.stringDefault())));
+            serviceList.add(new NetROMService("NETROM", getMyCallNoSSID()+configuration.getConfig(Conf.netromSSID, Conf.netromSSID.stringDefault())));
         }
     }
 

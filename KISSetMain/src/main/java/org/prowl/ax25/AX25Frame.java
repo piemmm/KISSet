@@ -368,8 +368,15 @@ public class AX25Frame implements Serializable, AX25FrameSource, Comparable<AX25
     public AX25Frame() {
         // assume APRS until explicitly changed
         ctl = (AX25Frame.FRAMETYPE_U | AX25Frame.UTYPE_UI);
-        pid = PID_NOLVL3;
+        this.pid = PID_NOLVL3;
     }
+
+    public AX25Frame(int pid) {
+        // assume APRS until explicitly changed
+        ctl = (AX25Frame.FRAMETYPE_U | AX25Frame.UTYPE_UI);
+        this.pid = (byte)pid;
+    }
+
 
     /**
      * Create a AX25Frame from a byte array presumed to contain an AX.25 protocol sequence.

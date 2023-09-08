@@ -69,6 +69,34 @@ public class NetROMRoute {
         return lastHeard;
     }
 
+    public void setSourceCallsign(String sourceCallsign) {
+        this.sourceCallsign = sourceCallsign;
+    }
+
+    public void setAnInterface(Interface anInterface) {
+        this.anInterface = anInterface;
+    }
+
+    public void setDestinationNodeCallsign(String destinationNodeCallsign) {
+        this.destinationNodeCallsign = destinationNodeCallsign;
+    }
+
+    public void setDestinationNodeMnemonic(String destinationNodeMnemonic) {
+        this.destinationNodeMnemonic = destinationNodeMnemonic;
+    }
+
+    public void setNeighbourNodeCallsign(String neighbourNodeCallsign) {
+        this.neighbourNodeCallsign = neighbourNodeCallsign;
+    }
+
+    public void setBestQualityValue(int bestQualityValue) {
+        this.bestQualityValue = bestQualityValue;
+    }
+
+    public void setLastHeard(long lastHeard) {
+        this.lastHeard = lastHeard;
+    }
+
     /**
      * Show a human readable version of the routing packet
      *
@@ -77,8 +105,12 @@ public class NetROMRoute {
     public String toString() {
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yy HH:mm:ss");
         StringBuilder builder = new StringBuilder();
-        int interfaceNumber = KISSet.INSTANCE.getInterfaceHandler().getInterfaceNumber(anInterface);
-        builder.append(interfaceNumber + ": ");
+        if (anInterface == null) {
+            builder.append("Unknown interface");
+        } else {
+            int interfaceNumber = KISSet.INSTANCE.getInterfaceHandler().getInterfaceNumber(anInterface);
+            builder.append(interfaceNumber + ": ");
+        }
         builder.append(sourceCallsign);
         builder.append(" advertises");
         builder.append(" " + destinationNodeCallsign + "/" + destinationNodeMnemonic);
@@ -97,7 +129,7 @@ public class NetROMRoute {
      *
      * @return A byte array representing the serialised message
      */
-    public byte[] toPacket() {
+    public byte[] toSerialize() {
 
         try (ByteArrayOutputStream bos = new ByteArrayOutputStream(30);
              DataOutputStream dout = new DataOutputStream(bos)) {
@@ -124,7 +156,7 @@ public class NetROMRoute {
     /**
      * Deserialise from a byte array
      **/
-    public NetROMRoute fromPacket(DataInputStream din) throws InvalidMessageException {
+    public NetROMRoute fromSerialize(DataInputStream din) throws InvalidMessageException {
 
         try {
             anInterface = KISSet.INSTANCE.getInterfaceHandler().getInterfaceByUUID(Tools.readString(din, din.readInt()));

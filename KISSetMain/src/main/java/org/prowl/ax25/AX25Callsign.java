@@ -619,6 +619,40 @@ public final class AX25Callsign implements Comparable<AX25Callsign>, Cloneable, 
     }
 
     /**
+     * Return a byte array of the callsign, we pad with spaces if we are not the correct size.
+     *
+     * @param size    the size of the returned byte array (6 or 7 bytes)
+     * @param shifted if we are shifting the data left by 1 bit
+     * @return
+     */
+    public byte[] toByteArray(int size, boolean shifted) {
+        byte[] answer = new byte[size];
+        int i = 0;
+        for (; i < Math.min(callsign.length(), 6); i++) {
+            if (shifted) {
+                answer[i] = (byte) (((int) callsign.charAt(i) & 0x7F) << 1);
+            } else {
+                answer[i] = (byte) (((int) callsign.charAt(i) & 0x7F));
+            }
+        }
+        for (; i < 6; i++) {
+            if (shifted) {
+                answer[i] = (0x40); // space shifted left 1
+            } else {
+                answer[i] = (0x20); // space
+            }
+        }
+        if (size == 7) {
+            if (shifted) {
+                answer[6] = (byte) ((ssid << 1) | ((reserved & 3) << 5) | (h_c ? 0x80 : 0) | (last ? 1 : 0));
+            } else {
+                answer[6] = (byte) ((ssid) | ((reserved & 3) << 4) | (h_c ? 0x80 : 0) | (last ? 1 : 0));
+            }
+        }
+        return answer;
+    }
+
+    /**
      * Return the AX.25 packing of the 7th byte of the callsign. Used to support the optimized
      * checksum computation in AX25Frame so as to avoid malloc'ing a byte array by using the
      * toByteArray() method.

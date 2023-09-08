@@ -233,4 +233,17 @@ public abstract class Interface {
     public void setKissParameter(KissParameterType type, int data) {
         anInterface.setKISSParameter(type, new int[] { data  });
     }
+
+    /**
+     * Convenience to send a UI frame
+     * @param destination
+     * @param data
+     */
+    public void sendUI(String destination, byte[] data) throws IOException {
+        anInterface.sendUI(destination, data);
+    }
+
+    public void sendFrame(AX25Frame frame) throws IOException {
+        anInterface.sendFrame(frame);
+    }
 }

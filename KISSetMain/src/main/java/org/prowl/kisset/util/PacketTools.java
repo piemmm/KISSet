@@ -56,6 +56,17 @@ public class PacketTools {
     }
 
     /**
+     * shift a byte array to the left by 1 bit
+     */
+    public static byte[] shiftLeft(byte[] callsign) {
+        for (int i = 0; i < callsign.length; i++) {
+
+                callsign[i] = (byte) ((callsign[i] & 0xFF) << 1);
+
+        }
+        return callsign;
+    }
+    /**
      * Get a sequence of 6 or 7 bytes representing a callsign with optional bit shifting
      */
     public static String getDataUntilSpaceOrCR(ByteBuffer buffer, int maxlength, boolean shift) {

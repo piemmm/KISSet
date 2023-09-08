@@ -142,6 +142,8 @@ class AX25InputStream extends InputStream {
         if (ConnState.ConnType.CLOSED == connState.connType) {
             return -1;
         }
+
+        // Wait for a frame
         synchronized (this) {
             while (currentFrame == null && connState.connType != ConnState.ConnType.CLOSED && frameQueue.size() == 0) {
                 frameBodyIndex = 0;
@@ -158,6 +160,8 @@ class AX25InputStream extends InputStream {
                 currentFrame = frameQueue.remove(0);
             }
         }
+
+        // Now we have a frame, copy the data.
         if (len >= currentFrame.body.length - frameBodyIndex) {
             len = currentFrame.body.length - frameBodyIndex;
             System.arraycopy(currentFrame.body, frameBodyIndex, b, off, len);

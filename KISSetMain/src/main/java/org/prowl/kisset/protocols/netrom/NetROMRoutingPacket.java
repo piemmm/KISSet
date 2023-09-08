@@ -2,10 +2,13 @@ package org.prowl.kisset.protocols.netrom;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.prowl.ax25.AX25Callsign;
 import org.prowl.kisset.objects.routing.NetROMRoute;
 import org.prowl.kisset.protocols.core.Node;
 import org.prowl.kisset.util.PacketTools;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -56,6 +59,20 @@ public class NetROMRoutingPacket {
     }
 
     /**
+     * Create a new Net/ROM routing packet
+     */
+    public NetROMRoutingPacket() {
+
+    }
+
+    /**
+     * Add a node to the packet
+     */
+    public void addNode(NetROMRoute node) {
+        nodesInThisPacket.add(node);
+    }
+
+    /**
      * Get the nodes in this packet
      *
      * @return
@@ -77,5 +94,30 @@ public class NetROMRoutingPacket {
         return builder.toString();
     }
 
+    /**
+     * From the data in this class, create the raw packet.
+     *
+     * @return
+     */
+    public byte[] toPacketBody(String sendingCallsign) {
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        try {
+            buffer.write((byte) 0xFF);
+            byte[] encoded = new AX25Callsign(sendingCallsign).toByteArray(6,false);
+            buffer.write(encoded);
+            for (NetROMRoute node : nodesInThisPacket) {
+                encoded = PacketTools.shiftLeft(new AX25Callsign(node.getDestinationNodeCallsign()).toByteArray(7,false));
+                buffer.write(encoded);
+                encoded = new AX25Callsign(node.getDestinationNodeMnemonic()).toByteArray(6,false);
+                buffer.write(encoded);
+                encoded = PacketTools.shiftLeft(new AX25Callsign(node.getNeighbourNodeCallsign()).toByteArray(7,false));
+                buffer.write(encoded);
+                buffer.write((byte) node.getBestQualityValue());
+            }
+        } catch (IOException e) {
+            LOG.error(e.getMessage(), e);
+        }
+        return buffer.toByteArray();
+    }
 
 }

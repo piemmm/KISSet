@@ -425,7 +425,7 @@ public class Storage {
 
             dout.writeInt(nodes.size());
             for (NetROMRoute node : nodes) {
-                dout.write(node.toPacket());
+                dout.write(node.toSerialize());
             }
             dout.flush();
 
@@ -451,7 +451,7 @@ public class Storage {
             int count = din.readInt();
             for (int i = 0; i < count; i++) {
                 NetROMRoute node = new NetROMRoute();
-                node.fromPacket(din);
+                node.fromSerialize(din);
                 if (!node.isExipred()) {
                     NetROMRoutingTable.INSTANCE.addRoute(node);
                 }
