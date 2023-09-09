@@ -163,14 +163,15 @@ public class NetROMClientHandler implements ClientHandler {
                 // See if we have an active connection to that node.
                 NetROMClientHandler nextStation = service.getClientHandlerForCallsign(route.getAnInterface(), circuit.getDestinationCallsign(), true);
                 if (nextStation != null) {
-                    // All good we have a connection, now register the new circuit with the CircuitManager
-                    CircuitManager.registerCircuit(circuit);
+                    // We have a connection to the next station, so we can connect to the destination.
 
                     // Set the circuit state to connected.
                     circuit.setState(CircuitState.CONNECTED);
 
-                    // Set the circuit to point at this nodes connection
+                    // Now register the new circuit with the CircuitManager
+                    CircuitManager.registerCircuit(circuit);
 
+                    // TODO: do we now need to send a connection request to the next station?
 
                 } else {
                     // No connection or were not able to connect
