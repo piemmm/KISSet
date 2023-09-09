@@ -3,15 +3,16 @@ package org.prowl.kisset.services.remote.netrom;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.prowl.kisset.io.Interface;
+import org.prowl.kisset.objects.routing.NetROMRoute;
 import org.prowl.kisset.objects.user.User;
 import org.prowl.kisset.protocols.netrom.NetROMPacket;
+import org.prowl.kisset.protocols.netrom.NetROMRoutingTable;
 import org.prowl.kisset.services.ClientHandler;
 import org.prowl.kisset.services.remote.netrom.circuit.Circuit;
 import org.prowl.kisset.services.remote.netrom.circuit.CircuitException;
 import org.prowl.kisset.services.remote.netrom.circuit.CircuitManager;
 import org.prowl.kisset.services.remote.netrom.circuit.CircuitState;
 import org.prowl.kisset.services.remote.netrom.opcodebeans.*;
-import org.prowl.kisset.util.PipedIOStream;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -44,8 +45,7 @@ public class NetROMClientHandler implements ClientHandler {
     @Override
     /**
      * Read in packets from our connection and process them.
-     */
-    public void start() {
+     */ public void start() {
 
         try {
             // Packet spec means they will always be <= 256 bytes.
@@ -84,6 +84,8 @@ public class NetROMClientHandler implements ClientHandler {
     public void processPacket(NetROMPacket packet) throws IOException {
 
         // We have a packet, let's process it.
+        // This may need to be split off into some form of thread based processing so we can handle multiple circuits which
+        // might need to do blocking stuff on paticular requests, without stalling the rest of the connection
         switch (packet.getOpCode()) {
             case NetROMPacket.OPCODE_CONNECT_REQUEST:
                 // We have a connection request.
@@ -146,12 +148,39 @@ public class NetROMClientHandler implements ClientHandler {
         circuit.setYourCircuitIndex(connectRequest.getMyCircuitIndex());
         circuit.setYourCiruitID(connectRequest.getMyCircuitID());
 
-        // TODO: some code to check if we want to accept the connection or not based on
-        // routing reachability, loop detection, etc.
+        // if the connection is to us, then we need to pass it on to the relevant handler.
+        if (connectRequest.getDestinationCallsign().toString().equalsIgnoreCase(service.getCallsign()) || connectRequest.getDestinationCallsign().toString().equalsIgnoreCase(service.getAlias())) {
+            // Connection is to us.
+            // Todo - pass it on to the relevant handler.
+
+        } else {
+
+            // Connection is to another node, not us.
+            // Check we have a route to the destination node.
+            NetROMRoute route = NetROMRoutingTable.INSTANCE.getRoutingToCallsign(circuit.getDestinationCallsign().toString());
+            if (route != null && !route.isExipred()) {
+
+                // See if we have an active connection to that node.
+                NetROMClientHandler nextStation = service.getClientHandlerForCallsign(route.getAnInterface(), circuit.getDestinationCallsign(), true);
+                if (nextStation != null) {
+                    // All good we have a connection, now register the new circuit with the CircuitManager
+                    CircuitManager.registerCircuit(circuit);
+
+                    // Set the circuit state to connected.
+                    circuit.setState(CircuitState.CONNECTED);
+
+                    // Set the circuit to point at this nodes connection
 
 
-        // Register the new circuit with the CircuitManager
-        CircuitManager.registerCircuit(circuit);
+                } else {
+                    // No connection or were not able to connect
+                    circuit.setValid(false);
+                }
+            } else {
+                // We don't have a route to the destination, so we refuse the connection.
+                circuit.setValid(false);// Reject the connection.
+            }
+        }
 
         // Send a connection acknoledge.
         ConnectAcknowledge connectAcknowledge = new ConnectAcknowledge();
@@ -191,7 +220,6 @@ public class NetROMClientHandler implements ClientHandler {
             // Connection was refused.
             circuit.setState(CircuitState.DISCONNECTED);
         }
-
 
 
     }

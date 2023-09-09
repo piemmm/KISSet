@@ -1,5 +1,6 @@
 package org.prowl.kisset.services.remote.netrom.opcodebeans;
 
+import org.prowl.ax25.AX25Callsign;
 import org.prowl.kisset.protocols.netrom.NetROMPacket;
 
 public class Information {
@@ -32,6 +33,15 @@ public class Information {
 
     public byte[] getBody() {
         return netROMPacket.getBody();
+    }
+
+
+    public AX25Callsign getSourceCallsign() {
+        return new AX25Callsign(netROMPacket.getOriginCallsign());
+    }
+
+    public AX25Callsign getDestinationCallsign() {
+        return new AX25Callsign(netROMPacket.getDestinationCallsign());
     }
 
     /**

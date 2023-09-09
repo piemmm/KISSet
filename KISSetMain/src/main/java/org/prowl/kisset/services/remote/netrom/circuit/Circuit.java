@@ -9,6 +9,9 @@ import org.prowl.ax25.AX25Callsign;
  */
 public class Circuit {
 
+    private AX25Callsign sourceCallsign;
+    private AX25Callsign destinationCallsign;
+
     private int myCircuitIndex;
     private int myCircuitId;
     private int yourCircuitIndex;
@@ -104,8 +107,24 @@ public class Circuit {
         return isValid;
     }
 
-    void setValid(boolean isValid) {
+    public void setValid(boolean isValid) {
         this.isValid = isValid;
+    }
+
+    public AX25Callsign getSourceCallsign() {
+        return sourceCallsign;
+    }
+
+    public void setSourceCallsign(AX25Callsign sourceCallsign) {
+        this.sourceCallsign = sourceCallsign;
+    }
+
+    public AX25Callsign getDestinationCallsign() {
+        return destinationCallsign;
+    }
+
+    public void setDestinationCallsign(AX25Callsign destinationCallsign) {
+        this.destinationCallsign = destinationCallsign;
     }
 
     public String toString() {
@@ -129,6 +148,11 @@ public class Circuit {
         sb.append(originatingNode);
         sb.append(" IsValid: ");
         sb.append(isValid);
+        sb.append(" SourceCallsign: ");
+        sb.append(sourceCallsign);
+        sb.append(" DestinationCallsign: ");
+        sb.append(destinationCallsign);
+
         return sb.toString();
     }
 }

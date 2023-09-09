@@ -1,21 +1,19 @@
 package org.prowl.kisset.services.remote.netrom;
 
-import com.google.common.eventbus.Subscribe;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.prowl.ax25.AX25Callsign;
 import org.prowl.ax25.AX25Frame;
+import org.prowl.ax25.ConnState;
+import org.prowl.ax25.ConnectionEstablishmentListener;
 import org.prowl.kisset.KISSet;
 import org.prowl.kisset.config.Conf;
 import org.prowl.kisset.config.Config;
-import org.prowl.kisset.eventbus.SingleThreadBus;
-import org.prowl.kisset.eventbus.events.HeardNodeEvent;
 import org.prowl.kisset.io.Interface;
 import org.prowl.kisset.objects.routing.NetROMRoute;
 import org.prowl.kisset.objects.user.User;
 import org.prowl.kisset.protocols.netrom.NetROMRoutingPacket;
 import org.prowl.kisset.services.Service;
-import org.prowl.kisset.services.remote.pms.PMSClientHandler;
 import org.prowl.kisset.util.Tools;
 
 import java.io.IOException;
@@ -25,6 +23,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Semaphore;
 
 
 /**
@@ -38,7 +37,7 @@ public class NetROMService extends Service {
 
     private boolean stop = false;
     private final String callsign;
-    private  String alias;
+    private String alias;
 
     /**
      * This is a map of all the clients that are connected to us.
@@ -66,10 +65,11 @@ public class NetROMService extends Service {
 
     /**
      * Accept a connection from another Net/ROM node
+     *
      * @param anInterface the interface responsible for receiving the connection
-     * @param user the connecting station
-     * @param in the input stream
-     * @param out the output stream
+     * @param user        the connecting station
+     * @param in          the input stream
+     * @param out         the output stream
      */
     public void acceptedConnection(Interface anInterface, User user, InputStream in, OutputStream out) {
         NetROMClientHandler client = new NetROMClientHandler(this, anInterface, user, in, out);
@@ -78,6 +78,85 @@ public class NetROMService extends Service {
 
     public void clientDisconnected(Interface anInterface, User user) {
         clients.remove(user);
+    }
+
+    /**
+     * Get the client handler which is connected to 'callsign'
+     *
+     * @param callsign the callsign to look for
+     * @return The clientHandler which is connected to 'callsign' or null if not found.
+     */
+    public NetROMClientHandler getClientHandlerForCallsign(Interface anInterface, AX25Callsign callsign, boolean initiateConnectIfNotConnected) {
+        for (NetROMClientHandler client : clients.values()) {
+            if (client.getUser().getSourceCallsign().equalsIgnoreCase(callsign.toString())) {
+                return client;
+            }
+        }
+        // If we get here, we don't have a client connected to the callsign, so we will try to connect to it.
+        if (initiateConnectIfNotConnected) {
+            return connectToRemoteNode(anInterface, callsign);
+        }
+        // If we're not interested in making a new connection then just return null
+        return null;
+    }
+
+    /**
+     * Connect to a remote node. Block until we are connected.
+     *
+     * @param anInterface
+     * @param callsign
+     * @return
+     */
+    public NetROMClientHandler connectToRemoteNode(Interface anInterface, AX25Callsign callsign) {
+        try {
+            User user = new User();
+            user.setBaseCallsign(callsign.getBaseCallsign());
+            user.setSourceCallsign(callsign.toString());
+            user.setDestinationCallsign(getCallsign());
+
+            Semaphore semaphore = new Semaphore(1);
+            semaphore.acquire();
+
+            // Now do the connection
+            ConnState[] connState = new ConnState[1];
+            anInterface.connect(callsign.toString(), getCallsign(), new ConnectionEstablishmentListener() {
+                @Override
+                public void connectionEstablished(Object sessionIdentifier, ConnState conn) {
+                    connState[0] = conn;
+                    semaphore.release();
+                }
+
+                @Override
+                public void connectionNotEstablished(Object sessionIdentifier, Object reason) {
+                    semaphore.release();
+                }
+
+                @Override
+                public void connectionClosed(Object sessionIdentifier, boolean fromOtherEnd) {
+                    semaphore.release();
+                }
+
+                @Override
+                public void connectionLost(Object sessionIdentifier, Object reason) {
+                    semaphore.release();
+                }
+
+            });
+            semaphore.acquire();
+
+            if (connState[0] == null) {
+                InputStream in = connState[0].getInputStream();
+                OutputStream out = connState[0].getOutputStream();
+                NetROMClientHandler clientHandler = new NetROMClientHandler(this, anInterface, user, in, out);
+                clientHandler.start();
+                return clientHandler;
+            }
+        } catch (IOException e) {
+            LOG.error(e.getMessage(), e);
+        } catch (InterruptedException e) {
+            LOG.error(e.getMessage(), e);
+        }
+        return null;
     }
 
     public void start() {
@@ -94,6 +173,7 @@ public class NetROMService extends Service {
 
     /**
      * Return the node alias
+     *
      * @return
      */
     public String getAlias() {
@@ -127,7 +207,7 @@ public class NetROMService extends Service {
                 uiFrame.body = anounceBody;
                 anInterface.sendFrame(uiFrame);
 
-            } catch(IOException e) {
+            } catch (IOException e) {
                 LOG.error(e.getMessage(), e);
             }
 

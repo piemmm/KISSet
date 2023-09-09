@@ -27,12 +27,20 @@ public class ConnectRequest {
         return netROMPacket.getBody()[0];
     }
 
+    public AX25Callsign getSourceCallsign() {
+        return new AX25Callsign(netROMPacket.getOriginCallsign());
+    }
+
+    public AX25Callsign getDestinationCallsign() {
+        return new AX25Callsign(netROMPacket.getDestinationCallsign());
+    }
+
     public AX25Callsign getCallsignOfOriginatingUser() {
-        return new AX25Callsign(netROMPacket.getBody(),1,7);
+        return new AX25Callsign(netROMPacket.getBody(),7,7);
     }
 
     public AX25Callsign getCallsignOfOriginatingNode() {
-        return new AX25Callsign(netROMPacket.getBody(),8,7);
+        return new AX25Callsign(netROMPacket.getBody(),7+7,7);
     }
 
 }

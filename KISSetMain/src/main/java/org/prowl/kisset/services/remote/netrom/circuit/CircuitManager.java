@@ -71,7 +71,7 @@ public class CircuitManager {
      * @return
      */
     private static int findFreeCircuit() {
-        for (int i = 1; i < 65535; i++) {
+        for (int i = 257; i < 65535; i++) {
             if (circuits.get(i) == null) {
                 return i;
             }
