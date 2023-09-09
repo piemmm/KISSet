@@ -6,8 +6,15 @@ import org.prowl.kisset.io.Interface;
 import org.prowl.kisset.objects.user.User;
 import org.prowl.kisset.protocols.netrom.NetROMPacket;
 import org.prowl.kisset.services.ClientHandler;
+import org.prowl.kisset.services.remote.netrom.circuit.Circuit;
+import org.prowl.kisset.services.remote.netrom.circuit.CircuitException;
+import org.prowl.kisset.services.remote.netrom.circuit.CircuitManager;
+import org.prowl.kisset.services.remote.netrom.circuit.CircuitState;
+import org.prowl.kisset.services.remote.netrom.opcodebeans.*;
+import org.prowl.kisset.util.PipedIOStream;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
@@ -31,17 +38,22 @@ public class NetROMClientHandler implements ClientHandler {
         this.user = user;
         this.service = service;
         this.anInterface = anInterface;
+
     }
 
     @Override
+    /**
+     * Read in packets from our connection and process them.
+     */
     public void start() {
 
         try {
-            byte[] buffer = new byte[512];
+            // Packet spec means they will always be <= 256 bytes.
+            byte[] buffer = new byte[256];
             int b = 0;
             while (b != -1) {
-
-                // This will read an entire packet at a time.
+                // Handily as we process packet frames a chunk at a time, we can
+                // do the below to grab a 'netrom' packet, one at a time.
                 int lengthRead = in.read(buffer, 0, buffer.length);
                 byte[] data = new byte[lengthRead];
                 System.arraycopy(buffer, 0, data, 0, lengthRead);
@@ -63,48 +75,137 @@ public class NetROMClientHandler implements ClientHandler {
 
     /**
      * Process a netrom packet from a connected node according to the netrom spec.
-     *
+     * <p>
      * A connected node could be conversing with us about several different circuits/things
      * so we will farm each of these off to their own individual handlers where needed.
      *
      * @param packet
      */
-    public void processPacket(NetROMPacket packet) {
+    public void processPacket(NetROMPacket packet) throws IOException {
 
         // We have a packet, let's process it.
         switch (packet.getOpCode()) {
             case NetROMPacket.OPCODE_CONNECT_REQUEST:
                 // We have a connection request.
-                LOG.debug("Got a connection request from " + packet.getOriginCallsign()+" to "+packet.getDestinationCallsign());
+                LOG.debug("Got a connection request from " + packet.getOriginCallsign() + " to " + packet.getDestinationCallsign());
+                receiveConnectionRequest(new ConnectRequest(packet));
                 break;
             case NetROMPacket.OPCODE_CONNECT_ACK:
                 // We have a connection ack.
-                LOG.debug("Got a connection ack from " + packet.getOriginCallsign()+" to "+packet.getDestinationCallsign());
+                LOG.debug("Got a connection ack from " + packet.getOriginCallsign() + " to " + packet.getDestinationCallsign());
+                receiveConnectionAcknowledge(new ConnectAcknowledge(packet));
                 break;
             case NetROMPacket.OPCODE_DISCONNECT_REQUEST:
                 // We have a disconnect request.
-                LOG.debug("Got a disconnect request from " + packet.getOriginCallsign()+" to "+packet.getDestinationCallsign());
+                LOG.debug("Got a disconnect request from " + packet.getOriginCallsign() + " to " + packet.getDestinationCallsign());
+                DisconnectRequest disconnectRequest = new DisconnectRequest(packet);
+
                 break;
             case NetROMPacket.OPCODE_DISCONNECT_ACK:
                 // We have a disconnect ack.
-                LOG.debug("Got a disconnect ack from " + packet.getOriginCallsign()+" to "+packet.getDestinationCallsign());
+                LOG.debug("Got a disconnect ack from " + packet.getOriginCallsign() + " to " + packet.getDestinationCallsign());
+                DisconnectAcknowledge disconnectAcknowledge = new DisconnectAcknowledge(packet);
+
                 break;
             case NetROMPacket.OPCODE_INFORMATION_TRANSFER:
                 // We have a data packet.
-                LOG.debug("Got a data packet from " + packet.getOriginCallsign()+" to "+packet.getDestinationCallsign());
+                LOG.debug("Got a data packet from " + packet.getOriginCallsign() + " to " + packet.getDestinationCallsign());
+                Information information = new Information(packet);
+
                 break;
             case NetROMPacket.OPCODE_INFORMATION_ACK:
                 // We have a data ack.
-                LOG.debug("Got a data ack from " + packet.getOriginCallsign()+" to "+packet.getDestinationCallsign());
+                LOG.debug("Got a data ack from " + packet.getOriginCallsign() + " to " + packet.getDestinationCallsign());
+                InformationAcknowledge informationAcknowledge = new InformationAcknowledge(packet);
+
                 break;
             case NetROMPacket.OPCODE_RESET:
                 // We have a reset.
-                LOG.debug("Got a reset from " + packet.getOriginCallsign()+" to "+packet.getDestinationCallsign());
-                break;
+                LOG.debug("Got a reset from " + packet.getOriginCallsign() + " to " + packet.getDestinationCallsign());
+                Reset reset = new Reset(packet);
 
+                break;
+        }
+    }
+
+
+    /**
+     * Deals with receiving a connection request.
+     * <p>
+     * We create the circuit, and send back a connection ack.
+     *
+     * @param connectRequest
+     * @throws CircuitException
+     */
+    public void receiveConnectionRequest(ConnectRequest connectRequest) throws IOException {
+
+        Circuit circuit = new Circuit();
+        circuit.setOriginatingUser(connectRequest.getCallsignOfOriginatingUser());
+        circuit.setOriginatingNode(connectRequest.getCallsignOfOriginatingNode());
+        circuit.setAcceptedSize(connectRequest.getProposeWindowSize());
+        circuit.setYourCircuitIndex(connectRequest.getMyCircuitIndex());
+        circuit.setYourCiruitID(connectRequest.getMyCircuitID());
+
+        // TODO: some code to check if we want to accept the connection or not based on
+        // routing reachability, loop detection, etc.
+
+
+        // Register the new circuit with the CircuitManager
+        CircuitManager.registerCircuit(circuit);
+
+        // Send a connection acknoledge.
+        ConnectAcknowledge connectAcknowledge = new ConnectAcknowledge();
+        connectAcknowledge.setAcceptWindowSize(circuit.getAcceptedSize());
+        connectAcknowledge.setYourCircuitIndex(circuit.getYourCircuitIndex());
+        connectAcknowledge.setYourCircuitID(circuit.getYourCircuitID());
+        connectAcknowledge.setMyCircuitIndex(circuit.getMyCircuitIndex());
+        connectAcknowledge.setMyCircuitID(circuit.getMyCircuitId());
+        // If we refused the connection then set the high order bit (which is in ACK_REFUSED for convenience)
+        connectAcknowledge.setOpcode(circuit.isValid() ? NetROMPacket.OPCODE_CONNECT_ACK : NetROMPacket.OPCODE_CONNECT_ACK_REFUSED);
+
+        // Send the packet.
+        sendPacket(connectAcknowledge.getNetROMPacket());
+    }
+
+    /**
+     * We have received a connection acknowledge
+     *
+     * @param connectAcknowledge
+     * @throws IOException
+     */
+    public void receiveConnectionAcknowledge(ConnectAcknowledge connectAcknowledge) throws IOException {
+
+        Circuit circuit = CircuitManager.getCircuit(connectAcknowledge.getYourCircuitIndex(), connectAcknowledge.getYourCircuitID());
+        if (circuit == null) {
+            // We should not get here as there should always be a circuit at this point.
+            LOG.error("Received a connection ack for a circuit that does not exist.");
+            // We should try to disconnect the session at this point as it is obviously borked.
+            //disconnectCircuit(connectAcknowledge.getYourCircuitIndex(), connectAcknowledge.getYourCircuitID());
+        }
+
+        // Set the circuit state to connected.
+        if (connectAcknowledge.getOpcode() == NetROMPacket.OPCODE_CONNECT_ACK) {
+            // Connection was accepted.
+            circuit.setState(CircuitState.CONNECTED);
+        } else {
+            // Connection was refused.
+            circuit.setState(CircuitState.DISCONNECTED);
         }
 
 
+
+    }
+
+    /**
+     * Send a packet to the remote node.
+     *
+     * @param packet
+     * @throws IOException
+     */
+    private void sendPacket(NetROMPacket packet) throws IOException {
+        // Send the packet.
+        out.write(packet.toPacket());
+        out.flush();
     }
 
     /**

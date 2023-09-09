@@ -25,12 +25,11 @@ import java.text.ParseException;
  */
 public class NetROMPacket {
 
-    //private static String body = "FF4D4E4B4E4F448E846E9A9C96644D4E4B4348548E846E9A9C9662FF8E846E9A9C96604D4E4B4242538E846E9A9C9662FF9A609C86AE40664352455343489A609C86AE4060BF8E846E9EAA96604F554B4E4F448E846E9EAA9660C08E846E9EAA96644F554B4348548E846E9EAA9660BF8E846E9EAA96664F554B4445568E846E9EAA9660BF9A846E9C98846042555A5A52449A846E9C988460C09A846E9C98846242555A4242539A846E9C988460969A846E9C98846442555A4348549A846E9C988460BF9A846E9C98846642555A5757439A846E9C988460BF";
-
     // List of opcodes
     public static final int OPCODE_PROTOCOL_EXTENSION = 0; // Protocol ID extension to network layer (IP type coded in circuit index, etc)
     public static final int OPCODE_CONNECT_REQUEST = 1; // Connect Request
     public static final int OPCODE_CONNECT_ACK = 2; // Connect Acknowledge
+    public static final int OPCODE_CONNECT_ACK_REFUSED = OPCODE_CONNECT_ACK | 0x80; // Connect Acknowledge+refused
     public static final int OPCODE_DISCONNECT_REQUEST = 3; // Disconnect Request
     public static final int OPCODE_DISCONNECT_ACK = 4; // Disconnect Acknowledge
     public static final int OPCODE_INFORMATION_TRANSFER = 5; // Information Transfer
@@ -43,8 +42,8 @@ public class NetROMPacket {
     public static final int PROTOCOL_IP = 0x0C; // IP protocol
 
 
-    private final String originCallsign;
-    private final String destinationCallsign;
+    private String originCallsign;
+    private String destinationCallsign;
 
     // Contents of the Net/ROM network and transport header
     private int ttl;
@@ -61,14 +60,23 @@ public class NetROMPacket {
     private boolean reserved;
     private int opCode;
 
-    private final byte[] body;
-    private final byte[] raw;
+    private byte[] body;
+    private byte[] raw;
 
     /**
      * Decode a Net/ROM broadcast packet from an AX.25 frame
      **/
     public NetROMPacket(Node node) throws ParseException {
         this(node.getFrame().getBody());
+    }
+
+    /**
+     * Construct a blank netrom packet.
+     * @throws ParseException
+     */
+    public NetROMPacket() {
+        raw = new byte[0];
+        body = new byte[0];
     }
 
     public NetROMPacket(byte[] data) throws ParseException {
@@ -324,5 +332,9 @@ public class NetROMPacket {
 
     public byte[] getBody() {
         return body;
+    }
+
+    public void setBody(byte[] body) {
+        this.body = body;
     }
 }

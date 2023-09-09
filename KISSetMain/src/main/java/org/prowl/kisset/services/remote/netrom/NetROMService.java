@@ -54,19 +54,23 @@ public class NetROMService extends Service {
         Config config = KISSet.INSTANCE.getConfig();
         alias = config.getConfig(Conf.netromAlias, Conf.createDefaultNetromAlias());
 
-
-        // We want to listen for packets.
-        SingleThreadBus.INSTANCE.register(this);
-
+        // FIXME: Test code.
         Tools.runOnThread(new Runnable() {
             @Override
             public void run() {
                 Tools.delay(5000);
-                sendNodeBroadcast();
+                sendNodeBroadcast(); // Just send a broadcast to announce ourselves.
             }
         });
     }
 
+    /**
+     * Accept a connection from another Net/ROM node
+     * @param anInterface the interface responsible for receiving the connection
+     * @param user the connecting station
+     * @param in the input stream
+     * @param out the output stream
+     */
     public void acceptedConnection(Interface anInterface, User user, InputStream in, OutputStream out) {
         NetROMClientHandler client = new NetROMClientHandler(this, anInterface, user, in, out);
         client.start();
@@ -94,18 +98,6 @@ public class NetROMService extends Service {
      */
     public String getAlias() {
         return alias;
-    }
-
-    @Subscribe
-    public void handlePacket(HeardNodeEvent packet) {
-       // LOG.debug("Received packet: " + packet);
-//        if (packet.getNode().getDestination().equalsIgnoreCase(callsign)) {
-//            // Packet sent to us, so we're interested in it.
-//
-//            // Some form of keepalive/quality tracking packet from BPQ:
-//            // GB7MNK-1>M0NCW[S RR P NR=5 CTL=0xb1 PID=0xf0]{No LVL3}
-//            // We can ignore this as our stack /should/ send a reply automatically.
-//        }
     }
 
     /**

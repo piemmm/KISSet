@@ -9,7 +9,7 @@ public class Reset {
 
     private NetROMPacket netROMPacket;
 
-    private Reset(NetROMPacket packet) {
+    public Reset(NetROMPacket packet) {
         this.netROMPacket = packet;
     }
 
