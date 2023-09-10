@@ -110,7 +110,7 @@ public class NetROMClientHandler implements ClientHandler {
                 // We have a disconnect ack.
                 LOG.debug("Got a disconnect ack from " + packet.getOriginCallsign() + " to " + packet.getDestinationCallsign());
                 DisconnectAcknowledge disconnectAcknowledge = new DisconnectAcknowledge(packet);
-
+                receiveDisconnectAck(new DisconnectAcknowledge(packet));
                 break;
             case NetROMPacket.OPCODE_INFORMATION_TRANSFER:
                 // We have a data packet.
@@ -160,6 +160,9 @@ public class NetROMClientHandler implements ClientHandler {
             // Create the IO Streams for this connection
             InputStream circuitIn = new CircuitInputStream(this, circuit);
             OutputStream circuitOut = new CircuitOutputStream(this, circuit);
+
+            circuit.setCircuitInputStream(circuitIn);
+            circuit.setCircuitOutputStream(circuitOut);
 
             // Forward the connection to it's handler which is given the circuit input and circuit output streams.
             service.acceptedConnection(anInterface, user, circuitIn, circuitOut);
@@ -271,8 +274,8 @@ public class NetROMClientHandler implements ClientHandler {
         while (System.currentTimeMillis() - startTime < TIMEOUT) {
             Tools.delay(100); // FIXME: remove this and use a proper wait/notify
             // Check for a connection ack/nack
-            if (connectingCircuit != null && connectingCircuit.getState() == CircuitState.CONNECTED) {
-                // We have a connection ack.
+            if (connectingCircuit == null || (connectingCircuit.getState() == CircuitState.CONNECTED || connectingCircuit.getState() == CircuitState.DISCONNECTED)) {
+                // We have a connection ack or the circuit failed to setup.
                 break;
             }
         }
@@ -309,7 +312,7 @@ public class NetROMClientHandler implements ClientHandler {
      *
      * @param disconnectRequest
      */
-    public void receiveDisconnectRequest(DisconnectRequest disconnectRequest) {
+    public void receiveDisconnectRequest(DisconnectRequest disconnectRequest) throws IOException {
 
         // Get the circuit
         Circuit circuit = CircuitManager.getCircuit(disconnectRequest.getYourCircuitIndex(), disconnectRequest.getYourCircuitID());
@@ -321,10 +324,12 @@ public class NetROMClientHandler implements ClientHandler {
         // Are we forwarding between circuits or does this end at us?
         if (circuit.getDestinationCallsign().toString().equalsIgnoreCase(service.getCallsign()) || circuit.getDestinationCallsign().toString().equalsIgnoreCase(service.getAlias())) {
             // This circuit ends at us, so we need to disconnect the other end.
-
+            circuit.getCircuitOutputStream().close();
+            circuit.getCircuitInputStream().close();
         } else {
-            // This circuit is forwarding, so we need to forward the disconnect request.
-
+            // This circuit is forwarding, so we need to forward the disconnect reques to the other circuit.
+            NetROMClientHandler otherCircuitClientHandler = circuit.getOtherCircuit().getOwnerClientHandler();
+            otherCircuitClientHandler.disconnectCircuit(circuit);
         }
 
         // Send the disconnect ack.
@@ -332,7 +337,30 @@ public class NetROMClientHandler implements ClientHandler {
         disconnectAcknowledge.setYourCircuitIndex(disconnectRequest.getYourCircuitIndex());
         disconnectAcknowledge.setYourCircuitID(disconnectRequest.getYourCircuitID());
 
+
         sendPacket(disconnectAcknowledge.getNetROMPacket());
+    }
+
+
+    /**
+     * Receive a disconnect acknowledge. Don't really know what the point of this is - once you send the disconnect
+     * then the circuit is disconnected, there's not really much else to do.
+     * @param disconnectAcknowledge
+     */
+    public void receiveDisconnectAck(DisconnectAcknowledge disconnectAcknowledge) {
+       // Don't really care about this. There's no room in the spec for the other side to say 'no you can't disconnect'
+       // so why does this ack even exist?
+    }
+
+    /**
+     * Initiate a disconnect on a circuit.
+     */
+    public void disconnectCircuit(Circuit circuit) throws IOException {
+        // Send a disconnect request.
+        DisconnectRequest disconnectRequest = new DisconnectRequest();
+        disconnectRequest.setYourCircuitIndex(circuit.getYourCircuitIndex());
+        disconnectRequest.setYourCircuitID(circuit.getYourCircuitID());
+        sendPacket(disconnectRequest.getNetROMPacket());
     }
 
     /**

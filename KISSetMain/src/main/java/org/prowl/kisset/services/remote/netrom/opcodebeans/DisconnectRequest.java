@@ -11,6 +11,12 @@ public class DisconnectRequest {
         this.netROMPacket = packet;
     }
 
+    public DisconnectRequest() {
+        netROMPacket = new NetROMPacket();
+        netROMPacket.setBody(new byte[0]);
+        netROMPacket.setOpCode(NetROMPacket.OPCODE_DISCONNECT_REQUEST);
+    }
+
     public int getYourCircuitIndex() {
         return netROMPacket.getCircuitIndex();
     }
@@ -24,6 +30,15 @@ public class DisconnectRequest {
     }
 
 
+    public void setYourCircuitIndex(int circuitIndex) {
+        netROMPacket.setCircuitIndex(circuitIndex);
+    }
+
+    public void setYourCircuitID(int circuitID) {
+        netROMPacket.setCircuitId(circuitID);
+    }
+
+
     public AX25Callsign getSourceCallsign() {
         return new AX25Callsign(netROMPacket.getOriginCallsign());
     }
@@ -31,4 +46,18 @@ public class DisconnectRequest {
     public AX25Callsign getDestinationCallsign() {
         return new AX25Callsign(netROMPacket.getDestinationCallsign());
     }
+
+
+    public void setSourceCallsign(AX25Callsign callsign) {
+        netROMPacket.setOriginCallsign(callsign.toString());
+    }
+
+    public void setDestinationCallsign(AX25Callsign callsign) {
+        netROMPacket.setDestinationCallsign(callsign.toString());
+    }
+
+    public NetROMPacket getNetROMPacket() {
+        return netROMPacket;
+    }
+
 }

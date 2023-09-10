@@ -1,10 +1,15 @@
 package org.prowl.kisset.services.remote.netrom.circuit;
 
 import org.prowl.ax25.AX25Callsign;
+import org.prowl.kisset.services.ClientHandler;
+import org.prowl.kisset.services.remote.netrom.NetROMClientHandler;
+
+import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  * A circuit represents a connection from a node to node
- *
+ * <p>
  * A circuit is identified by a circuit index and a circuit id.
  */
 public class Circuit {
@@ -20,6 +25,14 @@ public class Circuit {
     private int acceptedSize;
     private AX25Callsign originatingUser;
     private AX25Callsign originatingNode;
+
+    // IO streams (if this circuit terminates at us) - if we are forwarding, these are null.
+    private InputStream circuitInputStream;
+    private OutputStream circuitOutputStream;
+
+    private NetROMClientHandler ownerClientHandler;
+    // The other circuit if we are forwarding.
+    private Circuit otherCircuit;
 
     private boolean isValid = true; // This is false if the circuit could not be registered.
 
@@ -155,4 +168,37 @@ public class Circuit {
 
         return sb.toString();
     }
+
+    public NetROMClientHandler getOwnerClientHandler() {
+        return ownerClientHandler;
+    }
+
+    public void setOwnerClientHandler(ClientHandler ownerClientHandler) {
+        this.ownerClientHandler = ownerClientHandler;
+    }
+
+    public Circuit getOtherCircuit() {
+        return otherCircuit;
+    }
+
+    public void setOtherCircuit(Circuit otherCircuit) {
+        this.otherCircuit = otherCircuit;
+    }
+
+    public InputStream getCircuitInputStream() {
+        return circuitInputStream;
+    }
+
+    public void setCircuitInputStream(InputStream circuitInputStream) {
+        this.circuitInputStream = circuitInputStream;
+    }
+
+    public OutputStream getCircuitOutputStream() {
+        return circuitOutputStream;
+    }
+
+    public void setCircuitOutputStream(OutputStream circuitOutputStream) {
+        this.circuitOutputStream = circuitOutputStream;
+    }
+
 }

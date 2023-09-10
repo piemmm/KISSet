@@ -14,6 +14,7 @@ public class ConnectAcknowledge {
     public ConnectAcknowledge() {
         this.netROMPacket = new NetROMPacket();
         netROMPacket.getBody()[0] = 100;
+        this.netROMPacket.setOpCode(NetROMPacket.OPCODE_CONNECT_ACK);
     }
 
     public int getYourCircuitIndex() {

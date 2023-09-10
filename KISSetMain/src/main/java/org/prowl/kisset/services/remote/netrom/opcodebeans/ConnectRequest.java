@@ -14,6 +14,7 @@ public class ConnectRequest {
     public ConnectRequest() {
         this.netROMPacket = new NetROMPacket();
         this.netROMPacket.setBody(new byte[6+7+7]);
+        this.netROMPacket.setOpCode(NetROMPacket.OPCODE_CONNECT_REQUEST);
     }
 
     public int getMyCircuitIndex() {
