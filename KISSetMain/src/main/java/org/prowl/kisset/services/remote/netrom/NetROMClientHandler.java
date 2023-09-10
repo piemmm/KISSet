@@ -13,6 +13,7 @@ import org.prowl.kisset.services.remote.netrom.circuit.CircuitException;
 import org.prowl.kisset.services.remote.netrom.circuit.CircuitManager;
 import org.prowl.kisset.services.remote.netrom.circuit.CircuitState;
 import org.prowl.kisset.services.remote.netrom.opcodebeans.*;
+import org.prowl.kisset.util.Tools;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -24,6 +25,8 @@ public class NetROMClientHandler implements ClientHandler {
     private static final Log LOG = LogFactory.getLog("NetROMClientHandler");
 
     private static final String CR = "\r";
+
+    private static final long TIMEOUT = 120000; // 2 minutes
 
     private InputStream in;
     private OutputStream out;
@@ -142,6 +145,8 @@ public class NetROMClientHandler implements ClientHandler {
     public void receiveConnectionRequest(ConnectRequest connectRequest) throws IOException {
 
         Circuit circuit = new Circuit();
+        circuit.setSourceCallsign(connectRequest.getSourceCallsign());
+        circuit.setDestinationCallsign(connectRequest.getDestinationCallsign());
         circuit.setOriginatingUser(connectRequest.getCallsignOfOriginatingUser());
         circuit.setOriginatingNode(connectRequest.getCallsignOfOriginatingNode());
         circuit.setAcceptedSize(connectRequest.getProposeWindowSize());
@@ -151,7 +156,8 @@ public class NetROMClientHandler implements ClientHandler {
         // if the connection is to us, then we need to pass it on to the relevant handler.
         if (connectRequest.getDestinationCallsign().toString().equalsIgnoreCase(service.getCallsign()) || connectRequest.getDestinationCallsign().toString().equalsIgnoreCase(service.getAlias())) {
             // Connection is to us.
-            // Todo - pass it on to the relevant handler.
+            // Todo - pass it on to the relevant handler so the user can converse with the service on our node they are
+            //        conneting to
 
         } else {
 
@@ -165,13 +171,22 @@ public class NetROMClientHandler implements ClientHandler {
                 if (nextStation != null) {
                     // We have a connection to the next station, so we can connect to the destination.
 
-                    // Set the circuit state to connected.
-                    circuit.setState(CircuitState.CONNECTED);
-
                     // Now register the new circuit with the CircuitManager
                     CircuitManager.registerCircuit(circuit);
 
-                    // TODO: do we now need to send a connection request to the next station?
+                    // Set the circuit state to connected.
+                    circuit.setState(CircuitState.CONNECTING);
+
+                    // TODO: we now need to send a connection request to the next station and wait
+                    //       for the reply, or timeout, and then send the connection ack/nack back
+                    //       to the originating station.
+                    Circuit remoteCircuit = nextStation.sendConnectionRequestBlocking(this, circuit);
+                    if (remoteCircuit != null && remoteCircuit.isValid()) {
+                        circuit.setState(circuit.isValid() ? CircuitState.CONNECTED : CircuitState.DISCONNECTED);
+                    } else {
+                        // Connection failed, so invalidate this circuit as well.
+                        circuit.setValid(false);
+                    }
 
                 } else {
                     // No connection or were not able to connect
@@ -183,7 +198,7 @@ public class NetROMClientHandler implements ClientHandler {
             }
         }
 
-        // Send a connection acknoledge.
+        // Send a connection ack/nack depending if the connection succeeded or failed
         ConnectAcknowledge connectAcknowledge = new ConnectAcknowledge();
         connectAcknowledge.setAcceptWindowSize(circuit.getAcceptedSize());
         connectAcknowledge.setYourCircuitIndex(circuit.getYourCircuitIndex());
@@ -195,6 +210,68 @@ public class NetROMClientHandler implements ClientHandler {
 
         // Send the packet.
         sendPacket(connectAcknowledge.getNetROMPacket());
+    }
+
+    /**
+     * Send a connection request, wait for a reply or timeout.
+     *
+     * @param sourceCircuit the circuit we are making the connection for.
+     */
+    private Circuit sendConnectionRequestBlocking(ClientHandler sourceHandler, Circuit sourceCircuit) {
+
+        // Create a circuit to handle this connection request
+        Circuit circuit = new Circuit();
+        circuit.setSourceCallsign(sourceCircuit.getSourceCallsign());
+        circuit.setDestinationCallsign(sourceCircuit.getDestinationCallsign());
+        circuit.setOriginatingUser(sourceCircuit.getOriginatingUser());
+        circuit.setOriginatingNode(sourceCircuit.getOriginatingNode());
+        circuit.setAcceptedSize(sourceCircuit.getAcceptedSize());
+        CircuitManager.registerCircuit(circuit); // Applies the circuit IDs and indexes.
+
+        // Setup a connection request with the relevant infos.
+        ConnectRequest connectRequest = new ConnectRequest();
+        connectRequest.setMyCircuitIndex(sourceCircuit.getMyCircuitIndex());
+        connectRequest.setMyCircuitID(sourceCircuit.getMyCircuitId());
+        connectRequest.setProposeWindowSize(sourceCircuit.getAcceptedSize());
+        connectRequest.setDestinationCallsign(sourceCircuit.getDestinationCallsign());
+        connectRequest.setSourceCallsign(sourceCircuit.getSourceCallsign());
+        connectRequest.getNetROMPacket().setOriginCallsign(sourceCircuit.getSourceCallsign().toString());
+        connectRequest.getNetROMPacket().setDestinationCallsign(sourceCircuit.getDestinationCallsign().toString());
+
+        try {
+            // Send the connection request and wait for a reply.
+            sendPacket(connectRequest.getNetROMPacket());
+
+            // Wait for a connection ack or nack to appear from the node we are talking to
+            waitForConnectionAck(sourceHandler, circuit);
+        } catch(IOException e) {
+            LOG.debug(e.getMessage(),e);
+            circuit.setValid(false);
+        }
+
+        // Set this circuit state
+        circuit.setState(circuit.isValid() ? CircuitState.CONNECTED : CircuitState.DISCONNECTED);
+
+        return circuit;
+    }
+
+    /**
+     * Waits for reception of a connection ack/nack or a timeout.
+     *
+     * @param sourceHandler
+     */
+    public Circuit waitForConnectionAck(ClientHandler sourceHandler, Circuit connectingCircuit) {
+        // Wait for a connection ack or nack to appear from the node we are talking to
+        long startTime = System.currentTimeMillis();
+        while (System.currentTimeMillis() - startTime < TIMEOUT) {
+            Tools.delay(100); // FIXME: remove this and use a proper wait/notify
+            // Check for a connection ack/nack
+            if (connectingCircuit != null && connectingCircuit.getState() == CircuitState.CONNECTED) {
+                // We have a connection ack.
+                break;
+            }
+        }
+        return connectingCircuit;
     }
 
     /**

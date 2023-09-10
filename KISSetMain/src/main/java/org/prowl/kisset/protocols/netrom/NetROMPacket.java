@@ -337,4 +337,12 @@ public class NetROMPacket {
     public void setBody(byte[] body) {
         this.body = body;
     }
+
+    public void setOriginCallsign(String originCallsign) {
+        this.originCallsign = originCallsign;
+    }
+
+    public void setDestinationCallsign(String destinationCallsign) {
+        this.destinationCallsign = destinationCallsign;
+    }
 }
