@@ -104,7 +104,7 @@ public class NetROMClientHandler implements ClientHandler {
                 // We have a disconnect request.
                 LOG.debug("Got a disconnect request from " + packet.getOriginCallsign() + " to " + packet.getDestinationCallsign());
                 DisconnectRequest disconnectRequest = new DisconnectRequest(packet);
-
+                receiveDisconnectRequest(new DisconnectRequest(packet));
                 break;
             case NetROMPacket.OPCODE_DISCONNECT_ACK:
                 // We have a disconnect ack.
@@ -156,8 +156,13 @@ public class NetROMClientHandler implements ClientHandler {
         // if the connection is to us, then we need to pass it on to the relevant handler.
         if (connectRequest.getDestinationCallsign().toString().equalsIgnoreCase(service.getCallsign()) || connectRequest.getDestinationCallsign().toString().equalsIgnoreCase(service.getAlias())) {
             // Connection is to us.
-            // Todo - pass it on to the relevant handler so the user can converse with the service on our node they are
-            //        conneting to
+
+            // Create the IO Streams for this connection
+            InputStream circuitIn = new CircuitInputStream(this, circuit);
+            OutputStream circuitOut = new CircuitOutputStream(this, circuit);
+
+            // Forward the connection to it's handler which is given the circuit input and circuit output streams.
+            service.acceptedConnection(anInterface, user, circuitIn, circuitOut);
 
         } else {
 
@@ -244,8 +249,8 @@ public class NetROMClientHandler implements ClientHandler {
 
             // Wait for a connection ack or nack to appear from the node we are talking to
             waitForConnectionAck(sourceHandler, circuit);
-        } catch(IOException e) {
-            LOG.debug(e.getMessage(),e);
+        } catch (IOException e) {
+            LOG.debug(e.getMessage(), e);
             circuit.setValid(false);
         }
 
@@ -281,7 +286,6 @@ public class NetROMClientHandler implements ClientHandler {
      * @throws IOException
      */
     public void receiveConnectionAcknowledge(ConnectAcknowledge connectAcknowledge) throws IOException {
-
         Circuit circuit = CircuitManager.getCircuit(connectAcknowledge.getYourCircuitIndex(), connectAcknowledge.getYourCircuitID());
         if (circuit == null) {
             // We should not get here as there should always be a circuit at this point.
@@ -298,8 +302,37 @@ public class NetROMClientHandler implements ClientHandler {
             // Connection was refused.
             circuit.setState(CircuitState.DISCONNECTED);
         }
+    }
 
+    /**
+     * We have received a disconnect request from a remote node so we will need to teardown both ends of the circuit.
+     *
+     * @param disconnectRequest
+     */
+    public void receiveDisconnectRequest(DisconnectRequest disconnectRequest) {
 
+        // Get the circuit
+        Circuit circuit = CircuitManager.getCircuit(disconnectRequest.getYourCircuitIndex(), disconnectRequest.getYourCircuitID());
+        if (circuit == null) {
+            // We should not get here as there should always be a circuit at this point.
+            LOG.error("Received a disconnect request for a circuit that does not exist.");
+        }
+
+        // Are we forwarding between circuits or does this end at us?
+        if (circuit.getDestinationCallsign().toString().equalsIgnoreCase(service.getCallsign()) || circuit.getDestinationCallsign().toString().equalsIgnoreCase(service.getAlias())) {
+            // This circuit ends at us, so we need to disconnect the other end.
+
+        } else {
+            // This circuit is forwarding, so we need to forward the disconnect request.
+
+        }
+
+        // Send the disconnect ack.
+        DisconnectAcknowledge disconnectAcknowledge = new DisconnectAcknowledge();
+        disconnectAcknowledge.setYourCircuitIndex(disconnectRequest.getYourCircuitIndex());
+        disconnectAcknowledge.setYourCircuitID(disconnectRequest.getYourCircuitID());
+
+        sendPacket(disconnectAcknowledge.getNetROMPacket());
     }
 
     /**

@@ -32,6 +32,16 @@ public abstract class Service {
      */
     public abstract String getCallsign();
 
+    /**
+     * Called when a connection is accepted.
+     *
+     * @param anInterface The interface the connection was accepted on - note not to be used to control connection states. Connectionless only as the
+     *                    interface may only reflect the net/rom connection and not actually have a physical connection to the remote node as it is
+     *                    net/rom tunneled.
+     * @param user        The user that is connecting
+     * @param in          The input stream for the connection
+     * @param out         The output stream for the connection - close this to end the connection.
+     */
     public abstract void acceptedConnection(Interface anInterface, User user, InputStream in, OutputStream out);
 
 }
