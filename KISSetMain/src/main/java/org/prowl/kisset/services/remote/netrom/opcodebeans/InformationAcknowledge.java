@@ -11,6 +11,11 @@ public class InformationAcknowledge {
         this.netROMPacket = packet;
     }
 
+    public InformationAcknowledge() {
+        netROMPacket = new NetROMPacket();
+        netROMPacket.setBody(new byte[0]);
+    }
+
     public int getYourCircuitIndex() {
         return netROMPacket.getCircuitIndex();
     }
@@ -54,5 +59,11 @@ public class InformationAcknowledge {
         return new AX25Callsign(netROMPacket.getDestinationCallsign());
     }
 
-
+    /**
+     * Set the data to be transported on this packet.
+     * @param body
+     */
+    public void setBody(byte[] body) {
+        netROMPacket.setBody(body);
+    }
 }

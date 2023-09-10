@@ -343,13 +343,18 @@ public class NetROMClientHandler implements ClientHandler {
 
 
     /**
-     * Receive a disconnect acknowledge. Don't really know what the point of this is - once you send the disconnect
-     * then the circuit is disconnected, there's not really much else to do.
+     * Receive a disconnect acknowledge.
      * @param disconnectAcknowledge
      */
     public void receiveDisconnectAck(DisconnectAcknowledge disconnectAcknowledge) {
-       // Don't really care about this. There's no room in the spec for the other side to say 'no you can't disconnect'
-       // so why does this ack even exist?
+
+        // Get the circuit
+        Circuit circuit = CircuitManager.getCircuit(disconnectAcknowledge.getYourCircuitIndex(), disconnectAcknowledge.getYourCircuitID());
+        circuit.setState(CircuitState.DISCONNECTED);
+
+        // TODO: Cancel any retry timers
+
+        // TODO: Let the originating client know disconnection is complete.
     }
 
     /**
@@ -368,6 +373,10 @@ public class NetROMClientHandler implements ClientHandler {
             destinationCircuit = circuit.getOtherCircuit();
         }
 
+
+        // TODO: Correctly reassemble the packet based on sequence number - we should probably hold all the RX packets
+        //       in the circuit temporarily and then reassemble them when we have them all, in the correct order.
+        // this(below) is wrong:
         for (int i = 0; i < data.length; i++) {
             try {
                 destinationCircuit.writeByte(data[i] & 0xFF);
@@ -375,9 +384,17 @@ public class NetROMClientHandler implements ClientHandler {
                 LOG.error(e.getMessage(), e);
             }
         }
+        // TODO: see above.
+        circuit.incrementRxSequenceNumber();
+
+        // TODO: is NAK set? If so, we need to retransmit the requested packet sequence, so we should probably
+        //       keep a list of those as well in the circuit, for retransmits.
 
         // Send an information acknowledge.
-
+        InformationAcknowledge informationAcknowledge = new InformationAcknowledge();
+        informationAcknowledge.setYourCircuitIndex(information.getYourCircuitIndex());
+        informationAcknowledge.setYourCircuitID(information.getYourCircuitID());
+        informationAcknowledge.setRxSequenceNumber(circuit.getRxSequenceNumber());
     }
 
     /**
@@ -388,6 +405,11 @@ public class NetROMClientHandler implements ClientHandler {
         DisconnectRequest disconnectRequest = new DisconnectRequest();
         disconnectRequest.setYourCircuitIndex(circuit.getYourCircuitIndex());
         disconnectRequest.setYourCircuitID(circuit.getYourCircuitID());
+
+        circuit.setState(CircuitState.DISCONNECTING);
+
+        // TODO: Implement some ACK timeout thing here to resend X times until an ACK is received.
+
         sendPacket(disconnectRequest.getNetROMPacket());
     }
 
