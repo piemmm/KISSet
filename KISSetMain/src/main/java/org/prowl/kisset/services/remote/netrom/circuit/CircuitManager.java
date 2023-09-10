@@ -1,5 +1,7 @@
 package org.prowl.kisset.services.remote.netrom.circuit;
 
+import org.prowl.kisset.services.remote.netrom.NetROMClientHandler;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -32,7 +34,7 @@ public class CircuitManager {
      * @return A new circuit
      * @throws CircuitException if the circuit already exists.
      */
-    public static Circuit registerCircuit(Circuit circuit) {
+    public static Circuit registerCircuit(Circuit circuit, NetROMClientHandler ownerClientHandler) {
 
         int key = findFreeCircuit();
         if (key == -1) {
@@ -42,6 +44,7 @@ public class CircuitManager {
         //Circuit circuit = new Circuit(key >> 8, key & 0xFF);
         circuit.setMyCircuitId(key >> 8);
         circuit.setMyCircuitIndex(key & 0xFF);
+        circuit.setOwnerClientHandler(ownerClientHandler);
         circuit.setValid(true);
         circuits.put(key, circuit);
         return circuit;

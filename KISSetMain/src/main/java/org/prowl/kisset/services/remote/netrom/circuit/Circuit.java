@@ -3,7 +3,9 @@ package org.prowl.kisset.services.remote.netrom.circuit;
 import org.prowl.ax25.AX25Callsign;
 import org.prowl.kisset.services.ClientHandler;
 import org.prowl.kisset.services.remote.netrom.NetROMClientHandler;
+import org.prowl.kisset.util.PipedIOStream;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
@@ -27,14 +29,19 @@ public class Circuit {
     private AX25Callsign originatingNode;
 
     // IO streams (if this circuit terminates at us) - if we are forwarding, these are null.
-    private InputStream circuitInputStream;
-    private OutputStream circuitOutputStream;
+    private PipedIOStream circuitInputStream = new PipedIOStream();
+    private PipedIOStream circuitOutputStream = new PipedIOStream();
 
     private NetROMClientHandler ownerClientHandler;
     // The other circuit if we are forwarding.
     private Circuit otherCircuit;
 
+    private boolean terminatesLocally = false;
     private boolean isValid = true; // This is false if the circuit could not be registered.
+
+    // Sequence numbers allow up to 127 frames.
+    private int txSequenceNumber = 0;
+    private int rxSequenceNumber = 0;
 
     public Circuit(int myCircuitIndex, int myCircuitId) {
         this.myCircuitIndex = myCircuitIndex;
@@ -173,7 +180,7 @@ public class Circuit {
         return ownerClientHandler;
     }
 
-    public void setOwnerClientHandler(ClientHandler ownerClientHandler) {
+    public void setOwnerClientHandler(NetROMClientHandler ownerClientHandler) {
         this.ownerClientHandler = ownerClientHandler;
     }
 
@@ -189,16 +196,65 @@ public class Circuit {
         return circuitInputStream;
     }
 
-    public void setCircuitInputStream(InputStream circuitInputStream) {
-        this.circuitInputStream = circuitInputStream;
-    }
 
     public OutputStream getCircuitOutputStream() {
-        return circuitOutputStream;
+        return circuitOutputStream.getOutputStream();
     }
 
-    public void setCircuitOutputStream(OutputStream circuitOutputStream) {
-        this.circuitOutputStream = circuitOutputStream;
+    public void writeByte(int b) throws IOException {
+        circuitInputStream.getOutputStream().write(b);
     }
+
+    public int readByte() throws IOException {
+        return circuitOutputStream.read();
+    }
+
+    /**
+     * True if the endpoint for this circuit is at this node
+     * @return
+     */
+    public boolean isTerminatesLocally() {
+        return terminatesLocally;
+    }
+
+    /**
+     * Set to true if this circuit does not forward to another circuit, but instead terminates at a service or user on this node
+     * @param terminatesLocally
+     */
+    public void setTerminatesLocally(boolean terminatesLocally) {
+        this.terminatesLocally = terminatesLocally;
+    }
+
+public int getTxSequenceNumber() {
+        return txSequenceNumber;
+    }
+
+    public void setTxSequenceNumber(int txSequenceNumber) {
+        this.txSequenceNumber = txSequenceNumber;
+    }
+
+    public int getRxSequenceNumber() {
+        return rxSequenceNumber;
+    }
+
+    public void setRxSequenceNumber(int rxSequenceNumber) {
+        this.rxSequenceNumber = rxSequenceNumber;
+    }
+
+    public void incrementTxSequenceNumber() {
+        txSequenceNumber++;
+        if (txSequenceNumber > 127) {
+            txSequenceNumber = 0;
+        }
+    }
+
+    public void incrementRxSequenceNumber() {
+        rxSequenceNumber++;
+        if (rxSequenceNumber > 127) {
+            rxSequenceNumber = 0;
+        }
+    }
+
+
 
 }

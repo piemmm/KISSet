@@ -13,6 +13,7 @@ import org.prowl.kisset.services.remote.netrom.circuit.CircuitException;
 import org.prowl.kisset.services.remote.netrom.circuit.CircuitManager;
 import org.prowl.kisset.services.remote.netrom.circuit.CircuitState;
 import org.prowl.kisset.services.remote.netrom.opcodebeans.*;
+import org.prowl.kisset.util.PipedIOStream;
 import org.prowl.kisset.util.Tools;
 
 import java.io.BufferedReader;
@@ -23,8 +24,6 @@ import java.io.OutputStream;
 public class NetROMClientHandler implements ClientHandler {
 
     private static final Log LOG = LogFactory.getLog("NetROMClientHandler");
-
-    private static final String CR = "\r";
 
     private static final long TIMEOUT = 120000; // 2 minutes
 
@@ -73,6 +72,10 @@ public class NetROMClientHandler implements ClientHandler {
         } finally {
             service.clientDisconnected(anInterface, user);
         }
+
+        // TODO: Start another thread here to forward any data blocks to remote nodes if there is data waiting
+
+
     }
 
 
@@ -116,7 +119,7 @@ public class NetROMClientHandler implements ClientHandler {
                 // We have a data packet.
                 LOG.debug("Got a data packet from " + packet.getOriginCallsign() + " to " + packet.getDestinationCallsign());
                 Information information = new Information(packet);
-
+                recieveInformationTransfer(new Information(packet));
                 break;
             case NetROMPacket.OPCODE_INFORMATION_ACK:
                 // We have a data ack.
@@ -155,17 +158,10 @@ public class NetROMClientHandler implements ClientHandler {
 
         // if the connection is to us, then we need to pass it on to the relevant handler.
         if (connectRequest.getDestinationCallsign().toString().equalsIgnoreCase(service.getCallsign()) || connectRequest.getDestinationCallsign().toString().equalsIgnoreCase(service.getAlias())) {
-            // Connection is to us.
-
-            // Create the IO Streams for this connection
-            InputStream circuitIn = new CircuitInputStream(this, circuit);
-            OutputStream circuitOut = new CircuitOutputStream(this, circuit);
-
-            circuit.setCircuitInputStream(circuitIn);
-            circuit.setCircuitOutputStream(circuitOut);
-
+            // Connection is to us
             // Forward the connection to it's handler which is given the circuit input and circuit output streams.
-            service.acceptedConnection(anInterface, user, circuitIn, circuitOut);
+            circuit.setTerminatesLocally(true);
+            service.acceptedConnection(anInterface, user, circuit.getCircuitInputStream(), circuit.getCircuitOutputStream());
 
         } else {
 
@@ -180,7 +176,7 @@ public class NetROMClientHandler implements ClientHandler {
                     // We have a connection to the next station, so we can connect to the destination.
 
                     // Now register the new circuit with the CircuitManager
-                    CircuitManager.registerCircuit(circuit);
+                    CircuitManager.registerCircuit(circuit, this);
 
                     // Set the circuit state to connected.
                     circuit.setState(CircuitState.CONNECTING);
@@ -189,6 +185,8 @@ public class NetROMClientHandler implements ClientHandler {
                     //       for the reply, or timeout, and then send the connection ack/nack back
                     //       to the originating station.
                     Circuit remoteCircuit = nextStation.sendConnectionRequestBlocking(this, circuit);
+                    remoteCircuit.setOtherCircuit(circuit);
+                    circuit.setOtherCircuit(remoteCircuit);
                     if (remoteCircuit != null && remoteCircuit.isValid()) {
                         circuit.setState(circuit.isValid() ? CircuitState.CONNECTED : CircuitState.DISCONNECTED);
                     } else {
@@ -234,7 +232,10 @@ public class NetROMClientHandler implements ClientHandler {
         circuit.setOriginatingUser(sourceCircuit.getOriginatingUser());
         circuit.setOriginatingNode(sourceCircuit.getOriginatingNode());
         circuit.setAcceptedSize(sourceCircuit.getAcceptedSize());
-        CircuitManager.registerCircuit(circuit); // Applies the circuit IDs and indexes.
+
+        CircuitManager.registerCircuit(circuit, this); // Applies the circuit IDs and indexes.
+        circuit.setOtherCircuit(sourceCircuit);
+        sourceCircuit.setOtherCircuit(circuit);
 
         // Setup a connection request with the relevant infos.
         ConnectRequest connectRequest = new ConnectRequest();
@@ -337,7 +338,6 @@ public class NetROMClientHandler implements ClientHandler {
         disconnectAcknowledge.setYourCircuitIndex(disconnectRequest.getYourCircuitIndex());
         disconnectAcknowledge.setYourCircuitID(disconnectRequest.getYourCircuitID());
 
-
         sendPacket(disconnectAcknowledge.getNetROMPacket());
     }
 
@@ -350,6 +350,34 @@ public class NetROMClientHandler implements ClientHandler {
     public void receiveDisconnectAck(DisconnectAcknowledge disconnectAcknowledge) {
        // Don't really care about this. There's no room in the spec for the other side to say 'no you can't disconnect'
        // so why does this ack even exist?
+    }
+
+    /**
+     * Receive information - no information on if these are ever received out of order.
+     */
+    public void recieveInformationTransfer(Information information) {
+        Circuit circuit = CircuitManager.getCircuit(information.getYourCircuitIndex(), information.getYourCircuitID());
+
+        byte[] data = information.getBody();
+        Circuit destinationCircuit = null;
+        if (circuit.isTerminatesLocally()) {
+            // Put data in this circuit
+            destinationCircuit = circuit;
+        } else {
+            // Forward to another circuit.
+            destinationCircuit = circuit.getOtherCircuit();
+        }
+
+        for (int i = 0; i < data.length; i++) {
+            try {
+                destinationCircuit.writeByte(data[i] & 0xFF);
+            } catch (IOException e) {
+                LOG.error(e.getMessage(), e);
+            }
+        }
+
+        // Send an information acknowledge.
+
     }
 
     /**
