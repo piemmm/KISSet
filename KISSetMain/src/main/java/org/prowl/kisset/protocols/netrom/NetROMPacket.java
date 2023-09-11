@@ -84,8 +84,14 @@ public class NetROMPacket {
         raw = data;
 
         // Src and dest callsigns
-        originCallsign = PacketTools.getData(buffer, 7, true);
-        destinationCallsign = PacketTools.getData(buffer, 7, true);
+        byte[] originCall = new byte[7];
+        buffer.get(originCall);
+        originCallsign = new AX25Callsign(originCall,0,originCall.length).toString();//PacketTools.getData(buffer, 7, true);
+
+        byte[] destCall = new byte[7];
+        buffer.get(destCall);
+        destinationCallsign = new AX25Callsign(destCall,0,destCall.length).toString();//PacketTools.getData(buffer, 7, true);
+
         ttl = buffer.get() & 0xFF;
 
         // Decode the Net/ROM header
@@ -329,7 +335,7 @@ public class NetROMPacket {
      */
     public byte[] toPacket() {
 
-        ByteBuffer buffer = ByteBuffer.allocate(7 + 7 + 1 + 1 + 1 + 1 + 1 + body.length);
+        ByteBuffer buffer = ByteBuffer.allocate(7 + 7 + 1 + 1 + 1 + 1 + 1 + 1 + body.length);
         buffer.put(new AX25Callsign(originCallsign).toByteArray());
         buffer.put(new AX25Callsign(destinationCallsign).toByteArray());
         buffer.put((byte) ttl);

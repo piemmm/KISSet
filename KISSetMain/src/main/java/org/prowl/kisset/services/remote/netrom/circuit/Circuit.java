@@ -38,7 +38,7 @@ public class Circuit {
     private AX25Callsign originatingUser;
     private AX25Callsign originatingNode;
 
-    private boolean rxHasChokedUS = false; // If true, we have been choked by the remote end - don't send any data.
+    private boolean choke = false; // If true, we have been choked by the remote end - don't send any data.
 
     // IO streams (if this circuit terminates at us) - if we are forwarding, these are null.
     private PipedIOStream circuitInputStream = new PipedIOStream();
@@ -49,10 +49,14 @@ public class Circuit {
     private boolean isValid = true; // This is false if the circuit could not be registered.
 
     // Sequence numbers allow up to 127 frames.
-    private int txSequenceNumber = 0; // They have received
+    private int txSequenceNumber = 0; // We have sent
+    private int txSequenceNumberAck = 0; // We have received an ACK for
+
     private int rxSequenceNumber = 0; // We have received
 
-    private Object MONITOR = new Object();
+
+
+    private final Object MONITOR = new Object();
     private Timer ackTimer;
 
     /**
@@ -260,80 +264,88 @@ public class Circuit {
     public void addReceviedFrame(Information information) {
         incomingInformationFrames.put(information.getRxSequenceNumber(), information);
 
-        if (information.isNakFlag()) {
-            updateRxSequence(information.getTxSequenceNumber(), -1);
-        } else {
-            updateRxSequence(information.getTxSequenceNumber(), information.getRxSequenceNumber());
+        if (!information.isNakFlag()) {
+            // Update the tx sequence number ack if the rx (piggybacked acknowledge it is actually tx ack) sequence number is greater than the current ack.
+            // Bear in mind that this can loop around to 0 after passing 127
+            if (txSequenceNumberAck < information.getRxSequenceNumber()) {
+                txSequenceNumberAck = information.getRxSequenceNumber();
+            }
+            // If the tx sequence number is not the same as the rx (piggybacked acknowledge)) then we *might* need
+            // to retransmit a frame.
+            if (txSequenceNumber != information.getRxSequenceNumber()) {
+
+            }
+
         }
 
 
         // Reassemble any our of order frames.
-        checkReassembly();
+        checkReassembly(information);
     }
 
-    /**
-     * Update the sequence numbers for this circuit with the highest sequence numbers we have seen (may loop at 127)
-     */
-    public void updateRxSequence(int currentSequenceNumber, int nextSequenceNumber) {
-        if (rxSequenceNumber < currentSequenceNumber) {
-            rxSequenceNumber = currentSequenceNumber;
-        }
 
-//        if (nextSequenceNumber != -1) {
-//            if (rxSequenceNumber < nextSequenceNumber) {
-//                rxSequenceNumber = nextSequenceNumber;
-//            }
-//        }
-    }
 
-    public void checkReassembly() {
 
-        // Get all the frames we have so far
-        int count = 0;
-        while (incomingInformationFrames.get(rxSequenceNumber + count) != null) {
-            Information toReassemble = incomingInformationFrames.remove(rxSequenceNumber);
-            byte[] data = toReassemble.getBody();
-            for (int i = 0; i < data.length; i++) {
-                try {
-                    writeByte(data[i] & 0xFF);
-                } catch (IOException e) {
-                    LOG.error(e.getMessage(), e);
-                }
-            }
-            count++;
-            // Reset a receive timeout timer here?
-        }
-        rxSequenceNumber = count - 1;
-
-        // Delayed queue for an ACK packet as we don't really need to send one for every single frame received,
-        // Just the most recent one will do to save on traffic.
-        queueAck();
-    }
-
-    /**
-     * Queues and ACK frame for information - this is delayed by 5 seconds to allow for more frames to be received.
-     */
-    public void queueAck() {
+    public void checkReassembly(Information information) {
         synchronized(MONITOR) {
-            if (ackTimer == null) {
+            // Get all the frames we have so far
+            int count = 0;
+            while (incomingInformationFrames.get(rxSequenceNumber + count) != null) {
+                Information toReassemble = incomingInformationFrames.remove(rxSequenceNumber);
+                byte[] data = toReassemble.getBody();
+                for (int i = 0; i < data.length; i++) {
+                    try {
+                        writeByte(data[i] & 0xFF);
+                    } catch (IOException e) {
+                        LOG.error(e.getMessage(), e);
+                    }
+                }
+                count++;
+
+                // Delayed queue for an ACK packet as we don't really need to send one for every single frame received,
+                // Just the most recent one will do to save on traffic.
+                queueAck(information);
+            }
+            rxSequenceNumber = count - 1;
+        }
+    }
+
+    /**
+     * Queues and ACK frame for information - this is delayed by 2 seconds to allow for more frames to be received.
+     */
+    public void queueAck(Information information) {
+        synchronized(MONITOR) {
+            if (ackTimer != null) {
                 ackTimer.cancel();
             }
 
             ackTimer = new Timer();
             ackTimer.schedule(new TimerTask() {
+                private Timer original = ackTimer;
                 @Override
                 public void run() {
-                    try {
-                        InformationAcknowledge ack = new InformationAcknowledge();
-                        ack.setYourCircuitIndex(yourCircuitIndex);
-                        ack.setYourCircuitID(yourCiruitID);
-                        ack.setRxSequenceNumber(rxSequenceNumber);
-                        ownerClientHandler.sendPacket(ack.getNetROMPacket());
-                    } catch (IOException e) {
-                        LOG.error(e.getMessage(), e);
+                    synchronized (MONITOR) {
+                        if (ackTimer != original) {
+                            return;
+                        }
+
+                        // No ownerClientHandler? Then this is an erroneous frame from a previous app instance
+                        if (isValid && ownerClientHandler != null) {
+                            try {
+                                InformationAcknowledge ack = new InformationAcknowledge();
+                                ack.setSourceCallsign(information.getDestinationCallsign());
+                                ack.setDestinationCallsign(information.getSourceCallsign());
+                                ack.setYourCircuitIndex(yourCircuitIndex);
+                                ack.setYourCircuitID(yourCiruitID);
+                                ack.setRxSequenceNumber(rxSequenceNumber);
+                                ownerClientHandler.sendPacket(ack.getNetROMPacket());
+                            } catch (IOException e) {
+                                LOG.error(e.getMessage(), e);
+                            }
+                        }
                     }
                 }
-            }, 5000);
+            }, 2000);
 
         }
     }
@@ -352,11 +364,11 @@ public class Circuit {
     }
 
     public boolean isRxChoked() {
-        return rxHasChokedUS;
+        return choke;
     }
 
-    public void setRxChoked(boolean choked) {
-        rxHasChokedUS = choked;
+    public void setChoked(boolean choke) {
+        this.choke = choke;
     }
 
 }

@@ -2,10 +2,7 @@ package org.prowl.kisset.services.remote.netrom;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.prowl.ax25.AX25Callsign;
-import org.prowl.ax25.AX25Frame;
-import org.prowl.ax25.ConnState;
-import org.prowl.ax25.ConnectionEstablishmentListener;
+import org.prowl.ax25.*;
 import org.prowl.kisset.KISSet;
 import org.prowl.kisset.config.Conf;
 import org.prowl.kisset.config.Config;
@@ -150,7 +147,8 @@ public class NetROMService extends Service {
 
             if (connState[0] == null) {
                 InputStream in = connState[0].getInputStream();
-                OutputStream out = connState[0].getOutputStream();
+                AX25OutputStream out = connState[0].getOutputStream();
+                out.setPID(AX25Frame.PID_NETROM);
                 NetROMClientHandler clientHandler = new NetROMClientHandler(this, anInterface, user, in, out);
                 clientHandler.start();
                 return clientHandler;
@@ -219,6 +217,10 @@ public class NetROMService extends Service {
 
         }
 
+    }
+
+    public byte getServicePid() {
+        return AX25Frame.PID_NETROM;
     }
 
 }

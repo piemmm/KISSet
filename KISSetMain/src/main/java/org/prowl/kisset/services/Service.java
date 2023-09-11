@@ -1,5 +1,7 @@
 package org.prowl.kisset.services;
 
+import org.prowl.ax25.AX25Frame;
+import org.prowl.ax25.AX25OutputStream;
 import org.prowl.kisset.io.Interface;
 import org.prowl.kisset.objects.user.User;
 
@@ -44,4 +46,12 @@ public abstract class Service {
      */
     public abstract void acceptedConnection(Interface anInterface, User user, InputStream in, OutputStream out);
 
+
+    /**
+     * The frame type used for I frames
+     * @return
+     */
+    public byte getServicePid() {
+        return AX25Frame.PID_NOLVL3;
+    }
 }

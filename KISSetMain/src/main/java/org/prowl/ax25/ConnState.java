@@ -173,10 +173,10 @@ public class ConnState implements AX25FrameSource, Closeable {
     /**
      * Get a Java-style OutputStream for writing to this connection.
      *
-     * @return OutputStream to this connection
+     * @return AX25OutputStream to this connection
      * @throws IOException if session not to or from this station
      */
-    public OutputStream getOutputStream() throws IOException {
+    public AX25OutputStream getOutputStream() throws IOException {
         if (out == null) {
             if (!stack.isLocalDest(src) && !stack.isLocalDest(dst)) {
                 throw new IOException("cannot open stream to session this station is not part of (" +

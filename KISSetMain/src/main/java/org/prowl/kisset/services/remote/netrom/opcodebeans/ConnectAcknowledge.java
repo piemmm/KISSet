@@ -13,8 +13,16 @@ public class ConnectAcknowledge {
 
     public ConnectAcknowledge() {
         this.netROMPacket = new NetROMPacket();
-        netROMPacket.getBody()[0] = 100;
+        netROMPacket.setBody(new byte[] { (byte)100 });
         this.netROMPacket.setOpCode(NetROMPacket.OPCODE_CONNECT_ACK);
+    }
+
+    public void setOriginCallsign(AX25Callsign callsign) {
+        netROMPacket.setOriginCallsign(callsign.toString());
+    }
+
+    public void setDestinationCallsign(AX25Callsign callsign) {
+        netROMPacket.setDestinationCallsign(callsign.toString());
     }
 
     public int getYourCircuitIndex() {

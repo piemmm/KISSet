@@ -40,6 +40,7 @@ module org.prowl.kisset {
     exports org.prowl.kisset.annotations;
     exports org.prowl.kisset.services.host.parser.commands;
     exports org.prowl.kisset.io;
+    exports org.prowl.ax25.util;
     exports org.prowl.kisset.services;
     exports org.prowl.kisset.objects.dxcluster;
     exports org.prowl.kisset.protocols.core;

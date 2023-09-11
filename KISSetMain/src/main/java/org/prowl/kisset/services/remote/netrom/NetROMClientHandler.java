@@ -16,6 +16,7 @@ import org.prowl.kisset.services.remote.netrom.circuit.CircuitException;
 import org.prowl.kisset.services.remote.netrom.circuit.CircuitManager;
 import org.prowl.kisset.services.remote.netrom.circuit.CircuitState;
 import org.prowl.kisset.services.remote.netrom.opcodebeans.*;
+import org.prowl.kisset.util.Tools;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -48,37 +49,39 @@ public class NetROMClientHandler implements ClientHandler {
         this.anInterface = anInterface;
     }
 
-    @Override
     /**
      * Read in packets from our connection and process them.
-     */ public void start() {
+     */
+    @Override
+    public void start() {
+        Tools.runOnThread(() -> {
+            try {
+                // Packet spec means they will always be <= 256 bytes.
+                byte[] buffer = new byte[256];
+                int b = 0;
+                while (b != -1) {
+                    // Handily as we process packet frames a chunk at a time, we can
+                    // do the below to grab a 'netrom' packet, one at a time.
+                    int lengthRead = in.read(buffer, 0, buffer.length);
+                    byte[] data = new byte[lengthRead];
+                    System.arraycopy(buffer, 0, data, 0, lengthRead);
 
-        try {
-            // Packet spec means they will always be <= 256 bytes.
-            byte[] buffer = new byte[256];
-            int b = 0;
-            while (b != -1) {
-                // Handily as we process packet frames a chunk at a time, we can
-                // do the below to grab a 'netrom' packet, one at a time.
-                int lengthRead = in.read(buffer, 0, buffer.length);
-                byte[] data = new byte[lengthRead];
-                System.arraycopy(buffer, 0, data, 0, lengthRead);
-
-                if (data.length > 0) {
-                    // We have a packet, let's process it.
-                    NetROMPacket packet = new NetROMPacket(data);
-                    processPacket(packet);
+                    if (lengthRead > 0) {
+                        LOG.debug("Received " + lengthRead + " bytes: "+Tools.byteArrayToReadableASCIIString(data));
+                        // We have a packet, let's process it.
+                        NetROMPacket packet = new NetROMPacket(data);
+                        processPacket(packet);
+                    }
                 }
+            } catch (Throwable e) {
+                LOG.error("Error in client handler", e);
+
+            } finally {
+                service.clientDisconnected(anInterface, user);
             }
-        } catch (Throwable e) {
-            LOG.error("Error in client handler", e);
 
-        } finally {
-            service.clientDisconnected(anInterface, user);
-        }
-
-        // TODO: Start another thread here to forward any data blocks to remote nodes if there is data waiting?
-
+            // TODO: Start another thread here to forward any data blocks to remote nodes if there is data waiting?
+        });
     }
 
 
@@ -94,11 +97,13 @@ public class NetROMClientHandler implements ClientHandler {
      */
     public void processPacket(NetROMPacket packet) throws IOException {
 
-        //
+        LOG.debug("Incoming packet:" + packet.toString());
         if (packet.getDestinationCallsign().toString().equalsIgnoreCase(service.getCallsign()) || packet.getDestinationCallsign().toString().equalsIgnoreCase(service.getAlias())) {
             // It's to us! we have to make circuits and stuff!
+            LOG.debug("Sinking packet");
             sinkPacket(packet);
         } else {
+            LOG.debug("Forwarding packet");
             // Just foward the packet to the next hop
             forwardPacket(packet);
         }
@@ -139,7 +144,7 @@ public class NetROMClientHandler implements ClientHandler {
                 // We have a data packet.
                 LOG.debug("Got a data packet from " + packet.getOriginCallsign() + " to " + packet.getDestinationCallsign());
                 Information information = new Information(packet);
-                recieveInformationTransfer(new Information(packet));
+                receiveInformationTransfer(new Information(packet));
                 break;
             case NetROMPacket.OPCODE_INFORMATION_ACK:
                 // We have a data ack.
@@ -177,6 +182,7 @@ public class NetROMClientHandler implements ClientHandler {
         circuit.setYourCircuitIndex(connectRequest.getMyCircuitIndex());
         circuit.setYourCiruitID(connectRequest.getMyCircuitID());
 
+        CircuitManager.registerCircuit(circuit, this); // Applies the circuit IDs and indexes.
 
         // Forward the connection to it's handler which is given the circuit input and circuit output streams.
         List<Service> services = KISSet.INSTANCE.getServices();
@@ -188,7 +194,7 @@ public class NetROMClientHandler implements ClientHandler {
             }
         }
 
-        if (service == null){
+        if (service == null) {
             circuit.setValid(false);
         } else {
             service.acceptedConnection(anInterface, user, circuit.getCircuitInputStream(), circuit.getCircuitOutputStream());
@@ -196,6 +202,8 @@ public class NetROMClientHandler implements ClientHandler {
 
         // Send a connection ack/nack depending if the connection succeeded or failed
         ConnectAcknowledge connectAcknowledge = new ConnectAcknowledge();
+        connectAcknowledge.setOriginCallsign(circuit.getDestinationCallsign());
+        connectAcknowledge.setDestinationCallsign(circuit.getSourceCallsign());
         connectAcknowledge.setAcceptWindowSize(circuit.getAcceptedSize());
         connectAcknowledge.setYourCircuitIndex(circuit.getYourCircuitIndex());
         connectAcknowledge.setYourCircuitID(circuit.getYourCircuitID());
@@ -208,7 +216,6 @@ public class NetROMClientHandler implements ClientHandler {
         // Send the packet.
         sendPacket(connectAcknowledge.getNetROMPacket());
     }
-
 
 
     /**
@@ -283,8 +290,20 @@ public class NetROMClientHandler implements ClientHandler {
     /**
      * Receive information frame - this could be out of order, so we need to buffer it
      */
-    public void recieveInformationTransfer(Information information) throws IOException {
+    public void receiveInformationTransfer(Information information) throws IOException {
         Circuit circuit = CircuitManager.getCircuit(information.getYourCircuitIndex(), information.getYourCircuitID());
+
+        if (circuit == null) {
+            // We're not connected (maybe we were restart mid-connection)
+            // Possibly send a reset here.
+            circuit = new Circuit();
+            circuit.setSourceCallsign(information.getSourceCallsign());
+            circuit.setDestinationCallsign(information.getDestinationCallsign());
+            circuit.setYourCiruitID(information.getYourCircuitID());
+            circuit.setYourCircuitIndex(information.getYourCircuitIndex());
+            disconnectCircuit(circuit);
+        }
+
 
         // First, add the frame to our received list.
         circuit.addReceviedFrame(information);
@@ -297,19 +316,8 @@ public class NetROMClientHandler implements ClientHandler {
         }
 
         // Set the choke state.
-        circuit.setRxChoked(information.isChokeFlag());
+        circuit.setChoked(information.isChokeFlag());
 
-
-
-
-
-        // If this is to us then we need to reassemble.
-//
-//        // Send an information acknowledge.
-//        InformationAcknowledge informationAcknowledge = new InformationAcknowledge();
-//        informationAcknowledge.setYourCircuitIndex(information.getYourCircuitIndex());
-//        informationAcknowledge.setYourCircuitID(information.getYourCircuitID());
-//        informationAcknowledge.setRxSequenceNumber(circuit.getRxSequenceNumber());
     }
 
     /**
@@ -318,6 +326,8 @@ public class NetROMClientHandler implements ClientHandler {
     public void disconnectCircuit(Circuit circuit) throws IOException {
         // Send a disconnect request.
         DisconnectRequest disconnectRequest = new DisconnectRequest();
+        disconnectRequest.setSourceCallsign(circuit.getDestinationCallsign());
+        disconnectRequest.setDestinationCallsign(circuit.getSourceCallsign());
         disconnectRequest.setYourCircuitIndex(circuit.getYourCircuitIndex());
         disconnectRequest.setYourCircuitID(circuit.getYourCircuitID());
 
@@ -353,7 +363,7 @@ public class NetROMClientHandler implements ClientHandler {
 
     /**
      * Send a packet to the remote node.
-     *
+     * <p>
      * TODO: Make this a queue that is processed by a thread, and checks the choke flag to hold packets.
      *
      * @param packet
@@ -373,7 +383,6 @@ public class NetROMClientHandler implements ClientHandler {
     public User getUser() {
         return user;
     }
-
 
 
 //    /**

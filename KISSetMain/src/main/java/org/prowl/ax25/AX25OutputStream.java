@@ -30,18 +30,23 @@ import java.io.OutputStream;
  *
  * @author Andrew Pavlin, KA2DDO
  */
-class AX25OutputStream extends OutputStream {
+public class AX25OutputStream extends OutputStream {
 
     private static final Log LOG = LogFactory.getLog("AX25OutputStream");
 
     private final byte[] buf; // maximum body length of AX.25 frame (like ax.25 paclen)
     private final ConnState connState;
     private int bufIdx = 0;
+    private byte pid = AX25Frame.PID_NOLVL3;
 
     AX25OutputStream(ConnState connState, int pacLen) {
         this.connState = connState;
         connState.transmitWindow = new AX25Frame[connState.connType == ConnState.ConnType.MOD128 ? 128 : 8];
         buf = new byte[pacLen];
+    }
+
+    public void setPID(byte pid) {
+        this.pid = pid;
     }
 
     /**
@@ -148,7 +153,7 @@ class AX25OutputStream extends OutputStream {
                 }
                 f.ctl = AX25Frame.FRAMETYPE_I;
                 f.mod128 = (ConnState.ConnType.MOD128 == connState.connType);
-                f.setPid(AX25Frame.PID_NOLVL3);
+                f.setPid(pid);
                 f.setCmd(true);
                 f.body = new byte[bufIdx];
                 System.arraycopy(buf, 0, f.body, 0, bufIdx);
@@ -237,6 +242,7 @@ class AX25OutputStream extends OutputStream {
     @Override
     public void close() throws IOException {
         flush();
+        connState.close();
     }
 
     /**

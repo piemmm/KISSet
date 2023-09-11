@@ -173,20 +173,14 @@ public abstract class Interface {
                         user.setBaseCallsign(conn.getSrc().getBaseCallsign());
                         user.setSourceCallsign(conn.getSrc().getBaseCallsign()+"-"+conn.getSrc().getSSID());
                         user.setDestinationCallsign(conn.getDst().getBaseCallsign()+"-"+conn.getSrc().getSSID());
-                        InputStream in = state.getInputStream();
-                        OutputStream out = state.getOutputStream();
+                        InputStream in = conn.getInputStream();
+                        AX25OutputStream out = conn.getOutputStream();
 
-                        // This wrapper provides a simple way to terminate the connection when the outputstream
-                        // is also closed.
-                        OutputStream wrapped = new BufferedOutputStream(out) {
-                            @Override
-                            public void close() throws IOException {
-                                conn.close();
-                            }
+                        // FIXME: This is a method to get the PID set correctly for netrom frames, I have no other use-cases
+                        //        for this so I'm not sure if it's a good idea or not.
+                        out.setPID(service.getServicePid());
 
-                        };
-
-                        service.acceptedConnection(Interface.this, user, in, wrapped);
+                        service.acceptedConnection(Interface.this, user, in, out);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
