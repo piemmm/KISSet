@@ -32,7 +32,7 @@ public class Circuit {
     private PipedIOStream circuitInputStream = new PipedIOStream();
     private PipedIOStream circuitOutputStream = new PipedIOStream();
 
-    private NetROMClientHandler ownerClientHandler;
+    private NetROMClientHandler ownerClientHandler; // The current owner (until a route changes) TODO: see if the circuit IDs change when the route changes - this could be an issue if the route suddenly gets shorter
     // The other circuit if we are forwarding.
     private Circuit otherCircuit;
 

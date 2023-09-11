@@ -46,7 +46,7 @@ public class NetROMPacket {
     private String destinationCallsign;
 
     // Contents of the Net/ROM network and transport header
-    private int ttl;
+    private int ttl = 25; // Reasonable default.
     private int circuitIndex;
     private int circuitId;
     private int txSequenceNumber;
@@ -170,10 +170,39 @@ public class NetROMPacket {
         sb.append("\r\n originCallsign=").append(originCallsign);
         sb.append("\r\n destinationCallsign=").append(destinationCallsign);
         sb.append("\r\n ttl=").append(ttl);
-        sb.append("\r\n circuitIndex=").append(circuitIndex);
-        sb.append("\r\n circuitId=").append(circuitId);
-        sb.append("\r\n txSequenceNumber=").append(txSequenceNumber);
-        sb.append("\r\n rxSequenceNumber=").append(rxSequenceNumber);
+
+        if (opCode == OPCODE_CONNECT_REQUEST) {
+            sb.append("\r\n myCircuitIndex=").append(circuitIndex);
+            sb.append("\r\n myCircuitId=").append(circuitId);
+            sb.append("\r\n txseq(unused)=").append(txSequenceNumber);
+            sb.append("\r\n rxseq(unused)=").append(rxSequenceNumber);
+        } else if (opCode == OPCODE_CONNECT_ACK) {
+            sb.append("\r\n yourCircuitIndex=").append(circuitIndex);
+            sb.append("\r\n yourCircuitId=").append(circuitId);
+            sb.append("\r\n myCircuitIndex=").append(txSequenceNumber);
+            sb.append("\r\n myCircuitId=").append(rxSequenceNumber);
+        } else if (opCode == OPCODE_DISCONNECT_REQUEST) {
+            sb.append("\r\n yourCircuitIndex=").append(circuitIndex);
+            sb.append("\r\n yourCircuitId=").append(circuitId);
+            sb.append("\r\n txseq(unused)=").append(txSequenceNumber);
+            sb.append("\r\n rxseq(unused)=").append(rxSequenceNumber);
+        } else if (opCode == OPCODE_DISCONNECT_ACK) {
+            sb.append("\r\n yourCircuitIndex=").append(circuitIndex);
+            sb.append("\r\n yourCircuitId=").append(circuitId);
+            sb.append("\r\n txseq(unused)=").append(txSequenceNumber);
+            sb.append("\r\n rxseq(unused)=").append(rxSequenceNumber);
+        } else if (opCode == OPCODE_INFORMATION_ACK) {
+            sb.append("\r\n yourCircuitIndex=").append(circuitIndex);
+            sb.append("\r\n yourCircuitId=").append(circuitId);
+            sb.append("\r\n txseq(unused)=").append(txSequenceNumber);
+            sb.append("\r\n rxSequenceNumber=").append(rxSequenceNumber);
+        } else {
+            sb.append("\r\n yourCircuitIndex=").append(circuitIndex);
+            sb.append("\r\n yourCircuitId=").append(circuitId);
+            sb.append("\r\n txSequenceNumber=").append(txSequenceNumber);
+            sb.append("\r\n rxSequenceNumber=").append(rxSequenceNumber);
+        }
+
         sb.append("\r\n opCodeAndFlags=0x").append(Integer.toString(opCodeAndFlags, 16));
         sb.append("\r\n chokeFlag=").append(chokeFlag);
         sb.append("\r\n nakFlag=").append(nakFlag);

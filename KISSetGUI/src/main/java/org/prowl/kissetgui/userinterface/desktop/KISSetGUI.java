@@ -61,10 +61,38 @@ public class KISSetGUI extends Application {
     }
 
     public static void main(String[] args) {
-                KISSet kisset = new KISSet();
-                kisset.initAll();
 
-         launch();
+
+        // Parse command line arguments
+        for (String s : args) {
+            String setting = "";
+            if (s.startsWith("--")) {
+                setting = s.substring(2);
+            } else if (s.startsWith("-")) {
+                setting = s.substring(1);
+            }
+
+            if (s.contains("=")) {
+                // property=value setting
+                String[] parts = setting.split("=");
+                if (parts.length == 2) {
+                    System.out.println(parts[0]+"  "+parts[1]);
+                     System.setProperty(parts[0], parts[1]);
+                }
+            } else {
+                // just a seting like --terminal or something like that
+//                if (setting.equalsIgnoreCase("ansi")) {
+//                    terminalMode = true;
+//                }
+            }
+        }
+
+
+
+        // Start KISSet
+        KISSet kisset = new KISSet();
+        kisset.initAll();
+        launch();
     }
 
     @Override

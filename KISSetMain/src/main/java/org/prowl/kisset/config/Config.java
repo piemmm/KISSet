@@ -29,8 +29,9 @@ public class Config {
     }
 
     public File getConfigFile() {
+        String configName = System.getProperty("kisset.config",".kisset");
         String userHome = System.getProperty("user.home");
-        File appDir = new File(userHome, ".kisset");
+        File appDir = new File(userHome, configName);
         if (!appDir.exists()) {
             appDir.mkdirs();
         }

@@ -88,11 +88,11 @@ public class KISSet {
                 setting = s.substring(1);
             }
 
-            if (s.contains("=")) {
+            if (setting.contains("=")) {
                 // property=value setting
-                String[] parts = s.split("=");
+                String[] parts = setting.split("=");
                 if (parts.length == 2) {
-                    // System.setProperty(parts[0], parts[1]);
+                     System.setProperty(parts[1], parts[1]);
                 }
             } else {
                 // just a seting like --terminal or something like that

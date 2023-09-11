@@ -85,6 +85,8 @@ public class NetROMClientHandler implements ClientHandler {
      * A connected node could be conversing with us about several different circuits/things
      * so we will farm each of these off to their own individual handlers where needed.
      *
+     * Also the data could come from any node if a route decides to change.
+     *
      * @param packet
      */
     public void processPacket(NetROMPacket packet) throws IOException {
@@ -392,9 +394,9 @@ public class NetROMClientHandler implements ClientHandler {
 
         // Send an information acknowledge.
         InformationAcknowledge informationAcknowledge = new InformationAcknowledge();
-        informationAcknowledge.setYourCircuitIndex(information.getYourCircuitIndex());
-        informationAcknowledge.setYourCircuitID(information.getYourCircuitID());
-        informationAcknowledge.setRxSequenceNumber(circuit.getRxSequenceNumber());
+//        informationAcknowledge.setYourCircuitIndex(information.getYourCircuitIndex());
+//        informationAcknowledge.setYourCircuitID(information.getYourCircuitID());
+//        informationAcknowledge.setRxSequenceNumber(circuit.getRxSequenceNumber());
     }
 
     /**

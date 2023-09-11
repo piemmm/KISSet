@@ -34,48 +34,6 @@ public class Storage {
 
     public Storage() {
 
-        // Can't do this until gluon fix their module export for ServiceFactory (which is currently limited to their utils package).
-        // gluonhq attach issue 368
-//        StorageService storageService = new StorageService() {
-//            @Override
-//            public Optional<File> getPrivateStorage() {
-//                return Optional.of(new File(getStorageDir(),"mapcache"));
-//            }
-//
-//            @Override
-//            public Optional<File> getPublicStorage(String subdirectory) {
-//                return getPrivateStorage();
-//            }
-//
-//            @Override
-//            public boolean isExternalStorageWritable() {
-//                return getPrivateStorage().get().canWrite();
-//            }
-//
-//            @Override
-//            public boolean isExternalStorageReadable() {
-//                return getPrivateStorage().get().canRead();
-//            }
-//        };
-//
-//        // define service factory for desktop
-//        ServiceFactory<StorageService> storageServiceFactory = new ServiceFactory<StorageService>() {
-//
-//            @Override
-//            public Class<StorageService> getServiceType() {
-//                return StorageService.class;
-//            }
-//
-//            @Override
-//            public Optional<StorageService> getInstance() {
-//                return Optional.of(storageService);
-//            }
-//
-//        };
-//
-//        // register service
-//        Services.registerServiceFactory(storageServiceFactory);
-
 
     }
 
@@ -116,8 +74,10 @@ public class Storage {
     }
 
     public File getStorageDir() {
+
+        String configName = System.getProperty("kisset.config",".kisset");
         String userHome = System.getProperty("user.home");
-        File appDir = new File(userHome, ".kisset");
+        File appDir = new File(userHome, configName);
         if (!appDir.exists()) {
             appDir.mkdirs();
         }
