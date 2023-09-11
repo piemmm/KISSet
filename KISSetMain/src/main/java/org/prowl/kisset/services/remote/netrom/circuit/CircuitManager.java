@@ -1,6 +1,6 @@
 package org.prowl.kisset.services.remote.netrom.circuit;
 
-import org.prowl.kisset.services.remote.netrom.NetROMClientHandler;
+import org.prowl.kisset.services.remote.netrom.server.NetROMClientHandler;
 
 import java.util.Collections;
 import java.util.HashMap;

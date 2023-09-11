@@ -1,4 +1,4 @@
-package org.prowl.kisset.services.remote.netrom;
+package org.prowl.kisset.services.remote.netrom.server;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -39,9 +39,9 @@ public class NetROMClientHandler implements ClientHandler {
     private final User user;
     private final Interface anInterface;
     private BufferedReader bin;
-    private NetROMService service;
+    private NetROMServerService service;
 
-    public NetROMClientHandler(NetROMService service, Interface anInterface, User user, InputStream in, OutputStream out) {
+    public NetROMClientHandler(NetROMServerService service, Interface anInterface, User user, InputStream in, OutputStream out) {
         this.in = in;
         this.out = out;
         this.user = user;
@@ -188,16 +188,18 @@ public class NetROMClientHandler implements ClientHandler {
         List<Service> services = KISSet.INSTANCE.getServices();
         Service chosen = null;
         for (Service service : services) {
-            if (service.getCallsign().equals(circuit.getDestinationCallsign().toString())) {
+            if (service.getCallsign().equals(circuit.getDestinationCallsign().toString()) && !(service instanceof NetROMServerService)) {
                 chosen = service;
                 break;
             }
         }
 
-        if (service == null) {
+        if (chosen == null) {
+            // We don't have a service for this callsign, so we will refuse the connection.
             circuit.setValid(false);
         } else {
-            service.acceptedConnection(anInterface, user, circuit.getCircuitInputStream(), circuit.getCircuitOutputStream());
+            // We have a service for this callsign, so we will accept the connection and forward it to this service
+            chosen.acceptedConnection(anInterface, user, circuit.getCircuitInputStream(), circuit.getCircuitOutputStream());
         }
 
         // Send a connection ack/nack depending if the connection succeeded or failed
@@ -211,7 +213,8 @@ public class NetROMClientHandler implements ClientHandler {
         connectAcknowledge.setMyCircuitID(circuit.getMyCircuitId());
 
         // If we refused the connection then set the high order bit (which is in ACK_REFUSED for convenience)
-        connectAcknowledge.setOpcode(circuit.isValid() ? NetROMPacket.OPCODE_CONNECT_ACK : NetROMPacket.OPCODE_CONNECT_ACK_REFUSED);
+        connectAcknowledge.setOpcode(NetROMPacket.OPCODE_CONNECT_ACK);
+        connectAcknowledge.setRefused(!circuit.isValid());
 
         // Send the packet.
         sendPacket(connectAcknowledge.getNetROMPacket());

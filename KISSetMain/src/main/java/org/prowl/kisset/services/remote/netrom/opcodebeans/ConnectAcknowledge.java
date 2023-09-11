@@ -91,7 +91,11 @@ public class ConnectAcknowledge {
      * @return
      */
     public boolean isRefused() {
-        return netROMPacket.getOpCode() > 127;
+        return netROMPacket.getOpCodeAndFlags() > 127;
+    }
+
+    public void setRefused(boolean refused) {
+        netROMPacket.setChokeFlag(refused);
     }
 
 }

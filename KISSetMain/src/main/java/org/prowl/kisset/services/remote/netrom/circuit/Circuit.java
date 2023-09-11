@@ -3,7 +3,7 @@ package org.prowl.kisset.services.remote.netrom.circuit;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.prowl.ax25.AX25Callsign;
-import org.prowl.kisset.services.remote.netrom.NetROMClientHandler;
+import org.prowl.kisset.services.remote.netrom.server.NetROMClientHandler;
 import org.prowl.kisset.services.remote.netrom.opcodebeans.Information;
 import org.prowl.kisset.services.remote.netrom.opcodebeans.InformationAcknowledge;
 import org.prowl.kisset.util.PipedIOStream;
@@ -44,7 +44,7 @@ public class Circuit {
     private PipedIOStream circuitInputStream = new PipedIOStream();
     private PipedIOStream circuitOutputStream = new PipedIOStream();
 
-    private NetROMClientHandler ownerClientHandler; // The current owner (until a route changes) TODO: see if the circuit IDs change when the route changes - this could be an issue if the route suddenly gets shorter
+    private NetROMClientHandler ownerClientHandler; // The current owner (until a route changes)
 
     private boolean isValid = true; // This is false if the circuit could not be registered.
 

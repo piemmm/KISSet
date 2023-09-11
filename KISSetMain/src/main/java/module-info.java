@@ -46,8 +46,9 @@ module org.prowl.kisset {
     exports org.prowl.kisset.protocols.core;
     exports org.prowl.kisset.util.compression.deflate;
     exports org.prowl.kisset.util.compression.deflatehuffman;
-    exports org.prowl.kisset.services.remote.netrom;
+    exports org.prowl.kisset.services.remote.netrom.user;
     exports org.prowl.kisset.services.remote.netrom.circuit;
+    exports org.prowl.kisset.services.remote.netrom.server;
 
 }
 

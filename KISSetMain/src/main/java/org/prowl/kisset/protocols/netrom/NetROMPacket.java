@@ -29,7 +29,6 @@ public class NetROMPacket {
     public static final int OPCODE_PROTOCOL_EXTENSION = 0; // Protocol ID extension to network layer (IP type coded in circuit index, etc)
     public static final int OPCODE_CONNECT_REQUEST = 1; // Connect Request
     public static final int OPCODE_CONNECT_ACK = 2; // Connect Acknowledge
-    public static final int OPCODE_CONNECT_ACK_REFUSED = OPCODE_CONNECT_ACK | 0x80; // Connect Acknowledge+refused
     public static final int OPCODE_DISCONNECT_REQUEST = 3; // Disconnect Request
     public static final int OPCODE_DISCONNECT_ACK = 4; // Disconnect Acknowledge
     public static final int OPCODE_INFORMATION_TRANSFER = 5; // Information Transfer

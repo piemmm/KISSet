@@ -1,4 +1,4 @@
-package org.prowl.kisset.services.remote.netrom;
+package org.prowl.kisset.services.remote.netrom.server;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -28,9 +28,9 @@ import java.util.concurrent.Semaphore;
  * surrounding topology and participating as a node in the network so that other nodes can hop through
  * it to reach their destination.
  */
-public class NetROMService extends Service {
+public class NetROMServerService extends Service {
 
-    private static final Log LOG = LogFactory.getLog("PMSService");
+    private static final Log LOG = LogFactory.getLog("NetROMServerService");
 
     private boolean stop = false;
     private final String callsign;
@@ -43,7 +43,7 @@ public class NetROMService extends Service {
      */
     private final Map<User, NetROMClientHandler> clients = Collections.synchronizedMap(new HashMap<>());
 
-    public NetROMService(String name, String callsign) {
+    public NetROMServerService(String name, String callsign) {
         super(name);
         LOG.debug("Starting Net/ROM Service, listening as " + callsign);
         this.callsign = callsign;
