@@ -47,10 +47,10 @@ public class NetROMPacket {
 
     // Contents of the Net/ROM network and transport header
     private int ttl = 25; // Reasonable default.
-    private int circuitIndex;
+    private int circuitIndex; // This and circuitID cannot be both 0 as that has a special (reset/disc?) meaning.
     private int circuitId;
-    private int txSequenceNumber;
-    private int rxSequenceNumber;
+    private int txSequenceNumber; // this is also used for 'myCircuitIndex' in some packets
+    private int rxSequenceNumber; // this is also used for 'myCircuitId' in some packets
     private int opCodeAndFlags; // see below
 
     // Contents of the opCodeAndFlags field
@@ -373,5 +373,9 @@ public class NetROMPacket {
 
     public void setDestinationCallsign(String destinationCallsign) {
         this.destinationCallsign = destinationCallsign;
+    }
+
+    public int decrementTTL() {
+        return --ttl;
     }
 }

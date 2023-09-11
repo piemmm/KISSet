@@ -39,6 +39,8 @@ public class NetROMService extends Service {
     private final String callsign;
     private String alias;
 
+    private static final Object MONITOR = new Object();
+
     /**
      * This is a map of all the clients that are connected to us.
      */
@@ -87,16 +89,18 @@ public class NetROMService extends Service {
      * @return The clientHandler which is connected to 'callsign' or null if not found.
      */
     public NetROMClientHandler getClientHandlerForCallsign(Interface anInterface, AX25Callsign callsign, boolean initiateConnectIfNotConnected) {
-        for (NetROMClientHandler client : clients.values()) {
-            if (client.getUser().getSourceCallsign().equalsIgnoreCase(callsign.toString())) {
-                return client;
+        synchronized (MONITOR) {
+            for (NetROMClientHandler client : clients.values()) {
+                if (client.getUser().getSourceCallsign().equalsIgnoreCase(callsign.toString())) {
+                    return client;
+                }
             }
+            // If we get here, we don't have a client connected to the callsign, so we will try to connect to it.
+            if (initiateConnectIfNotConnected) {
+                return connectToRemoteNode(anInterface, callsign);
+            }
+            // If we're not interested in making a new connection then just return null
         }
-        // If we get here, we don't have a client connected to the callsign, so we will try to connect to it.
-        if (initiateConnectIfNotConnected) {
-            return connectToRemoteNode(anInterface, callsign);
-        }
-        // If we're not interested in making a new connection then just return null
         return null;
     }
 
@@ -107,7 +111,7 @@ public class NetROMService extends Service {
      * @param callsign
      * @return
      */
-    public NetROMClientHandler connectToRemoteNode(Interface anInterface, AX25Callsign callsign) {
+    private NetROMClientHandler connectToRemoteNode(Interface anInterface, AX25Callsign callsign) {
         try {
             User user = new User();
             user.setBaseCallsign(callsign.getBaseCallsign());
@@ -182,6 +186,8 @@ public class NetROMService extends Service {
 
     /**
      * Send a netrom node broadcast for our node only (just to announce ourselves)
+     *
+     * FIXME: this is test code at the moment.
      */
     public void sendNodeBroadcast() {
 

@@ -72,5 +72,12 @@ public class Information {
         return netROMPacket.isMoreFollowsFlag();
     }
 
+    public void setBody(byte[] body) {
+        netROMPacket.setBody(body);
+    }
+
+    public NetROMPacket getNetROMPacket() {
+        return netROMPacket;
+    }
 
 }

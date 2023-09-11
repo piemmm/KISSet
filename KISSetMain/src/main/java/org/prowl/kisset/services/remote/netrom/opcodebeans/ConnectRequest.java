@@ -73,4 +73,8 @@ public class ConnectRequest {
     public NetROMPacket getNetROMPacket() {
         return netROMPacket;
     }
+
+    public int decrementTTL() {
+        return netROMPacket.decrementTTL();
+    }
 }

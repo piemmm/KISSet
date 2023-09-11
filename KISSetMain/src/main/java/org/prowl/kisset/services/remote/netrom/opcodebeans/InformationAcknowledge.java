@@ -13,6 +13,7 @@ public class InformationAcknowledge {
 
     public InformationAcknowledge() {
         netROMPacket = new NetROMPacket();
+        netROMPacket.setOpCode(NetROMPacket.OPCODE_INFORMATION_ACK);
         netROMPacket.setBody(new byte[0]);
     }
 
@@ -20,50 +21,85 @@ public class InformationAcknowledge {
         return netROMPacket.getCircuitIndex();
     }
 
+    public void setYourCircuitIndex(int circuitIndex) {
+        netROMPacket.setCircuitIndex(circuitIndex);
+    }
+
     public int getYourCircuitID() {
         return netROMPacket.getCircuitId();
+    }
+
+    public void setYourCircuitID(int circuitID) {
+        netROMPacket.setCircuitId(circuitID);
     }
 
     public int getRxSequenceNumber() {
         return netROMPacket.getRxSequenceNumber();
     }
 
+    public void setRxSequenceNumber(int rxSequenceNumber) {
+        netROMPacket.setRxSequenceNumber(rxSequenceNumber);
+    }
+
     public int getOpCode() {
         return netROMPacket.getOpCode();
     }
 
+
     /**
      * If set, it indicates that this node cannot accept any further
      * information messages until further notice.
+     *
      * @return
      */
     public boolean isChokeFlag() {
         return netROMPacket.isChokeFlag();
     }
 
+    public void setChokeFlag(boolean choke) {
+        netROMPacket.setChokeFlag(choke);
+    }
+
     /**
      * If set, indicates a selective retransmission of the frame
      * identified by the Rx sequence number is being requested.
+     *
      * @return
      */
     public boolean isNakFlag() {
         return netROMPacket.isNakFlag();
     }
 
+    public void setNakFlag(boolean nak) {
+        netROMPacket.setNakFlag(nak);
+    }
 
     public AX25Callsign getSourceCallsign() {
         return new AX25Callsign(netROMPacket.getOriginCallsign());
+    }
+
+    public void setSourceCallsign(AX25Callsign callsign) {
+        netROMPacket.setOriginCallsign(callsign.toString());
     }
 
     public AX25Callsign getDestinationCallsign() {
         return new AX25Callsign(netROMPacket.getDestinationCallsign());
     }
 
+    public void setDestinationCallsign(AX25Callsign callsign) {
+        netROMPacket.setDestinationCallsign(callsign.toString());
+    }
+
     /**
      * Set the data to be transported on this packet.
+     *
      * @param body
      */
     public void setBody(byte[] body) {
         netROMPacket.setBody(body);
+    }
+
+    public NetROMPacket getNetROMPacket() {
+        return netROMPacket;
     }
 }

@@ -1,13 +1,20 @@
 package org.prowl.kisset.services.remote.netrom.circuit;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.prowl.ax25.AX25Callsign;
-import org.prowl.kisset.services.ClientHandler;
 import org.prowl.kisset.services.remote.netrom.NetROMClientHandler;
+import org.prowl.kisset.services.remote.netrom.opcodebeans.Information;
+import org.prowl.kisset.services.remote.netrom.opcodebeans.InformationAcknowledge;
 import org.prowl.kisset.util.PipedIOStream;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * A circuit represents a connection from a node to node
@@ -15,6 +22,9 @@ import java.io.OutputStream;
  * A circuit is identified by a circuit index and a circuit id.
  */
 public class Circuit {
+
+    private static final Log LOG = LogFactory.getLog("Circuit");
+
 
     private AX25Callsign sourceCallsign;
     private AX25Callsign destinationCallsign;
@@ -28,20 +38,28 @@ public class Circuit {
     private AX25Callsign originatingUser;
     private AX25Callsign originatingNode;
 
+    private boolean rxHasChokedUS = false; // If true, we have been choked by the remote end - don't send any data.
+
     // IO streams (if this circuit terminates at us) - if we are forwarding, these are null.
     private PipedIOStream circuitInputStream = new PipedIOStream();
     private PipedIOStream circuitOutputStream = new PipedIOStream();
 
     private NetROMClientHandler ownerClientHandler; // The current owner (until a route changes) TODO: see if the circuit IDs change when the route changes - this could be an issue if the route suddenly gets shorter
-    // The other circuit if we are forwarding.
-    private Circuit otherCircuit;
 
-    private boolean terminatesLocally = false;
     private boolean isValid = true; // This is false if the circuit could not be registered.
 
     // Sequence numbers allow up to 127 frames.
-    private int txSequenceNumber = 0;
-    private int rxSequenceNumber = 0;
+    private int txSequenceNumber = 0; // They have received
+    private int rxSequenceNumber = 0; // We have received
+
+    private Object MONITOR = new Object();
+    private Timer ackTimer;
+
+    /**
+     * Information frames are stored here until they are ACKed (for tx) and until we have received all frames in a sequence (for rx)
+     */
+    private Map<Integer, Information> incomingInformationFrames = new HashMap<>();
+    private Map<Integer, Information> outgoingInformationFrames = new HashMap<>();
 
     public Circuit(int myCircuitIndex, int myCircuitId) {
         this.myCircuitIndex = myCircuitIndex;
@@ -184,13 +202,6 @@ public class Circuit {
         this.ownerClientHandler = ownerClientHandler;
     }
 
-    public Circuit getOtherCircuit() {
-        return otherCircuit;
-    }
-
-    public void setOtherCircuit(Circuit otherCircuit) {
-        this.otherCircuit = otherCircuit;
-    }
 
     public InputStream getCircuitInputStream() {
         return circuitInputStream;
@@ -209,23 +220,8 @@ public class Circuit {
         return circuitOutputStream.read();
     }
 
-    /**
-     * True if the endpoint for this circuit is at this node
-     * @return
-     */
-    public boolean isTerminatesLocally() {
-        return terminatesLocally;
-    }
 
-    /**
-     * Set to true if this circuit does not forward to another circuit, but instead terminates at a service or user on this node
-     * @param terminatesLocally
-     */
-    public void setTerminatesLocally(boolean terminatesLocally) {
-        this.terminatesLocally = terminatesLocally;
-    }
-
-public int getTxSequenceNumber() {
+    public int getTxSequenceNumber() {
         return txSequenceNumber;
     }
 
@@ -256,5 +252,111 @@ public int getTxSequenceNumber() {
     }
 
 
+    /**
+     * Add a received information frame.
+     *
+     * @param information
+     */
+    public void addReceviedFrame(Information information) {
+        incomingInformationFrames.put(information.getRxSequenceNumber(), information);
+
+        if (information.isNakFlag()) {
+            updateRxSequence(information.getTxSequenceNumber(), -1);
+        } else {
+            updateRxSequence(information.getTxSequenceNumber(), information.getRxSequenceNumber());
+        }
+
+
+        // Reassemble any our of order frames.
+        checkReassembly();
+    }
+
+    /**
+     * Update the sequence numbers for this circuit with the highest sequence numbers we have seen (may loop at 127)
+     */
+    public void updateRxSequence(int currentSequenceNumber, int nextSequenceNumber) {
+        if (rxSequenceNumber < currentSequenceNumber) {
+            rxSequenceNumber = currentSequenceNumber;
+        }
+
+//        if (nextSequenceNumber != -1) {
+//            if (rxSequenceNumber < nextSequenceNumber) {
+//                rxSequenceNumber = nextSequenceNumber;
+//            }
+//        }
+    }
+
+    public void checkReassembly() {
+
+        // Get all the frames we have so far
+        int count = 0;
+        while (incomingInformationFrames.get(rxSequenceNumber + count) != null) {
+            Information toReassemble = incomingInformationFrames.remove(rxSequenceNumber);
+            byte[] data = toReassemble.getBody();
+            for (int i = 0; i < data.length; i++) {
+                try {
+                    writeByte(data[i] & 0xFF);
+                } catch (IOException e) {
+                    LOG.error(e.getMessage(), e);
+                }
+            }
+            count++;
+            // Reset a receive timeout timer here?
+        }
+        rxSequenceNumber = count - 1;
+
+        // Delayed queue for an ACK packet as we don't really need to send one for every single frame received,
+        // Just the most recent one will do to save on traffic.
+        queueAck();
+    }
+
+    /**
+     * Queues and ACK frame for information - this is delayed by 5 seconds to allow for more frames to be received.
+     */
+    public void queueAck() {
+        synchronized(MONITOR) {
+            if (ackTimer == null) {
+                ackTimer.cancel();
+            }
+
+            ackTimer = new Timer();
+            ackTimer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    try {
+                        InformationAcknowledge ack = new InformationAcknowledge();
+                        ack.setYourCircuitIndex(yourCircuitIndex);
+                        ack.setYourCircuitID(yourCiruitID);
+                        ack.setRxSequenceNumber(rxSequenceNumber);
+                        ownerClientHandler.sendPacket(ack.getNetROMPacket());
+                    } catch (IOException e) {
+                        LOG.error(e.getMessage(), e);
+                    }
+                }
+            }, 5000);
+
+        }
+    }
+
+    /**
+     * Store a sent information frame incase we are in need of a retransmit.
+     *
+     * @param information
+     */
+    public void addSentFrame(Information information) {
+        outgoingInformationFrames.put(information.getTxSequenceNumber(), information);
+    }
+
+    public Information getSentFrame(int txSequenceNumber) {
+        return outgoingInformationFrames.get(txSequenceNumber);
+    }
+
+    public boolean isRxChoked() {
+        return rxHasChokedUS;
+    }
+
+    public void setRxChoked(boolean choked) {
+        rxHasChokedUS = choked;
+    }
 
 }
