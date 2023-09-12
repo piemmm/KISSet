@@ -61,11 +61,12 @@ public class PacketTools {
     public static byte[] shiftLeft(byte[] callsign) {
         for (int i = 0; i < callsign.length; i++) {
 
-                callsign[i] = (byte) ((callsign[i] & 0xFF) << 1);
+            callsign[i] = (byte) ((callsign[i] & 0xFF) << 1);
 
         }
         return callsign;
     }
+
     /**
      * Get a sequence of 6 or 7 bytes representing a callsign with optional bit shifting
      */
@@ -190,8 +191,10 @@ public class PacketTools {
             builder.append(" " + mod128);
         }
         builder.append("]");
-        builder.append(ANSI.GREEN);
-        builder.append(pidToString(node.getFrame().getPid()));
+        if (node.getFrame().getFrameType() == AX25Frame.FRAMETYPE_I) {
+            builder.append(ANSI.GREEN);
+            builder.append(pidToString(node.getFrame().getPid()));
+        }
         if (!event.isValidPacket()) {
             builder.append(ANSI.BOLD_RED);
             builder.append("<Invalid Packet>");
@@ -216,9 +219,7 @@ public class PacketTools {
                         if (packet.isAprs()) {
                             InformationField informationField = packet.getAprsInformation();
                             if (informationField != null) {
-                                if (informationField.getAprsData(APRSTypes.T_POSITION) != null ||
-                                        informationField.getAprsData(APRSTypes.T_OBJECT) != null ||
-                                        informationField.getAprsData(APRSTypes.T_ITEM) != null) {
+                                if (informationField.getAprsData(APRSTypes.T_POSITION) != null || informationField.getAprsData(APRSTypes.T_OBJECT) != null || informationField.getAprsData(APRSTypes.T_ITEM) != null) {
 
                                     builder.append(readableTextFromAPRSFrame(packet));
                                 }
@@ -399,6 +400,7 @@ public class PacketTools {
 
     /**
      * Return the base callsign (no ssid)
+     *
      * @param callsign
      * @return
      */
@@ -412,7 +414,7 @@ public class PacketTools {
 
     /**
      * Return the SSID (including -) part of the callsign.
-     *
+     * <p>
      * returns -0 if no ssid was specified
      */
     public static String getSSID(String callsign) {

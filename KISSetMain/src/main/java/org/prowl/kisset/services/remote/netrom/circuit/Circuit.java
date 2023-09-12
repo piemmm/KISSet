@@ -41,22 +41,24 @@ public class Circuit {
     private boolean choke = false; // If true, we have been choked by the remote end - don't send any data.
 
     // IO streams (if this circuit terminates at us) - if we are forwarding, these are null.
-    private PipedIOStream circuitInputStream = new PipedIOStream();
-    private PipedIOStream circuitOutputStream = new PipedIOStream() {
+    private final PipedIOStream circuitInputStream = new PipedIOStream();
+    private final PipedIOStream circuitOutputStream = new PipedIOStream() {
         @Override
         public synchronized void flush() throws IOException {
             if (ownerClientHandler != null) {
                 // MaxFrames.
                 while (available() > 0 && outgoingInformationFrames.size() < acceptedFrames) {
-                    
-                    // Basic frame size (ax.25 header (136bits) +fcs+ netrom network header + transport header)
+
+                    // Basic frame size (ax.25 header (136bits) +fcs+ netrom network header + transport header) + 3 weird bytes on the body
                     int frameSize =   17+2+15+5;
                     int pacLen = ownerClientHandler.getPacLen()-frameSize;
 
                     // Read up to window size
                     int len = Math.min(pacLen, available());
                     byte[] data = new byte[len];
-                    int actualRead = circuitOutputStream.read(data);
+                    int actualRead = circuitOutputStream.read(data, 0, len);
+                    LOG.debug("Read " + actualRead + " / "+ len +" bytes from circuit output stream");
+
 
                     Information information = new Information();
                     information.setSourceCallsign(destinationCallsign);
@@ -65,6 +67,7 @@ public class Circuit {
                     information.setYourCircuitID(yourCiruitID);
                     information.setTxSequenceNumber(txSequenceNumber);
                     information.setRxSequenceNumber(rxSequenceNumber);
+                    information.setMoreFollows(available() > 0);
                     information.setBody(data);
 
                     incrementTxSequenceNumber();
@@ -293,7 +296,8 @@ public class Circuit {
      * @param information
      */
     public void addReceviedFrame(Information information) {
-        incomingInformationFrames.put(information.getRxSequenceNumber(), information);
+        // Store the frame in the incoming frames map.
+        incomingInformationFrames.put(information.getTxSequenceNumber(), information);
 
         if (!information.isNakFlag()) {
             // Update the tx sequence number ack if the rx (piggybacked acknowledge it is actually tx ack) sequence number is greater than the current ack.
@@ -320,13 +324,15 @@ public class Circuit {
     public void checkReassembly(Information information) {
         synchronized(MONITOR) {
             // Get all the frames we have so far
-            int count = 0;
-            while (incomingInformationFrames.get(rxSequenceNumber + count) != null) {
+            int count = rxSequenceNumber;
+            LOG.debug("Checking reassembly for rxSequenceNumber: " + rxSequenceNumber+"  while:"+incomingInformationFrames.get(rxSequenceNumber + count));
+            while (incomingInformationFrames.get(count) != null) {
                 Information toReassemble = incomingInformationFrames.remove(rxSequenceNumber);
                 incrementRxSequenceNumber();
                 byte[] data = toReassemble.getBody();
                 for (int i = 0; i < data.length; i++) {
                     try {
+                        LOG.debug("WRITING RX byte:" + (data[i] & 0xFF));
                         writeByte(data[i] & 0xFF);
                     } catch (IOException e) {
                         LOG.error(e.getMessage(), e);
@@ -338,7 +344,7 @@ public class Circuit {
                 // Just the most recent one will do to save on traffic.
                 queueAck(information);
             }
-            rxSequenceNumber = count - 1;
+            rxSequenceNumber = count;
         }
     }
 
@@ -392,7 +398,23 @@ public class Circuit {
     }
 
     public void processAck(InformationAcknowledge informationAcknowledge) {
-        outgoingInformationFrames.remove(informationAcknowledge.getRxSequenceNumber());
+
+
+        // All frames *up to* the sequence number have been received, so we remove them from the outgoing queue. If we
+        // loop around to 0 then we need to remove all frames up to the current rx sequence number in the infoack frame.
+        if (!informationAcknowledge.isNakFlag()) {
+            while (txSequenceNumberAck != informationAcknowledge.getRxSequenceNumber()) {
+                outgoingInformationFrames.remove(txSequenceNumberAck);
+
+                txSequenceNumberAck++;
+                if (txSequenceNumberAck > 127) {
+                    txSequenceNumberAck = 0;
+                }
+            }
+            txSequenceNumberAck = informationAcknowledge.getRxSequenceNumber();
+        }
+
+        // Poke the output stream to send more frames if we can.
         try {
             circuitOutputStream.flush();
         } catch(IOException e) {

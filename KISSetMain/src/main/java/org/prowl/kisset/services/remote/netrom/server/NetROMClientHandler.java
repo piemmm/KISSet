@@ -220,8 +220,14 @@ public class NetROMClientHandler implements ClientHandler {
             // We don't have a service for this callsign, so we will refuse the connection.
             circuit.setValid(false);
         } else {
+
+            User netromUser = new User();
+            netromUser.setBaseCallsign(circuit.getOriginatingUser().getBaseCallsign());
+            netromUser.setSourceCallsign(circuit.getOriginatingUser().toString());
+            netromUser.setDestinationCallsign(circuit.getDestinationCallsign().toString());
+
             // We have a service for this callsign, so we will accept the connection and forward it to this service
-            chosen.acceptedConnection(anInterface, user, circuit.getCircuitInputStream(), circuit.getCircuitOutputStream());
+            chosen.acceptedConnection(anInterface, netromUser, circuit.getCircuitInputStream(), circuit.getCircuitOutputStream());
         }
     }
 
@@ -263,6 +269,7 @@ public class NetROMClientHandler implements ClientHandler {
         if (circuit == null) {
             // We should not get here as there should always be a circuit at this point.
             LOG.error("Received a disconnect request for a circuit that does not exist.");
+            return;
         } else {
             // This circuit ends at us, so we need to disconnect the other end.
             circuit.getCircuitOutputStream().close();
@@ -271,8 +278,8 @@ public class NetROMClientHandler implements ClientHandler {
 
         // Send the disconnect ack.
         DisconnectAcknowledge disconnectAcknowledge = new DisconnectAcknowledge();
-        disconnectAcknowledge.setYourCircuitIndex(disconnectRequest.getYourCircuitIndex());
-        disconnectAcknowledge.setYourCircuitID(disconnectRequest.getYourCircuitID());
+        disconnectAcknowledge.setYourCircuitIndex(circuit.getYourCircuitIndex());
+        disconnectAcknowledge.setYourCircuitID(circuit.getYourCircuitID());
         disconnectAcknowledge.setSourceCallsign(disconnectRequest.getDestinationCallsign());
         disconnectAcknowledge.setDestinationCallsign(disconnectRequest.getSourceCallsign());
 

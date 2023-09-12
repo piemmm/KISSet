@@ -258,7 +258,16 @@ public class NetROMPacket {
         }
 
 
-        sb.append("\r\n body:" + ANSI.NORMAL).append(Tools.byteArrayToReadableASCIIString(body));
+        if (opCode == OPCODE_INFORMATION_TRANSFER) {
+            sb.append("\r\n body:" + ANSI.NORMAL).append(Tools.byteArrayToReadableASCIIString(body));
+        } else if (opCode == OPCODE_CONNECT_REQUEST) {
+            sb.append("\r\n proposeWindowSize:"+((int)body[0]));
+            sb.append("\r\n originatingUser:"+new AX25Callsign(body,1,7));
+            sb.append("\r\n originatingNode:"+new AX25Callsign(body,1+7,7));
+        } else if (opCode == OPCODE_CONNECT_ACK) {
+            sb.append("\r\n proposeWindowSize:"+((int)body[0]));
+        }
+
         return sb.toString();
     }
 

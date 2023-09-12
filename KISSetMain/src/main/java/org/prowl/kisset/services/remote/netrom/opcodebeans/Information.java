@@ -17,6 +17,14 @@ public class Information {
         netROMPacket.setBody(new byte[0]);
     }
 
+    public void setMoreFollows(boolean moreFollows) {
+        netROMPacket.setMoreFollowsFlag(moreFollows);
+    }
+
+    public boolean isMoreFollows() {
+        return netROMPacket.isMoreFollowsFlag();
+    }
+
     public int getYourCircuitIndex() {
         return netROMPacket.getCircuitIndex();
     }
