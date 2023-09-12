@@ -51,11 +51,16 @@ public class PipedIOStream extends InputStream {
 
     @Override
     public int read(byte[] b, int off, int len) throws IOException {
+        if (closed)
+            return -1;
+
         int i;
+        int actLen = 0;
         for (i = 0; i < len; i++) {
             if (queue.size() > 0 || i == 0) {
                 try {
-                    b[off + i] = queue.take();
+                    b[off + actLen] = queue.take();
+                    actLen++;
                 } catch (InterruptedException e) {
                     return -1;
                 }
@@ -64,7 +69,7 @@ public class PipedIOStream extends InputStream {
             }
         }
 
-        return i;
+        return actLen;
     }
 
     public class PipedIOOutputStream extends OutputStream {

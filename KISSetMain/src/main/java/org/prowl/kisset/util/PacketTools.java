@@ -179,7 +179,11 @@ public class PacketTools {
             builder.append(" CTL2=0x" + Integer.toString(node.getFrame().ctl & 0xFF, 16));
             mod128 = "MOD128";
         }
-        builder.append(" PID=0x" + Integer.toString(node.getFrame().getPid() & 0xFF, 16));
+
+        // PID for I franes only (this is also I types such as: UI and FRMR XID TEST)
+        if (node.getFrame().getFrameType() == AX25Frame.FRAMETYPE_I) {
+            builder.append(" PID=0x" + Integer.toString(node.getFrame().getPid() & 0xFF, 16));
+        }
 
         // Put the mod128 identifier in nice place
         if (mod128.length() > 0) {

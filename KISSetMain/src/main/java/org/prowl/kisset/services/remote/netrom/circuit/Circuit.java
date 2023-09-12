@@ -34,7 +34,7 @@ public class Circuit {
     private int yourCircuitIndex;
     private int yourCiruitID;
     private CircuitState state;
-    private int acceptedSize;
+    private int acceptedFrames;
     private AX25Callsign originatingUser;
     private AX25Callsign originatingNode;
 
@@ -44,26 +44,33 @@ public class Circuit {
     private PipedIOStream circuitInputStream = new PipedIOStream();
     private PipedIOStream circuitOutputStream = new PipedIOStream() {
         @Override
-        public void flush() throws IOException {
+        public synchronized void flush() throws IOException {
             if (ownerClientHandler != null) {
+                // MaxFrames.
+                while (available() > 0 && outgoingInformationFrames.size() < acceptedFrames) {
+                    
+                    // Basic frame size (ax.25 header (136bits) +fcs+ netrom network header + transport header)
+                    int frameSize =   17+2+15+5;
+                    int pacLen = ownerClientHandler.getPacLen()-frameSize;
 
-                // Read up to window size
-                int len = Math.min(acceptedSize, available());
-                byte[] data = new byte[len];
-                circuitOutputStream.read(data);
+                    // Read up to window size
+                    int len = Math.min(pacLen, available());
+                    byte[] data = new byte[len];
+                    int actualRead = circuitOutputStream.read(data);
 
-                Information information = new Information();
-                information.setSourceCallsign(destinationCallsign);
-                information.setDestinationCallsign(sourceCallsign);
-                information.setYourCircuitIndex(yourCircuitIndex);
-                information.setYourCircuitID(yourCiruitID);
-                information.setTxSequenceNumber(txSequenceNumber);
-                information.setRxSequenceNumber(rxSequenceNumber);
-                information.setBody(data);
+                    Information information = new Information();
+                    information.setSourceCallsign(destinationCallsign);
+                    information.setDestinationCallsign(sourceCallsign);
+                    information.setYourCircuitIndex(yourCircuitIndex);
+                    information.setYourCircuitID(yourCiruitID);
+                    information.setTxSequenceNumber(txSequenceNumber);
+                    information.setRxSequenceNumber(rxSequenceNumber);
+                    information.setBody(data);
 
-                incrementTxSequenceNumber();
+                    incrementTxSequenceNumber();
 
-                ownerClientHandler.sendPacket(information.getNetROMPacket());
+                    ownerClientHandler.sendPacket(information.getNetROMPacket());
+                }
             }
         }
     };
@@ -145,12 +152,12 @@ public class Circuit {
         this.state = state;
     }
 
-    public int getAcceptedSize() {
-        return acceptedSize;
+    public int getAcceptedFrames() {
+        return acceptedFrames;
     }
 
-    public void setAcceptedSize(int acceptedSize) {
-        this.acceptedSize = acceptedSize;
+    public void setAcceptedFrames(int acceptedFrames) {
+        this.acceptedFrames = acceptedFrames;
     }
 
     public AX25Callsign getOriginatingUser() {
@@ -206,8 +213,8 @@ public class Circuit {
         sb.append(yourCiruitID);
         sb.append(" State: ");
         sb.append(state);
-        sb.append(" AcceptedSize: ");
-        sb.append(acceptedSize);
+        sb.append(" AcceptedFrames: ");
+        sb.append(acceptedFrames);
         sb.append(" OriginatingUser: ");
         sb.append(originatingUser);
         sb.append(" OriginatingNode: ");
@@ -316,6 +323,7 @@ public class Circuit {
             int count = 0;
             while (incomingInformationFrames.get(rxSequenceNumber + count) != null) {
                 Information toReassemble = incomingInformationFrames.remove(rxSequenceNumber);
+                incrementRxSequenceNumber();
                 byte[] data = toReassemble.getBody();
                 for (int i = 0; i < data.length; i++) {
                     try {
@@ -381,6 +389,15 @@ public class Circuit {
      */
     public void addSentFrame(Information information) {
         outgoingInformationFrames.put(information.getTxSequenceNumber(), information);
+    }
+
+    public void processAck(InformationAcknowledge informationAcknowledge) {
+        outgoingInformationFrames.remove(informationAcknowledge.getRxSequenceNumber());
+        try {
+            circuitOutputStream.flush();
+        } catch(IOException e) {
+            LOG.error(e.getMessage(), e);
+        }
     }
 
     public Information getSentFrame(int txSequenceNumber) {

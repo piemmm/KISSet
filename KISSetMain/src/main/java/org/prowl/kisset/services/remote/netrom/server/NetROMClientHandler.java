@@ -49,6 +49,10 @@ public class NetROMClientHandler implements ClientHandler {
         this.anInterface = anInterface;
     }
 
+    public int getPacLen() {
+        return anInterface.getPacLen();
+    }
+
     /**
      * Read in packets from our connection and process them.
      */
@@ -150,7 +154,7 @@ public class NetROMClientHandler implements ClientHandler {
                 // We have a data ack.
                 LOG.debug("Got a data ack from " + packet.getOriginCallsign() + " to " + packet.getDestinationCallsign());
                 InformationAcknowledge informationAcknowledge = new InformationAcknowledge(packet);
-
+                receiveInformationAcknowledge(new InformationAcknowledge(packet));
                 break;
             case NetROMPacket.OPCODE_RESET:
                 // We have a reset.
@@ -178,7 +182,7 @@ public class NetROMClientHandler implements ClientHandler {
         circuit.setDestinationCallsign(connectRequest.getDestinationCallsign());
         circuit.setOriginatingUser(connectRequest.getCallsignOfOriginatingUser());
         circuit.setOriginatingNode(connectRequest.getCallsignOfOriginatingNode());
-        circuit.setAcceptedSize(connectRequest.getProposeWindowSize());
+        circuit.setAcceptedFrames(connectRequest.getProposeWindowSize());
         circuit.setYourCircuitIndex(connectRequest.getMyCircuitIndex());
         circuit.setYourCiruitID(connectRequest.getMyCircuitID());
 
@@ -194,19 +198,11 @@ public class NetROMClientHandler implements ClientHandler {
             }
         }
 
-        if (chosen == null) {
-            // We don't have a service for this callsign, so we will refuse the connection.
-            circuit.setValid(false);
-        } else {
-            // We have a service for this callsign, so we will accept the connection and forward it to this service
-            chosen.acceptedConnection(anInterface, user, circuit.getCircuitInputStream(), circuit.getCircuitOutputStream());
-        }
-
         // Send a connection ack/nack depending if the connection succeeded or failed
         ConnectAcknowledge connectAcknowledge = new ConnectAcknowledge();
         connectAcknowledge.setOriginCallsign(circuit.getDestinationCallsign());
         connectAcknowledge.setDestinationCallsign(circuit.getSourceCallsign());
-        connectAcknowledge.setAcceptWindowSize(circuit.getAcceptedSize());
+        connectAcknowledge.setAcceptWindowSize(circuit.getAcceptedFrames());
         connectAcknowledge.setYourCircuitIndex(circuit.getYourCircuitIndex());
         connectAcknowledge.setYourCircuitID(circuit.getYourCircuitID());
         connectAcknowledge.setMyCircuitIndex(circuit.getMyCircuitIndex());
@@ -218,6 +214,15 @@ public class NetROMClientHandler implements ClientHandler {
 
         // Send the packet.
         sendPacket(connectAcknowledge.getNetROMPacket());
+
+        // Now we are ready to accept the connection and let it send it's i frames.
+        if (chosen == null) {
+            // We don't have a service for this callsign, so we will refuse the connection.
+            circuit.setValid(false);
+        } else {
+            // We have a service for this callsign, so we will accept the connection and forward it to this service
+            chosen.acceptedConnection(anInterface, user, circuit.getCircuitInputStream(), circuit.getCircuitOutputStream());
+        }
     }
 
 
@@ -258,7 +263,6 @@ public class NetROMClientHandler implements ClientHandler {
         if (circuit == null) {
             // We should not get here as there should always be a circuit at this point.
             LOG.error("Received a disconnect request for a circuit that does not exist.");
-            // We should try to disconnect the session at this point as it is obviously borked.
         } else {
             // This circuit ends at us, so we need to disconnect the other end.
             circuit.getCircuitOutputStream().close();
@@ -269,6 +273,9 @@ public class NetROMClientHandler implements ClientHandler {
         DisconnectAcknowledge disconnectAcknowledge = new DisconnectAcknowledge();
         disconnectAcknowledge.setYourCircuitIndex(disconnectRequest.getYourCircuitIndex());
         disconnectAcknowledge.setYourCircuitID(disconnectRequest.getYourCircuitID());
+        disconnectAcknowledge.setSourceCallsign(disconnectRequest.getDestinationCallsign());
+        disconnectAcknowledge.setDestinationCallsign(disconnectRequest.getSourceCallsign());
+
 
         sendPacket(disconnectAcknowledge.getNetROMPacket());
     }
@@ -324,6 +331,21 @@ public class NetROMClientHandler implements ClientHandler {
     }
 
     /**
+     * Receive an information ack
+     */
+    public void receiveInformationAcknowledge(InformationAcknowledge informationAcknowledge) {
+
+        Circuit circuit = CircuitManager.getCircuit(informationAcknowledge.getYourCircuitIndex(), informationAcknowledge.getYourCircuitID());
+
+        if (circuit == null) {
+            LOG.debug("Received an information ack for a circuit that does not exist.");
+            return;
+        }
+
+        circuit.processAck(informationAcknowledge);
+    }
+
+    /**
      * Initiate a disconnect on a circuit.
      */
     public void disconnectCircuit(Circuit circuit) throws IOException {
@@ -372,7 +394,7 @@ public class NetROMClientHandler implements ClientHandler {
      * @param packet
      * @throws IOException
      */
-    public void sendPacket(NetROMPacket packet) throws IOException {
+    public synchronized void sendPacket(NetROMPacket packet) throws IOException {
         // Send the packet.
         out.write(packet.toPacket());
         out.flush();

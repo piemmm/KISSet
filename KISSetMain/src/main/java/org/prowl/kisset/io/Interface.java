@@ -44,6 +44,10 @@ public abstract class Interface {
         setBeacon(config.getString(Conf.beaconText.name(), Conf.beaconText.stringDefault()), config.getInt(Conf.beaconEvery.name(), Conf.beaconEvery.intDefault()));
     }
 
+    public int getPacLen() {
+       return anInterface.getPacLen();
+    }
+
     public abstract void start() throws IOException;
 
     public abstract void stop();

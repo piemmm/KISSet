@@ -71,12 +71,16 @@ public class CircuitManager {
 
     /**
      * Find a free circuit that has not been allocated.
+     * Try to keep these random so they cannot be guessed.
      * @return
      */
     private static int findFreeCircuit() {
-        for (int i = 257; i < 65535; i++) {
-            if (circuits.get(i) == null) {
-                return i;
+
+        int start = (int)(Math.random() * 65535);
+        for (int i = 0; i < 65535; i++) {
+            int index = (start + i) % 65535;
+            if (index != 0 && circuits.get(index) == null) {
+                return index;
             }
         }
         return -1;

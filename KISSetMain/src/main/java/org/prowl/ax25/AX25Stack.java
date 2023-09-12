@@ -96,6 +96,10 @@ public class AX25Stack implements FrameListener, Runnable {
         parserThread.start();
     }
 
+    public int getPacLen() {
+        return pacLen;
+    }
+
 
     /**
      * Configure the stack for use with the supplied settings.

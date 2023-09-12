@@ -91,15 +91,6 @@ public class InformationAcknowledge {
         netROMPacket.setDestinationCallsign(callsign.toString());
     }
 
-    /**
-     * Set the data to be transported on this packet.
-     *
-     * @param body
-     */
-    public void setBody(byte[] body) {
-        netROMPacket.setBody(body);
-    }
-
     public NetROMPacket getNetROMPacket() {
         return netROMPacket;
     }

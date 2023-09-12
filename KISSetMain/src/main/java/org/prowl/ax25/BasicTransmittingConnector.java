@@ -89,6 +89,10 @@ public class BasicTransmittingConnector extends Connector implements Transmittin
         stack.setConnectionRequestListener(connectionRequestListener);
     }
 
+    public int getPacLen() {
+        return stack.getPacLen();
+    }
+
     public String getUUID() {
         return uuid;
     }
