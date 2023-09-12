@@ -38,6 +38,7 @@ public class AX25OutputStream extends OutputStream {
     private final ConnState connState;
     private int bufIdx = 0;
     private byte pid = AX25Frame.PID_NOLVL3;
+    private boolean closed = false;
 
     AX25OutputStream(ConnState connState, int pacLen) {
         this.connState = connState;
@@ -237,10 +238,17 @@ public class AX25OutputStream extends OutputStream {
      * is that it closes the output stream. A closed stream cannot perform
      * output operations and cannot be reopened.
      *
+     * Calling close will terminate the connection.
+     *
      * @throws IOException if an I/O error occurs.
      */
     @Override
     public void close() throws IOException {
+        if (closed) {
+            return;
+        }
+        closed = true;
+
         flush();
         connState.close();
     }

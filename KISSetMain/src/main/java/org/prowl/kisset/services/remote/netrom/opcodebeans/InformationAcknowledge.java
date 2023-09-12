@@ -41,6 +41,7 @@ public class InformationAcknowledge {
         netROMPacket.setRxSequenceNumber(rxSequenceNumber);
     }
 
+
     public int getOpCode() {
         return netROMPacket.getOpCode();
     }

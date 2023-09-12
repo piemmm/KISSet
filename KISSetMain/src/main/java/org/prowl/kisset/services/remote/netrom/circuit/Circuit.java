@@ -42,7 +42,31 @@ public class Circuit {
 
     // IO streams (if this circuit terminates at us) - if we are forwarding, these are null.
     private PipedIOStream circuitInputStream = new PipedIOStream();
-    private PipedIOStream circuitOutputStream = new PipedIOStream();
+    private PipedIOStream circuitOutputStream = new PipedIOStream() {
+        @Override
+        public void flush() throws IOException {
+            if (ownerClientHandler != null) {
+
+                // Read up to window size
+                int len = Math.min(acceptedSize, available());
+                byte[] data = new byte[len];
+                circuitOutputStream.read(data);
+
+                Information information = new Information();
+                information.setSourceCallsign(destinationCallsign);
+                information.setDestinationCallsign(sourceCallsign);
+                information.setYourCircuitIndex(yourCircuitIndex);
+                information.setYourCircuitID(yourCiruitID);
+                information.setTxSequenceNumber(txSequenceNumber);
+                information.setRxSequenceNumber(rxSequenceNumber);
+                information.setBody(data);
+
+                incrementTxSequenceNumber();
+
+                ownerClientHandler.sendPacket(information.getNetROMPacket());
+            }
+        }
+    };
 
     private NetROMClientHandler ownerClientHandler; // The current owner (until a route changes)
 

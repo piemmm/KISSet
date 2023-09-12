@@ -78,6 +78,18 @@ public class PipedIOStream extends InputStream {
                 throw new RuntimeException(e);
             }
         }
+
+        @Override
+        public void flush() throws IOException {
+            if (closed)
+                throw new IOException("Stream closed");
+            PipedIOStream.this.flush();
+        }
+
+    }
+
+    public void flush() throws IOException{
+        // Default does nothing
     }
 
     @Override

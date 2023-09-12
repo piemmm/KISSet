@@ -11,12 +11,34 @@ public class Information {
         this.netROMPacket = packet;
     }
 
+    public Information() {
+        netROMPacket = new NetROMPacket();
+        netROMPacket.setOpCode(NetROMPacket.OPCODE_INFORMATION_TRANSFER);
+        netROMPacket.setBody(new byte[0]);
+    }
+
     public int getYourCircuitIndex() {
         return netROMPacket.getCircuitIndex();
     }
 
     public int getYourCircuitID() {
         return netROMPacket.getCircuitId();
+    }
+
+    public void setYourCircuitID(int circuitID) {
+        netROMPacket.setCircuitId(circuitID);
+    }
+
+    public void setYourCircuitIndex(int circuitIndex) {
+        netROMPacket.setCircuitIndex(circuitIndex);
+    }
+
+    public void setRxSequenceNumber(int rxSequenceNumber) {
+        netROMPacket.setRxSequenceNumber(rxSequenceNumber);
+    }
+
+    public void setTxSequenceNumber(int txSequenceNumber) {
+        netROMPacket.setTxSequenceNumber(txSequenceNumber);
     }
 
     public int getTxSequenceNumber() {
@@ -40,13 +62,24 @@ public class Information {
         return new AX25Callsign(netROMPacket.getOriginCallsign());
     }
 
+    public void setSourceCallsign(AX25Callsign callsign) {
+        netROMPacket.setOriginCallsign(callsign.toString());
+    }
+
+
     public AX25Callsign getDestinationCallsign() {
         return new AX25Callsign(netROMPacket.getDestinationCallsign());
+    }
+
+
+    public void setDestinationCallsign(AX25Callsign callsign) {
+        netROMPacket.setDestinationCallsign(callsign.toString());
     }
 
     /**
      * If set, it indicates that this node cannot accept any further
      * information messages until further notice.
+     *
      * @return
      */
     public boolean isChokeFlag() {
@@ -56,6 +89,7 @@ public class Information {
     /**
      * If set, indicates a selective retransmission of the frame
      * identified by the Rx sequence number is being requested.
+     *
      * @return
      */
     public boolean isNakFlag() {
@@ -66,6 +100,7 @@ public class Information {
      * If set, it indicates that the information is a fragment of a long
      * information frame and must be reassembled with one or more following information
      * messages by the destination node.
+     *
      * @return
      */
     public boolean isMoreFollowsFlag() {
