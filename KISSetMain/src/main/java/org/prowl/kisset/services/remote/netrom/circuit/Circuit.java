@@ -43,6 +43,15 @@ public class Circuit {
     // IO streams (if this circuit terminates at us) - if we are forwarding, these are null.
     private final PipedIOStream circuitInputStream = new PipedIOStream();
     private final PipedIOStream circuitOutputStream = new PipedIOStream() {
+
+        @Override
+        public void close() throws IOException {
+            super.close();
+            if (ownerClientHandler != null) {
+                ownerClientHandler.disconnectCircuit(Circuit.this);
+            }
+        }
+
         @Override
         public synchronized void flush() throws IOException {
             if (ownerClientHandler != null) {

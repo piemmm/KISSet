@@ -62,16 +62,18 @@ public class NetROMClientHandler implements ClientHandler {
             try {
                 // Packet spec means they will always be <= 256 bytes.
                 byte[] buffer = new byte[256];
-                int b = 0;
-                while (b != -1) {
+                int lengthRead = 0;
+                while (lengthRead != -1) {
                     // Handily as we process packet frames a chunk at a time, we can
                     // do the below to grab a 'netrom' packet, one at a time.
-                    int lengthRead = in.read(buffer, 0, buffer.length);
-                    byte[] data = new byte[lengthRead];
-                    System.arraycopy(buffer, 0, data, 0, lengthRead);
+                    lengthRead = in.read(buffer, 0, buffer.length);
+
 
                     if (lengthRead > 0) {
-                        LOG.debug("Received " + lengthRead + " bytes: "+Tools.byteArrayToReadableASCIIString(data));
+                        byte[] data = new byte[lengthRead];
+                        System.arraycopy(buffer, 0, data, 0, lengthRead);
+
+                        LOG.debug("Received " + lengthRead + " bytes: " + Tools.byteArrayToReadableASCIIString(data));
                         // We have a packet, let's process it.
                         NetROMPacket packet = new NetROMPacket(data);
                         processPacket(packet);

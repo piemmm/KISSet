@@ -91,6 +91,11 @@ public class PipedIOStream extends InputStream {
             PipedIOStream.this.flush();
         }
 
+        @Override
+        public void close() throws IOException {
+            PipedIOStream.this.close();
+        }
+
     }
 
     public void flush() throws IOException{
