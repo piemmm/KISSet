@@ -101,6 +101,8 @@ public class ConnState implements AX25FrameSource, Closeable {
     AX25InputStream in = null;
     AX25OutputStream out = null;
 
+    boolean closed = false;
+
     ConnState(AX25Callsign src, AX25Callsign dst, AX25Stack stack) {
         this.src = src;
         this.dst = dst;
@@ -112,6 +114,7 @@ public class ConnState implements AX25FrameSource, Closeable {
      */
     void reset() {
         synchronized (MONITOR) {
+            closed = false;
             modReceivedFrameIndex = 0;
             modSentFrameIndex = 0;
             modAcknowledgedFrameIndex = 0;
@@ -384,6 +387,10 @@ public class ConnState implements AX25FrameSource, Closeable {
      */
     @Override
     public void close() {
+        if (closed)
+            return;
+        closed = true;
+
         synchronized (MONITOR) {
 
             if (isOpen()) {
