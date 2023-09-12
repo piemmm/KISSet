@@ -42,6 +42,21 @@ public enum NetROMRoutingTable {
         }
     }
 
+    /**
+     * Returns trie if the routing table contains a node with the given callsign, so we can assume that node is net/rom capable.
+     * @param callsign
+     * @return
+     */
+    public boolean hasNode(String callsign) {
+        for (NetROMRoute node : nodes) {
+            if (node.getDestinationNodeCallsign().equals(callsign) || node.getDestinationNodeMnemonic().equals(callsign) ||
+            node.getNeighbourNodeCallsign().equals(callsign) || node.getSourceCallsign().equals(callsign)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public void removeNode(NetROMRoute node) {
         nodes.remove(node);
     }

@@ -192,7 +192,7 @@ public class NetROMClientHandler implements ClientHandler {
         List<Service> services = KISSet.INSTANCE.getServices();
         Service chosen = null;
         for (Service service : services) {
-            if (service.getCallsign().equals(circuit.getDestinationCallsign().toString()) && !(service instanceof NetROMServerService)) {
+            if (service.getCallsign().equals(circuit.getDestinationCallsign().toString())) {
                 chosen = service;
                 break;
             }

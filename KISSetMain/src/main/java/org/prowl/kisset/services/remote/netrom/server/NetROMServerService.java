@@ -10,7 +10,9 @@ import org.prowl.kisset.io.Interface;
 import org.prowl.kisset.objects.routing.NetROMRoute;
 import org.prowl.kisset.objects.user.User;
 import org.prowl.kisset.protocols.netrom.NetROMRoutingPacket;
+import org.prowl.kisset.protocols.netrom.NetROMRoutingTable;
 import org.prowl.kisset.services.Service;
+import org.prowl.kisset.services.remote.netrom.user.NetROMUserClientHandler;
 import org.prowl.kisset.util.Tools;
 
 import java.io.IOException;
@@ -71,8 +73,16 @@ public class NetROMServerService extends Service {
      * @param out         the output stream
      */
     public void acceptedConnection(Interface anInterface, User user, InputStream in, OutputStream out) {
-        NetROMClientHandler client = new NetROMClientHandler(this, anInterface, user, in, out);
-        client.start();
+        // Work out what is connecting to us - a Net/ROM node or user
+        if (NetROMRoutingTable.INSTANCE.hasNode(user.getSourceCallsign())) {
+            // It's another Net/ROM node connecting.
+            NetROMClientHandler client = new NetROMClientHandler(this, anInterface, user, in, out);
+            client.start();
+        } else {
+            // It's a user connecting
+            NetROMUserClientHandler client = new NetROMUserClientHandler(anInterface, user, in, out);
+            client.start();
+        }
     }
 
     public void clientDisconnected(Interface anInterface, User user) {
@@ -184,7 +194,7 @@ public class NetROMServerService extends Service {
 
     /**
      * Send a netrom node broadcast for our node only (just to announce ourselves)
-     *
+     * <p>
      * FIXME: this is test code at the moment.
      */
     public void sendNodeBroadcast() {

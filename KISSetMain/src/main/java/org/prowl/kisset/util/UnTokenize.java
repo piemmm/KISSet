@@ -16,8 +16,10 @@ public class UnTokenize {
         // Global stuff
         Config config = KISSet.INSTANCE.getConfig();
         String pmsSSID = config.getConfig(Conf.pmsSSID, Conf.pmsSSID.stringDefault());
+        String nodeSSID = config.getConfig(Conf.netromSSID, Conf.netromSSID.stringDefault());
 
         tokenizedStringToDetokenise = tokenizedStringToDetokenise.replace("%PMSCALLSIGN%", KISSet.INSTANCE.getMyCallNoSSID()+pmsSSID);
+        tokenizedStringToDetokenise = tokenizedStringToDetokenise.replace("%NODECALLSIGN%", KISSet.INSTANCE.getMyCallNoSSID()+nodeSSID);
 
         return tokenizedStringToDetokenise;
     }

@@ -18,7 +18,6 @@ import org.prowl.kisset.services.Service;
 import org.prowl.kisset.services.host.TNCHost;
 import org.prowl.kisset.services.host.parser.Mode;
 import org.prowl.kisset.services.remote.netrom.server.NetROMServerService;
-import org.prowl.kisset.services.remote.netrom.user.NetROMUserService;
 import org.prowl.kisset.services.remote.pms.PMSService;
 import org.prowl.kisset.statistics.Statistics;
 import org.prowl.kisset.userinterface.TerminalHost;
@@ -198,10 +197,10 @@ public class KISSet {
         // Net/ROM
         boolean netROMEnabled = configuration.getConfig(Conf.netromEnabled, Conf.netromEnabled.boolDefault());
         if (netROMEnabled) {
-            // Server netrom/node facing service
+            // Net/ROM node. This is the node that connects to other nodes, and will determine if the remote station is a node or a user.
             serviceList.add(new NetROMServerService("NETROMNode", getMyCallNoSSID()+configuration.getConfig(Conf.netromSSID, Conf.netromSSID.stringDefault())));
             // User facing net/rom node service
-            serviceList.add(new NetROMUserService("NETROMUser", getMyCallNoSSID()+configuration.getConfig(Conf.netromSSID, Conf.netromSSID.stringDefault())));
+            //serviceList.add(new NetROMUserService("NETROMUser", getMyCallNoSSID()+configuration.getConfig(Conf.netromSSID, Conf.netromSSID.stringDefault())));
 
         }
     }
@@ -222,15 +221,6 @@ public class KISSet {
         // Redirect stdout/err
         stdOut = System.out;
         stdIn = System.in;
-
-//        // We need to intercept the stdout for our buffer.
-//        System.setOut(new PrintStream(new OutputStream() {
-//            @Override
-//            public void write(int b) throws IOException {
-//                dataBuffer.put((byte) b);
-//                stdOut.write(b);
-//            }
-//        }));
 
         // Force the logs to a null output
         System.setErr(new PrintStream(PrintStream.nullOutputStream()));
@@ -280,7 +270,6 @@ public class KISSet {
                         LOG.debug(e.getMessage(), e);
                     }
                 }
-
             }
 
             @Override
