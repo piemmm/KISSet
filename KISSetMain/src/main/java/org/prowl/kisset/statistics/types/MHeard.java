@@ -79,6 +79,22 @@ public class MHeard {
     }
 
     /**
+     * Has this callsign been heard?
+     * @param callsign
+     * @return true if heard, false if not.
+     */
+    public boolean seen(String callsign) {
+        synchronized (heardList) {
+            for (Node n : heardList) {
+                if (n.getCallsign().equalsIgnoreCase(callsign)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
      * Is this via a digipeater? or directly heard?
      * @return true if heard direct, false if via a digipeater
      */

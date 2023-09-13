@@ -40,7 +40,7 @@ public class StreamConnectionEstablishmentListener implements ConnectionEstablis
             if (stream.getRemoteCall() == null) {
                 return;
             }
-            commandParser.writeToTerminal("*** Connected to " + conn.getDst().toString().toUpperCase() + CR);
+            commandParser.writeToTerminal(CR+"*** Connected to " + conn.getDst().toString().toUpperCase() + CR);
             commandParser.setModeIfCurrentStream(Mode.CONNECTED_TO_STATION, stream);
             commandParser.getCurrentInterface().getCurrentStream().setStreamState(StreamState.CONNECTED);
 

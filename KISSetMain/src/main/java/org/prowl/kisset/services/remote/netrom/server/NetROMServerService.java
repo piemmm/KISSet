@@ -229,8 +229,12 @@ public class NetROMServerService extends Service {
 
     }
 
-    public byte getServicePid() {
-        return AX25Frame.PID_NETROM;
+    @Override
+    public byte getServicePid(User user) {
+        if (NetROMRoutingTable.INSTANCE.hasNode(user.getSourceCallsign())) {
+            return AX25Frame.PID_NETROM;
+        }
+        return AX25Frame.PID_NOLVL3;
     }
 
 }

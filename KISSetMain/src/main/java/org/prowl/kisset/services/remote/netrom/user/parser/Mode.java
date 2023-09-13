@@ -18,6 +18,7 @@ public class Mode {
 
     // Command mode
     public static final Mode CMD = new Mode("NODE_CMD");
+    public static final Mode CONNECTED_TO_STATION = new Mode("NODE_CONNECTED_TO_STATION");
 
 
     private final String mode;

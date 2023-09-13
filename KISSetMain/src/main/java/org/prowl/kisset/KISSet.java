@@ -381,4 +381,13 @@ public class KISSet {
         return serviceList;
     }
 
+    public Service getService(Class serivceClass) {
+        for (Service service : serviceList) {
+            if (service.getClass().equals(serivceClass)) {
+                return service;
+            }
+        }
+        return null;
+    }
+
 }

@@ -177,12 +177,12 @@ public abstract class Interface {
                         user.setBaseCallsign(conn.getSrc().getBaseCallsign());
                         user.setSourceCallsign(conn.getSrc().getBaseCallsign()+"-"+conn.getSrc().getSSID());
                         user.setDestinationCallsign(conn.getDst().getBaseCallsign()+"-"+conn.getSrc().getSSID());
-                        InputStream in = conn.getInputStream();
+                        AX25InputStream in = conn.getInputStream();
                         AX25OutputStream out = conn.getOutputStream();
 
                         // FIXME: This is a method to get the PID set correctly for netrom frames, I have no other use-cases
                         //        for this so I'm not sure if it's a good idea or not.
-                        out.setPID(service.getServicePid());
+                        out.setPID(service.getServicePid(user));
 
                         service.acceptedConnection(Interface.this, user, in, out);
                     } catch (Exception e) {

@@ -86,7 +86,7 @@ public class NetROMUserClientHandler implements ClientHandler {
 
             // Everything else is just part of our standard welcome message
             send(ANSI.BOLD_CYAN + Messages.get("usesColour") + CR + ANSI.NORMAL + CR);
-            send(Messages.get(user, "welcomeNewUser") + CR);
+            send(Messages.get(user, "netrom_welcomeNewUser") + CR);
             parser.sendPrompt();
 
         } catch (Throwable e) {
@@ -143,6 +143,10 @@ public class NetROMUserClientHandler implements ClientHandler {
         }
 
         out.write(data.getBytes());
+    }
+
+    public void sendRaw(int data) throws IOException {
+        out.write(data);
     }
 
     public void flush() throws IOException {

@@ -29,7 +29,7 @@ import java.util.List;
  *
  * @author Andrew Pavlin, KA2DDO
  */
-class AX25InputStream extends InputStream {
+public class AX25InputStream extends InputStream {
     private final ConnState connState;
     List<AX25Frame> frameQueue = new LinkedList<AX25Frame>();
     transient AX25Frame currentFrame = null;

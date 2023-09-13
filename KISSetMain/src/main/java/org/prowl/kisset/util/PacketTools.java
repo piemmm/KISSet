@@ -182,7 +182,7 @@ public class PacketTools {
         }
 
         // PID for I franes only (this is also I types such as: UI and FRMR XID TEST)
-        if (node.getFrame().getFrameType() == AX25Frame.FRAMETYPE_I) {
+        if (node.getFrame().getFrameType() == AX25Frame.FRAMETYPE_I || ( node.getFrame().getFrameType() == AX25Frame.FRAMETYPE_U && node.getFrame().getUType() == AX25Frame.UTYPE_UI)) {
             builder.append(" PID=0x" + Integer.toString(node.getFrame().getPid() & 0xFF, 16));
         }
 
@@ -191,7 +191,7 @@ public class PacketTools {
             builder.append(" " + mod128);
         }
         builder.append("]");
-        if (node.getFrame().getFrameType() == AX25Frame.FRAMETYPE_I) {
+        if (node.getFrame().getFrameType() == AX25Frame.FRAMETYPE_I || ( node.getFrame().getFrameType() == AX25Frame.FRAMETYPE_U && node.getFrame().getUType() == AX25Frame.UTYPE_UI)) {
             builder.append(ANSI.GREEN);
             builder.append(pidToString(node.getFrame().getPid()));
         }

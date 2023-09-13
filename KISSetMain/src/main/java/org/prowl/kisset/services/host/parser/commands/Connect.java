@@ -68,7 +68,7 @@ public class Connect extends Command {
         // connect: C GB7MNK
         if (data.length == 2) {
             String station = data[1].toUpperCase();
-            writeToTerminal("*** Connecting to " + station + CR);
+            writeToTerminal("*** Connecting to " + station);
             currentStream.setRemoteCall(station);
             anInterface.connect(data[1].toUpperCase(), KISSet.INSTANCE.getMyCall(), new StreamConnectionEstablishmentListener(commandParser, stream));
             anInterface.getCurrentStream().setStreamState(StreamState.CONNECTING);
@@ -76,8 +76,6 @@ public class Connect extends Command {
         } else {
             writeToTerminal("*** Usage: connect <station>" + CR);
         }
-
-        writeToTerminal(CR);
 
         return true;
     }

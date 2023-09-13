@@ -15,6 +15,7 @@ import org.reflections.Reflections;
 
 import java.io.EOFException;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -37,6 +38,9 @@ public class CommandParser {
     protected List<Mode> modeStack = new ArrayList<>();
     // Default to command mode.
     private Mode mode = Mode.CMD;
+
+    private OutputStream divertStream;
+
 
     public CommandParser(NetROMUserClientHandler client) {
         this.client = client;
@@ -100,6 +104,19 @@ public class CommandParser {
                     unknownCommand();
                 }
                 sendPrompt();
+            } else if (mode == Mode.CONNECTED_TO_STATION) {
+
+                // Send i/o to/from station
+                if (divertStream != null) {
+                    try {
+                        divertStream.write(c.getBytes());
+                        divertStream.write('\r');
+                        divertStream.flush();
+                    } catch (IOException e) {
+                        LOG.error("Unable to write to divert stream", e);
+                    }
+                }
+
             } else {
                 // Try in case of a paticular mode setting requires 'no command' when outside of command mode
                 if (!mode.equals(org.prowl.kisset.services.host.parser.Mode.CMD)) {
@@ -119,6 +136,22 @@ public class CommandParser {
 
         }
     }
+
+
+    public void closeDivertStream() {
+        if (divertStream != null) {
+            try {
+                divertStream.close();
+            } catch (IOException e) {
+                LOG.error("Unable to close divert stream", e);
+            }
+        }
+    }
+
+    public void setDivertStream(OutputStream divertStream) {
+        this.divertStream = divertStream;
+    }
+
 
     public void sendPrompt() throws IOException {
         try {
@@ -154,6 +187,10 @@ public class CommandParser {
      */
     public void write(String s) throws IOException {
         client.send(s);
+    }
+
+    public void writeRaw(int data) throws IOException {
+        client.sendRaw(data);
     }
 
     /**

@@ -86,6 +86,7 @@ public class User {
         this.sourceCallsign = connectingCallsign;
     }
 
+
     public String getDestinationCallsign() {
         return destinationCallsign;
     }

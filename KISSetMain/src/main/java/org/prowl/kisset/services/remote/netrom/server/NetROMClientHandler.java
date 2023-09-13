@@ -31,8 +31,8 @@ public class NetROMClientHandler implements ClientHandler {
 
     private static final Log LOG = LogFactory.getLog("NetROMClientHandler");
 
-    private static final long TIMEOUT = 120000; // 2 minutes
-    private static final long REASSEMBLY_TIMEOUT = 120000; // 2 minutes
+    public static final long TIMEOUT = 120000; // 2 minutes
+    public static final long REASSEMBLY_TIMEOUT = 120000; // 2 minutes
 
     private InputStream in;
     private OutputStream out;
@@ -257,6 +257,8 @@ public class NetROMClientHandler implements ClientHandler {
             // Connection was refused.
             circuit.setState(CircuitState.DISCONNECTED);
         }
+
+
     }
 
     /**
@@ -417,14 +419,14 @@ public class NetROMClientHandler implements ClientHandler {
     public User getUser() {
         return user;
     }
-
-
+//
+//
 //    /**
 //     * Send a connection request, wait for a reply or timeout.
 //     *
 //     * @param sourceCircuit the circuit we are making the connection for.
 //     */
-//    private Circuit sendConnectionRequestBlocking(ClientHandler sourceHandler, Circuit sourceCircuit) {
+//    private Circuit sendConnectionRequestBlocking(ClientHandler sourceHandler) {
 //
 //        // Create a circuit to handle this connection request
 //        Circuit circuit = new Circuit();
@@ -432,11 +434,10 @@ public class NetROMClientHandler implements ClientHandler {
 //        circuit.setDestinationCallsign(sourceCircuit.getDestinationCallsign());
 //        circuit.setOriginatingUser(sourceCircuit.getOriginatingUser());
 //        circuit.setOriginatingNode(sourceCircuit.getOriginatingNode());
-//        circuit.setAcceptedSize(sourceCircuit.getAcceptedSize());
+//        circuit.setAcceptedFrames(sourceCircuit.getAcceptedFrames());
 //
 //        CircuitManager.registerCircuit(circuit, this); // Applies the circuit IDs and indexes.
-//        circuit.setOtherCircuit(sourceCircuit);
-//        sourceCircuit.setOtherCircuit(circuit);
+//
 //
 //        // Setup a connection request with the relevant infos.
 //        ConnectRequest connectRequest = new ConnectRequest();
@@ -464,7 +465,7 @@ public class NetROMClientHandler implements ClientHandler {
 //
 //        return circuit;
 //    }
-
+//
 //    /**
 //     * Waits for reception of a connection ack/nack or a timeout.
 //     *
