@@ -78,6 +78,7 @@ public class NetROMServerService extends Service {
             // It's another Net/ROM node connecting.
             NetROMClientHandler client = new NetROMClientHandler(this, anInterface, user, in, out);
             client.start();
+            clients.put(user, client);
         } else {
             // It's a user connecting
             NetROMUserClientHandler client = new NetROMUserClientHandler(anInterface, user, in, out);
@@ -98,6 +99,7 @@ public class NetROMServerService extends Service {
     public NetROMClientHandler getClientHandlerForCallsign(Interface anInterface, AX25Callsign callsign, boolean initiateConnectIfNotConnected) {
         synchronized (MONITOR) {
             for (NetROMClientHandler client : clients.values()) {
+                LOG.debug("Checking for connection:"+client.getUser().getSourceCallsign()+"/"+client.getUser().getDestinationCallsign()+"   search:"+callsign.toString());
                 if (client.getUser().getSourceCallsign().equalsIgnoreCase(callsign.toString())) {
                     return client;
                 }
@@ -155,12 +157,13 @@ public class NetROMServerService extends Service {
             });
             semaphore.acquire();
 
-            if (connState[0] == null) {
+            if (connState[0] != null) {
                 InputStream in = connState[0].getInputStream();
                 AX25OutputStream out = connState[0].getOutputStream();
                 out.setPID(AX25Frame.PID_NETROM);
                 NetROMClientHandler clientHandler = new NetROMClientHandler(this, anInterface, user, in, out);
                 clientHandler.start();
+                clients.put(user, clientHandler);
                 return clientHandler;
             }
         } catch (IOException e) {

@@ -49,7 +49,7 @@ public class Connect extends Command {
         // Attempt a connection via the node network
         if (data.length == 2) {
             String station = data[1].toUpperCase();
-            write("*** Connecting to " + station);
+            write("*** Connecting to " + station + CR);
 
             // See if it's a node.
             NetROMRoute route = NetROMRoutingTable.INSTANCE.getRoutingToCallsign(data[1].toUpperCase());
@@ -58,7 +58,7 @@ public class Connect extends Command {
                 nodeConnect(route, station);
             } else {
                 // No route to a node
-                write("*** Unknown node: " + station);
+                write("*** Unknown node: " + station + CR);
             }
         } else if (data.length == 3) {
 
@@ -84,17 +84,17 @@ public class Connect extends Command {
      */
     public void nodeConnect(NetROMRoute route, String toCallsign) throws IOException {
 
-        write("*** Connecting to node " + toCallsign);
-
         // Get the interface we are going to use
         Interface routeInterface = route.getAnInterface();
 
         // Choose a suitable SSID for our outgoing callsign.
         //String callsign = chooseCallsign(client.getUser().getBaseCallsign());
+        NetROMServerService netROMService = ((NetROMServerService) KISSet.INSTANCE.getService(NetROMServerService.class));
+
 
         // Create a circuit to handle the connection
         Circuit circuit = new Circuit();
-        circuit.setSourceCallsign(new AX25Callsign(client.getUser().getSourceCallsign()));
+        circuit.setSourceCallsign(new AX25Callsign(netROMService.getCallsign()));
         circuit.setDestinationCallsign(new AX25Callsign(toCallsign));
         circuit.setOriginatingUser(new AX25Callsign(client.getUser().getSourceCallsign()));
         circuit.setOriginatingNode(new AX25Callsign(client.getUser().getDestinationCallsign()));
@@ -102,16 +102,22 @@ public class Connect extends Command {
         circuit.setState(CircuitState.CONNECTING);
 
         // Now initiate a NetROM<->NetROM connection
-        NetROMServerService netROMService = ((NetROMServerService) KISSet.INSTANCE.getService(NetROMServerService.class));
         NetROMClientHandler nextStation = netROMService.getClientHandlerForCallsign(route.getAnInterface(), new AX25Callsign(route.getSourceCallsign()), true);
+        if (nextStation == null) {
+            write("*** Node not in routing table: " + route.getSourceCallsign() + CR);
+            return;
+        }
+
         CircuitManager.registerCircuit(circuit, nextStation); // Applies the circuit IDs and indexes.
 
         ConnectRequest connectRequest = new ConnectRequest();
-        connectRequest.setDestinationCallsign(new AX25Callsign(toCallsign));
-        connectRequest.setSourceCallsign(new AX25Callsign(client.getUser().getSourceCallsign()));
+        connectRequest.setDestinationCallsign(circuit.getDestinationCallsign());
+        connectRequest.setSourceCallsign(circuit.getSourceCallsign());
         connectRequest.setMyCircuitID(circuit.getMyCircuitId());
         connectRequest.setMyCircuitIndex(circuit.getMyCircuitIndex());
         connectRequest.setProposeWindowSize(circuit.getAcceptedFrames());
+        connectRequest.setCallsignOfOriginatingUser(new AX25Callsign(client.getUser().getSourceCallsign()));
+        connectRequest.setCallsignOfOriginatingNode(new AX25Callsign(netROMService.getCallsign()));
 
         nextStation.sendPacket(connectRequest.getNetROMPacket());
 
@@ -122,7 +128,7 @@ public class Connect extends Command {
                 write("*** Connection timed out" + CR);
                 return;
             }
-            Tools.delay(100);
+            Tools.delay(1000);
         }
 
         // We can now assume connected or disconnected state
@@ -157,7 +163,7 @@ public class Connect extends Command {
                             commandParser.writeRaw(b);
                         } else {
                             // Crude.
-                            Tools.delay(100);
+                            Tools.delay(500);
                         }
                     }
                 } catch (IOException e) {

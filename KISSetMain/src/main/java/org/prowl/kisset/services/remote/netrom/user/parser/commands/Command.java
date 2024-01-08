@@ -46,6 +46,7 @@ public abstract class Command {
      */
     public void write(String s) throws IOException {
         client.send(s);
+        client.flush();
     }
 
     public void flush() throws IOException {

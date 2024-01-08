@@ -62,12 +62,23 @@ public class ConnectRequest {
         netROMPacket.setDestinationCallsign(callsign.toString());
     }
 
+
     public AX25Callsign getCallsignOfOriginatingUser() {
         return new AX25Callsign(netROMPacket.getBody(),1,7);
     }
 
     public AX25Callsign getCallsignOfOriginatingNode() {
         return new AX25Callsign(netROMPacket.getBody(),1+7,7);
+    }
+
+    public void setCallsignOfOriginatingUser(AX25Callsign callsign) {
+        byte[] data = callsign.toByteArray();
+        System.arraycopy(data, 0, netROMPacket.getBody(), 1, data.length);
+    }
+
+    public void setCallsignOfOriginatingNode(AX25Callsign callsign) {
+        byte[] data = callsign.toByteArray();
+        System.arraycopy(data, 0, netROMPacket.getBody(), 1 + 7, data.length);
     }
 
     public NetROMPacket getNetROMPacket() {
