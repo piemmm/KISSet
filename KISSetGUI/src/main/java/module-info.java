@@ -4,6 +4,9 @@ module org.prowl.kissetgui {
     requires org.controlsfx.controls;
     requires net.synedra.validatorfx;
     requires org.kordamp.ikonli.javafx;
+    // If you're not using bellsoft-liberica-jdk, and get a module not found error for javafx.swing, then you will need
+    // to add the dependency in the pom.xml file (which is in there, just commented out for you). I would recommend
+    // using bellsoft-liberica-jdk, as it is the easiest way to get JavaFX working with Maven.
     requires javafx.swing;
 
 
