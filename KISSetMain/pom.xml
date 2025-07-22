@@ -304,7 +304,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
-                <version>3.1.0</version>
+                <version>3.5.1</version>
                 <configuration>
                     <mainClass>org.prowl.kisset.KISSet</mainClass>
                     <arguments>
@@ -648,7 +648,7 @@
                           If you don't want this behavior, just delete this plug execution. -->
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>exec-maven-plugin</artifactId>
-                        <version>3.1.0</version>
+                        <version>3.5.1</version>
                         <executions>
                             <execution>
                                 <phase>install</phase>
