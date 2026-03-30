@@ -150,7 +150,7 @@
         <dependency>
             <groupId>org.controlsfx</groupId>
             <artifactId>controlsfx</artifactId>
-            <version>11.1.2</version>
+            <version>11.2.3</version>
         </dependency>
         <dependency>
             <groupId>net.synedra</groupId>
